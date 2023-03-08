@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static javax.persistence.GenerationType.IDENTITY;
@@ -21,7 +22,7 @@ public class Payment extends BaseEntity {
     private Long id;
 
     @OneToMany(mappedBy = "payment")
-    private List<ReserveMenu> reserveMenus;
+    private List<ReserveMenu> reserveMenus = new ArrayList<>();
 
     private int totalPrice;
 

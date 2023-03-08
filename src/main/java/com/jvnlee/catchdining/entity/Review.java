@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static javax.persistence.FetchType.*;
@@ -38,6 +39,6 @@ public class Review extends BaseEntity {
     private String content;
 
     @OneToMany(mappedBy = "review")
-    private List<ReviewComment> reviewComments;
+    private List<ReviewComment> reviewComments = new ArrayList<>();
 
 }

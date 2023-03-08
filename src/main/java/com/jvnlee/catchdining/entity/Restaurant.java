@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static javax.persistence.GenerationType.IDENTITY;
@@ -32,7 +33,7 @@ public class Restaurant extends BaseEntity {
     private double rating;
 
     @OneToMany(mappedBy = "restaurant")
-    private List<Seat> seats;
+    private List<Seat> seats= new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private CountryType countryType;
@@ -44,9 +45,9 @@ public class Restaurant extends BaseEntity {
     private ServingType servingType;
 
     @OneToMany(mappedBy = "restaurant")
-    private List<Menu> menus;
+    private List<Menu> menus = new ArrayList<>();
 
     @OneToMany(mappedBy = "restaurant")
-    private List<Review> reviews;
+    private List<Review> reviews = new ArrayList<>();
 
 }

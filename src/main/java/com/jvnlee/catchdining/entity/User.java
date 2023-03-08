@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static javax.persistence.GenerationType.*;
@@ -26,15 +27,15 @@ public class User extends BaseEntity {
     private String phoneNumber;
 
     @OneToMany(mappedBy = "user")
-    private List<Favorite> favorites;
+    private List<Favorite> favorites = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<Reservation> reservations;
+    private List<Reservation> reservations = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<Notification> notifications;
+    private List<Notification> notifications = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<Review> reviews;
+    private List<Review> reviews = new ArrayList<>();
 
 }

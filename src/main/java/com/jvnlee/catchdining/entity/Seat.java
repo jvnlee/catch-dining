@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static javax.persistence.FetchType.*;
@@ -32,7 +33,7 @@ public class Seat extends BaseEntity {
     @ElementCollection
     @CollectionTable(name = "available_time",
             joinColumns = @JoinColumn(name = "seat_id"))
-    private List<LocalDateTime> availabeTime;
+    private List<LocalDateTime> availabeTime = new ArrayList<>();
 
     private int maxHeadCount;
 
