@@ -27,6 +27,9 @@ public class User extends BaseEntity {
 
     private String phoneNumber;
 
+    @Enumerated
+    private UserType userType;
+
     @OneToMany(mappedBy = "user")
     private List<Favorite> favorites = new ArrayList<>();
 
