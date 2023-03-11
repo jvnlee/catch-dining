@@ -28,7 +28,7 @@ public class User extends BaseEntity {
 
     private String phoneNumber;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private UserType userType;
 
     @OneToMany(mappedBy = "user")
