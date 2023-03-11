@@ -22,10 +22,12 @@ public class User extends BaseEntity {
     @Column(name = "user_id")
     private Long id;
 
+    @Column(unique = true)
     private String username;
 
     private String password;
 
+    @Column(unique = true)
     private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
