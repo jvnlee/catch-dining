@@ -1,6 +1,7 @@
 package com.jvnlee.catchdining.domain.user.service;
 
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
+import com.jvnlee.catchdining.domain.user.dto.UserSearchDto;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public User search(String username) {
-        return userRepository.findByUsername(username).orElseThrow();
+    public UserSearchDto search(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow();
+        return new UserSearchDto(user);
     }
 
     public void update(Long id, UserDto userDto) {
