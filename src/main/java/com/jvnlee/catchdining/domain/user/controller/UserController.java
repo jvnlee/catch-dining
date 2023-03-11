@@ -5,7 +5,11 @@ import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.domain.user.dto.UserSearchDto;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/users")
@@ -36,6 +40,18 @@ public class UserController {
     public Response delete(@PathVariable Long userId) {
         userService.delete(userId);
         return new Response("회원 탈퇴 성공");
+    }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Response handleDuplicateData(DuplicateKeyException e) {
+        return new Response(e.getMessage());
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Response handleNoData() {
+        return new Response("해당 username을 가진 사용자가 존재하지 않습니다.");
     }
 
 }
