@@ -109,9 +109,11 @@ class UserServiceTest {
     void update_fail_username() {
         Long id = 1L;
         UserDto userDto = new UserDto("user", "123", "01012345678", UserType.CUSTOMER);
-        User user = new User(userDto);
+        User spy = spy(new User(userDto));
+        Optional<User> user = Optional.of(spy);
 
-        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername("user")).thenReturn(user);
+        when(user.get().getId()).thenReturn(2L);
 
         assertThatThrownBy(() -> userService.update(id, userDto))
                 .isInstanceOf(DuplicateKeyException.class);
@@ -122,9 +124,11 @@ class UserServiceTest {
     void update_fail_phoneNumber() {
         Long id = 1L;
         UserDto userDto = new UserDto("user", "123", "01012345678", UserType.CUSTOMER);
-        User user = new User(userDto);
+        User spy = spy(new User(userDto));
+        Optional<User> user = Optional.of(spy);
 
-        when(userRepository.findByPhoneNumber("01012345678")).thenReturn(Optional.of(user));
+        when(userRepository.findByPhoneNumber("01012345678")).thenReturn(user);
+        when(user.get().getId()).thenReturn(2L);
 
         assertThatThrownBy(() -> userService.update(id, userDto))
                 .isInstanceOf(DuplicateKeyException.class);
