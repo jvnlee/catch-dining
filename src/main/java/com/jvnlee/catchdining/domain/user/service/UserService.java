@@ -9,6 +9,8 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -30,8 +32,8 @@ public class UserService {
     }
 
     public void update(Long id, UserDto userDto) {
-        validateUsername(userDto);
-        validatePhoneNumber(userDto);
+        validateUsername(id, userDto);
+        validatePhoneNumber(id, userDto);
         User user = userRepository.findById(id).orElseThrow();
         user.update(userDto);
     }
@@ -46,8 +48,24 @@ public class UserService {
         }
     }
 
+    private void validateUsername(Long id, UserDto userDto) {
+        Optional<User> user = userRepository.findByUsername(userDto.getUsername());
+        if (user.isPresent()) {
+            if (user.get().getId().equals(id)) return; // 같은 username을 가진 기존 데이터가 자기 자신인 경우는 패스
+            throw new DuplicateKeyException("이미 존재하는 username 입니다.");
+        }
+    }
+
     private void validatePhoneNumber(UserDto userDto) {
         if (userRepository.findByPhoneNumber(userDto.getPhoneNumber()).isPresent()) {
+            throw new DuplicateKeyException("이미 존재하는 연락처입니다.");
+        }
+    }
+
+    private void validatePhoneNumber(Long id, UserDto userDto) {
+        Optional<User> user = userRepository.findByPhoneNumber(userDto.getPhoneNumber());
+        if (user.isPresent()) {
+            if (user.get().getId().equals(id)) return; // 같은 phoneNumber 가진 기존 데이터가 자기 자신인 경우는 패스
             throw new DuplicateKeyException("이미 존재하는 연락처입니다.");
         }
     }
