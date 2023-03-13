@@ -1,0 +1,36 @@
+package com.jvnlee.catchdining.common.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+import static org.springframework.security.config.http.SessionCreationPolicy.*;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .httpBasic().disable() // HTTP Basic authentication 사용 안함
+                .csrf().disable() // CSRF protection 사용 안함
+                .sessionManagement().sessionCreationPolicy(STATELESS) // 세션 사용 안함
+                .and()
+                .authorizeHttpRequests()
+                .antMatchers("/users", "/login").permitAll() // 회원가입(POST /users), 로그인(POST /login) URL 접근 허용
+                .anyRequest().authenticated(); // 그 외에는 모두 로그인 후 접근 허용
+
+        return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder(); // 기본: BcryptPasswordEncoder 제공
+    }
+
+}
