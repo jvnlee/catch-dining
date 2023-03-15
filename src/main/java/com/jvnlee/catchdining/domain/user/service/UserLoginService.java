@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.user.service;
 
+import com.jvnlee.catchdining.domain.user.dto.JwtDto;
 import com.jvnlee.catchdining.domain.user.dto.UserLoginDto;
 import com.jvnlee.catchdining.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,9 @@ public class UserLoginService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    public void login(UserLoginDto userLoginDto) {
+    private final JwtService jwtService;
+
+    public JwtDto login(UserLoginDto userLoginDto) {
         String username = userLoginDto.getUsername();
         String password = userLoginDto.getPassword();
         Collection<? extends GrantedAuthority> authorities = userRepository.findByUsername(username).orElseThrow().getAuthorities();
@@ -36,8 +39,14 @@ public class UserLoginService implements UserDetailsService {
         // AuthenticationManager에게 인증 토큰을 넘겨 인증 진행
         Authentication auth = authenticationManagerBuilder.getObject().authenticate(authToken);
 
+        // 인증에 성공하면 JWT 생성
+        String accessToken = jwtService.createAccessToken(auth);
+        String refreshToken = jwtService.createRefreshToken();
+
         // 인증을 마친 Authentication 객체를 SecurityContextHolder에 보관
         SecurityContextHolder.getContext().setAuthentication(auth);
+
+        return new JwtDto(accessToken, refreshToken);
     }
 
     @Override
