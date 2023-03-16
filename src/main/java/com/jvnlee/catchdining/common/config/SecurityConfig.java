@@ -1,11 +1,12 @@
 package com.jvnlee.catchdining.common.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvnlee.catchdining.common.filter.JwtAuthenticationFilter;
+import com.jvnlee.catchdining.common.filter.JwtExceptionFilter;
 import com.jvnlee.catchdining.domain.user.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -22,6 +23,8 @@ public class SecurityConfig {
 
     private final JwtService jwtService;
 
+    private final ObjectMapper om;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -34,7 +37,9 @@ public class SecurityConfig {
                 .anyRequest().authenticated() // 그 외에는 모두 로그인 후 접근 허용
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService),
-                        UsernamePasswordAuthenticationFilter.class); // 모든 AuthentiationFilter 중에 가장 앞에 배치
+                        UsernamePasswordAuthenticationFilter.class) // 모든 AuthentiationFilter 중에 가장 앞에 배치
+                .addFilterBefore(new JwtExceptionFilter(om),
+                        JwtAuthenticationFilter.class); // JwtAuthenticationFilter에서 예외가 발생하면 처리해줄 필터 배치
 
         return http.build();
     }
