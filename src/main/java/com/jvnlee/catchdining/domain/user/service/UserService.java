@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.user.service;
 
+import com.jvnlee.catchdining.common.exception.UserNotFoundException;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.domain.user.dto.UserSearchDto;
 import com.jvnlee.catchdining.domain.user.model.User;
@@ -33,7 +34,9 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserSearchDto search(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow();
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
         return new UserSearchDto(user);
     }
 

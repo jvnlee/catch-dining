@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.user.service;
 
+import com.jvnlee.catchdining.common.exception.UserNotFoundException;
 import com.jvnlee.catchdining.domain.user.dto.JwtDto;
 import com.jvnlee.catchdining.domain.user.dto.UserLoginDto;
 import com.jvnlee.catchdining.domain.user.repository.UserRepository;
@@ -31,7 +32,10 @@ public class UserLoginService implements UserDetailsService {
     public JwtDto login(UserLoginDto userLoginDto) {
         String username = userLoginDto.getUsername();
         String password = userLoginDto.getPassword();
-        Collection<? extends GrantedAuthority> authorities = userRepository.findByUsername(username).orElseThrow().getAuthorities();
+        Collection<? extends GrantedAuthority> authorities = userRepository
+                .findByUsername(username)
+                .orElseThrow(UserNotFoundException::new)
+                .getAuthorities();
 
         // 인증 토큰 생성 (username, password, authorities)
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, authorities);
@@ -51,7 +55,9 @@ public class UserLoginService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username).orElseThrow();
+        return userRepository
+                .findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
     }
 
 }
