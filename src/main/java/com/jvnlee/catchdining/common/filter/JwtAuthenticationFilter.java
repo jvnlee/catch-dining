@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.common.filter;
 
+import com.jvnlee.catchdining.common.web.Response;
 import com.jvnlee.catchdining.domain.user.service.JwtService;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
@@ -12,9 +13,12 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static org.springframework.http.HttpHeaders.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
@@ -24,6 +28,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
 
         // Authorization 헤더가 없으면 그대로 doFilter() 호출해서 건너뜀 (회원가입이 안된 경우, 최초 로그인한 경우, 토큰이 모두 만료되어 재로그인한 경우)
         if (req.getHeader(AUTHORIZATION) == null || req.getHeader(AUTHORIZATION).isEmpty()) {
@@ -63,6 +68,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
                 Authentication authentication = jwtService.getAuthentication(accessToken);
                 String newAccessToken = jwtService.createAccessToken(authentication);
                 authenticate(newAccessToken);
+                res.setHeader(AUTHORIZATION, "Bearer " + newAccessToken + " " + refreshToken);
             } catch (JwtException e) {
                 // 인증 정보 추출에 실패 시, 재로그인해서 Access Token과 Refresh Token 모두 새로 발급 받아야함
                 throw new IllegalArgumentException("올바르지 않은 토큰입니다. 인증 정보를 불러올 수 없습니다.");
