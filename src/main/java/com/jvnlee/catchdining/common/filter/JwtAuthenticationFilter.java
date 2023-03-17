@@ -4,7 +4,6 @@ import com.jvnlee.catchdining.common.exception.UserNotFoundException;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.repository.UserRepository;
 import com.jvnlee.catchdining.domain.user.service.JwtService;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +25,8 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     private final JwtService jwtService;
 
     private final UserRepository userRepository;
+
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -64,7 +65,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         String refreshToken = authHeader[2];
 
         // Access Token은 유효하지 않은데, Refresh Token은 유효한 경우 Access Token 재발급
-        if (jwtService.validateToken(refreshToken)) {
+        if (jwtService.validateToken(refreshToken) && compareRefreshToken(refreshToken)) {
             Long id = Long.valueOf(jwtService.getClaims(refreshToken).get("id", String.class));
             User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
 
@@ -81,6 +82,17 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         SecurityContextHolder
                 .getContext()
                 .setAuthentication(jwtService.getAuthentication(accessToken));
+    }
+
+    private boolean compareRefreshToken(String refreshToken) {
+        String id = jwtService.getClaims(refreshToken).get("id", String.class);
+        String storedRefreshToken = redisTemplate.opsForValue().get(id);
+
+        if (storedRefreshToken != null) {
+            return storedRefreshToken.equals(refreshToken);
+        }
+
+        return false;
     }
 
 }
