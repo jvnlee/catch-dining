@@ -91,6 +91,10 @@ public class JwtService {
         }
     }
 
+    public Long getRefreshExp() {
+        return this.REFRESH_EXP;
+    }
+
     private String getAuthoritiesString(Authentication authentication) {
         return authentication
                 .getAuthorities()
