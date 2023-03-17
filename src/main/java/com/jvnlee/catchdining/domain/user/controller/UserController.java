@@ -9,6 +9,8 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.NoSuchElementException;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -44,6 +46,12 @@ public class UserController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Response handleDuplicateData(DuplicateKeyException e) {
         return new Response(e.getMessage());
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Response handleNoData() {
+        return new Response("해당 username을 가진 사용자가 존재하지 않습니다.");
     }
 
 }
