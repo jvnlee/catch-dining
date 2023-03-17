@@ -1,10 +1,12 @@
 package com.jvnlee.catchdining.common.filter;
 
-import com.jvnlee.catchdining.common.web.Response;
+import com.jvnlee.catchdining.common.exception.UserNotFoundException;
+import com.jvnlee.catchdining.domain.user.model.User;
+import com.jvnlee.catchdining.domain.user.repository.UserRepository;
 import com.jvnlee.catchdining.domain.user.service.JwtService;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -16,14 +18,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static org.springframework.http.HttpHeaders.*;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
 
     private final JwtService jwtService;
+
+    private final UserRepository userRepository;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -63,16 +65,13 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
         // Access Token은 유효하지 않은데, Refresh Token은 유효한 경우 Access Token 재발급
         if (jwtService.validateToken(refreshToken)) {
-            try {
-                // 만료된 Access Token으로부터 Authentication 정보 추출 시도
-                Authentication authentication = jwtService.getAuthentication(accessToken);
-                String newAccessToken = jwtService.createAccessToken(authentication);
-                authenticate(newAccessToken);
-                res.setHeader(AUTHORIZATION, "Bearer " + newAccessToken + " " + refreshToken);
-            } catch (JwtException e) {
-                // 인증 정보 추출에 실패 시, 재로그인해서 Access Token과 Refresh Token 모두 새로 발급 받아야함
-                throw new IllegalArgumentException("올바르지 않은 토큰입니다. 인증 정보를 불러올 수 없습니다.");
-            }
+            Long id = Long.valueOf(jwtService.getClaims(refreshToken).get("id", String.class));
+            User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+
+            String newAccessToken = jwtService.createAccessToken(user.getUsername(), user.getAuthorities());
+            authenticate(newAccessToken);
+
+            res.setHeader(AUTHORIZATION, "Bearer " + newAccessToken + " " + refreshToken);
         }
 
         chain.doFilter(request, response);

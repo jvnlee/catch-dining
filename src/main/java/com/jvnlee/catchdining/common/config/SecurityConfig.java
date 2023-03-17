@@ -3,10 +3,12 @@ package com.jvnlee.catchdining.common.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvnlee.catchdining.common.filter.JwtAuthenticationFilter;
 import com.jvnlee.catchdining.common.filter.JwtExceptionFilter;
+import com.jvnlee.catchdining.domain.user.repository.UserRepository;
 import com.jvnlee.catchdining.domain.user.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -25,6 +27,11 @@ public class SecurityConfig {
 
     private final ObjectMapper om;
 
+    private final UserRepository userRepository;
+
+    private final RedisTemplate<String, String> redisTemplate;
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -36,7 +43,7 @@ public class SecurityConfig {
                 .antMatchers("/users", "/login").permitAll() // 회원가입(POST /users), 로그인(POST /login) URL 접근 허용
                 .anyRequest().authenticated() // 그 외에는 모두 로그인 후 접근 허용
                 .and()
-                .addFilterBefore(new JwtAuthenticationFilter(jwtService),
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService, userRepository, redisTemplate),
                         UsernamePasswordAuthenticationFilter.class) // 모든 AuthentiationFilter 중에 가장 앞에 배치
                 .addFilterBefore(new JwtExceptionFilter(om),
                         JwtAuthenticationFilter.class); // JwtAuthenticationFilter에서 예외가 발생하면 처리해줄 필터 배치
