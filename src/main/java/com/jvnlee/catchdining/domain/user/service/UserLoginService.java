@@ -46,8 +46,8 @@ public class UserLoginService implements UserDetailsService {
         Authentication auth = authenticationManagerBuilder.getObject().authenticate(authToken);
 
         // 인증에 성공하면 JWT 생성
-        String accessToken = jwtService.createAccessToken(auth);
-        String refreshToken = jwtService.createRefreshToken();
+        String accessToken = jwtService.createAccessToken(username, user.getAuthorities());
+        String refreshToken = jwtService.createRefreshToken(user.getId());
 
         // Refresh Token을 Redis에 저장
         redisTemplate.opsForValue().set(

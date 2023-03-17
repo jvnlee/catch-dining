@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,23 +39,23 @@ public class JwtService {
         this.REFRESH_EXP = refreshExp;
     }
 
-    public String createAccessToken(Authentication authentication) {
-        String username = authentication.getName();
-        String authorities = getAuthoritiesString(authentication);
+    public String createAccessToken(String username, Collection<? extends GrantedAuthority> authorities) {
+        String authoritiesString = getAuthoritiesString(authorities);
 
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(getExpDate(ACCESS_EXP))
-                .claim("auth", authorities)
+                .claim("auth", authoritiesString)
                 .signWith(SECRET_KEY, SIG_ALG)
                 .compact();
     }
 
-    public String createRefreshToken() {
+    public String createRefreshToken(Long id) {
         return Jwts.builder()
                 .setIssuedAt(new Date())
                 .setExpiration(getExpDate(REFRESH_EXP))
+                .claim("id", id.toString())
                 .signWith(SECRET_KEY, SIG_ALG)
                 .compact();
     }
@@ -91,13 +92,20 @@ public class JwtService {
         }
     }
 
+    public Claims getClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
     public Long getRefreshExp() {
         return this.REFRESH_EXP;
     }
 
-    private String getAuthoritiesString(Authentication authentication) {
-        return authentication
-                .getAuthorities()
+    private String getAuthoritiesString(Collection<? extends GrantedAuthority> authorities) {
+        return authorities
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
@@ -109,14 +117,6 @@ public class JwtService {
 
     private Date getExpDate(Long expIn) {
         return new Date(System.currentTimeMillis() + expIn);
-    }
-
-    private Claims getClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
     }
 
 }
