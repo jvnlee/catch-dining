@@ -21,7 +21,7 @@ public class UserLoginController {
     private final UserLoginService userLoginService;
 
     @PostMapping
-    public Response login(UserLoginDto userLoginDto, HttpServletResponse response) {
+    public Response login(@RequestBody UserLoginDto userLoginDto, HttpServletResponse response) {
         JwtDto jwtDto = userLoginService.login(userLoginDto);
         response.setHeader(AUTHORIZATION, "Bearer " + jwtDto.getAccessToken() + " " + jwtDto.getRefreshToken());
         return new Response("로그인 성공");

@@ -17,7 +17,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public Response join(UserDto userDto) {
+    public Response join(@RequestBody UserDto userDto) {
         userService.join(userDto);
         return new Response("회원 가입 성공");
     }
@@ -29,7 +29,7 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    public Response update(@PathVariable Long userId, UserDto userDto) {
+    public Response update(@PathVariable Long userId, @RequestBody UserDto userDto) {
         userService.update(userId, userDto);
         return new Response("회원 정보 업데이트 성공");
     }
