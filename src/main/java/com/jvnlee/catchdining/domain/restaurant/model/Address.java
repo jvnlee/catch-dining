@@ -1,4 +1,4 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.domain.restaurant.model;
 
 import javax.persistence.Embeddable;
 

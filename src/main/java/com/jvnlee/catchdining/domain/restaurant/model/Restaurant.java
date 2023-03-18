@@ -1,6 +1,6 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.domain.restaurant.model;
 
-import com.sun.jdi.PrimitiveValue;
+import com.jvnlee.catchdining.entity.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
