@@ -4,10 +4,14 @@ import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.entity.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static javax.persistence.GenerationType.*;
@@ -16,7 +20,7 @@ import static lombok.AccessLevel.*;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class User extends BaseEntity {
+public class User extends BaseEntity implements UserDetails {
 
     @Id @GeneratedValue(strategy = IDENTITY)
     @Column(name = "user_id")
@@ -56,6 +60,31 @@ public class User extends BaseEntity {
         this.username = userDto.getUsername();
         this.password = userDto.getPassword();
         this.phoneNumber = userDto.getPhoneNumber();
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.userType.toString()));
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
 }
