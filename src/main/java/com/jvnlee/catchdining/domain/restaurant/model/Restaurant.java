@@ -2,6 +2,8 @@ package com.jvnlee.catchdining.domain.restaurant.model;
 
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.entity.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,13 +17,16 @@ import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = PROTECTED)
+@AllArgsConstructor
 public class Restaurant extends BaseEntity {
 
     @Id @GeneratedValue(strategy = IDENTITY)
     @Column(name = "restaurant_id")
     private Long id;
 
+    @Column(unique = true)
     private String name;
 
     @Embedded
@@ -33,8 +38,9 @@ public class Restaurant extends BaseEntity {
 
     private double rating;
 
+    @Builder.Default
     @OneToMany(mappedBy = "restaurant")
-    private List<Seat> seats= new ArrayList<>();
+    private List<Seat> seats = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private CountryType countryType;
@@ -45,9 +51,11 @@ public class Restaurant extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ServingType servingType;
 
+    @Builder.Default
     @OneToMany(mappedBy = "restaurant")
     private List<Menu> menus = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "restaurant")
     private List<Review> reviews = new ArrayList<>();
 
