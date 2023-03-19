@@ -12,7 +12,7 @@ import static org.springframework.http.HttpStatus.*;
 public class ControllerAdvice {
 
     @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(BAD_REQUEST)
+    @ResponseStatus(NOT_FOUND)
     public Response handleUserNotFound() {
         return new Response("존재하지 않는 사용자입니다.");
     }
