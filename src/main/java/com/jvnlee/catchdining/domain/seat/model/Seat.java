@@ -1,6 +1,7 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.domain.seat.model;
 
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
+import com.jvnlee.catchdining.entity.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,7 +35,7 @@ public class Seat extends BaseEntity {
     @ElementCollection
     @CollectionTable(name = "available_time",
             joinColumns = @JoinColumn(name = "seat_id"))
-    private List<LocalDateTime> availabeTime = new ArrayList<>();
+    private List<LocalDateTime> availableTime = new ArrayList<>();
 
     private int maxHeadCount;
 
