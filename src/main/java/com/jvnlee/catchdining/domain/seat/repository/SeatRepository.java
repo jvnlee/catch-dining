@@ -4,6 +4,7 @@ import com.jvnlee.catchdining.domain.seat.dto.SeatSearchDto;
 import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.seat.model.SeatType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
@@ -18,5 +19,12 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
             "and s.seatType = :seatType " +
             "and s.maxHeadCount >= :headCount")
     List<SeatSearchDto> findTimeByCond(Long restaurantId, LocalDate date, SeatType seatType, int headCount);
+
+    @Modifying
+    @Query("update Seat s " +
+            "set s.availableDate = :date, " +
+            "s.availableQuantity = s.quantity " +
+            "where s.availableDate < :today")
+    void updatePastDates(LocalDate date, LocalDate today);
 
 }

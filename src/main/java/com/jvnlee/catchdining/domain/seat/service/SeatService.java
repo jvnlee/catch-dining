@@ -10,6 +10,7 @@ import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.seat.model.SeatType;
 import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +57,11 @@ public class SeatService {
         List<SeatSearchDto> result = seatRepository.findTimeByCond(restaurantId, date, seatType, headCount);
         if (result.isEmpty()) throw new SeatNotFoundException();
         return result;
+    }
+
+    @Scheduled(cron = "0 0 3 * * *")
+    public void updatePastDates() {
+        seatRepository.updatePastDates(LocalDate.now().plusDays(RESERVABLE_DATE_LIMIT - 1), LocalDate.now());
     }
 
 }
