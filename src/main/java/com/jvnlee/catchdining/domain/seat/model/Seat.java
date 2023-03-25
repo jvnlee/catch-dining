@@ -1,7 +1,6 @@
 package com.jvnlee.catchdining.domain.seat.model;
 
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
-import com.jvnlee.catchdining.domain.seat.dto.SeatDto;
 import com.jvnlee.catchdining.entity.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,6 +38,8 @@ public class Seat extends BaseEntity {
     private LocalDate availableDate;
 
     private LocalTime availableTime;
+
+    private int minHeadCount;
 
     private int maxHeadCount;
 
