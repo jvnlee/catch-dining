@@ -43,9 +43,10 @@ public class SeatService {
                         .seatType(seatDto.getSeatType())
                         .availableDate(LocalDate.now().plusDays(i))
                         .availableTime(availableTime)
+                        .minHeadCount(seatDto.getMinHeadCount())
                         .maxHeadCount(seatDto.getMaxHeadCount())
                         .quantity(seatDto.getQuantity())
-                        .availableQuantity(seatDto.getAvailableQuantity())
+                        .availableQuantity(seatDto.getQuantity())
                         .build();
 
                 seatRepository.save(seat);

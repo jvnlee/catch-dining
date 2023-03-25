@@ -17,7 +17,7 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
             "where s.restaurant.id = :restaurantId " +
             "and s.availableDate = :date " +
             "and s.seatType = :seatType " +
-            "and s.maxHeadCount >= :headCount")
+            "and :headCount between s.minHeadCount and s.maxHeadCount")
     List<SeatSearchDto> findTimeByCond(Long restaurantId, LocalDate date, SeatType seatType, int headCount);
 
     @Modifying
