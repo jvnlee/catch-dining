@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.springframework.format.annotation.DateTimeFormat.ISO.DATE;
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("/restaurants/{restaurantId}/seats")
@@ -40,6 +41,7 @@ public class SeatController {
     }
 
     @ExceptionHandler(SeatNotFoundException.class)
+    @ResponseStatus(NOT_FOUND)
     public Response<Void> handleSeatNotFound() {
         return new Response<>("자리 정보가 존재하지 않습니다.");
     }
