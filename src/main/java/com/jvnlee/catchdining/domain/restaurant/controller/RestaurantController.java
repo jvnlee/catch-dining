@@ -61,10 +61,4 @@ public class RestaurantController {
         return new Response<>(e.getMessage());
     }
 
-    @ExceptionHandler(RestaurantNotFoundException.class)
-    @ResponseStatus(NOT_FOUND)
-    public Response<Void> handleRestaurantNotFound() {
-        return new Response<>("식당 정보가 존재하지 않습니다.");
-    }
-
 }

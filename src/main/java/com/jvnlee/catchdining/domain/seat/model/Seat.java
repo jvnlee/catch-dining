@@ -1,14 +1,16 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.domain.seat.model;
 
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
+import com.jvnlee.catchdining.entity.BaseEntity;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import static javax.persistence.FetchType.*;
 import static javax.persistence.GenerationType.IDENTITY;
@@ -16,7 +18,9 @@ import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = PROTECTED)
+@AllArgsConstructor
 public class Seat extends BaseEntity {
 
     @Id
@@ -31,11 +35,16 @@ public class Seat extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private SeatType seatType;
 
-    @ElementCollection
-    @CollectionTable(name = "available_time",
-            joinColumns = @JoinColumn(name = "seat_id"))
-    private List<LocalDateTime> availabeTime = new ArrayList<>();
+    private LocalDate availableDate;
+
+    private LocalTime availableTime;
+
+    private int minHeadCount;
 
     private int maxHeadCount;
+
+    private int quantity;
+
+    private int availableQuantity;
 
 }
