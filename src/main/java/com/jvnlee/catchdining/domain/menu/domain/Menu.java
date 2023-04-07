@@ -1,6 +1,7 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.domain.menu.domain;
 
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
+import com.jvnlee.catchdining.entity.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
