@@ -5,8 +5,6 @@ import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.domain.user.dto.UserSearchDto;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -38,12 +36,6 @@ public class UserController {
     public Response delete(@PathVariable Long userId) {
         userService.delete(userId);
         return new Response("회원 탈퇴 성공");
-    }
-
-    @ExceptionHandler(DuplicateKeyException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Response handleDuplicateData(DuplicateKeyException e) {
-        return new Response(e.getMessage());
     }
 
 }
