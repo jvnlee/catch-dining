@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.menu.domain;
 
+import com.jvnlee.catchdining.domain.menu.dto.MenuDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.entity.BaseEntity;
 import lombok.Getter;
@@ -29,4 +30,14 @@ public class Menu extends BaseEntity {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
+    public Menu(MenuDto menuDto, Restaurant restaurant) {
+        this.name = menuDto.getName();
+        this.price = menuDto.getPrice();
+        this.restaurant = restaurant;
+    }
+
+    public void update(MenuDto menuDto) {
+        this.name = menuDto.getName();
+        this.price = menuDto.getPrice();
+    }
 }
