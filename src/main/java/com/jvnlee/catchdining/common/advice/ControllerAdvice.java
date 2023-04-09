@@ -3,6 +3,8 @@ package com.jvnlee.catchdining.common.advice;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.common.exception.UserNotFoundException;
 import com.jvnlee.catchdining.common.web.Response;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,6 +13,12 @@ import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice
 public class ControllerAdvice {
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Response handleDuplicateKey(DuplicateKeyException e) {
+        return new Response(e.getMessage());
+    }
 
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(NOT_FOUND)

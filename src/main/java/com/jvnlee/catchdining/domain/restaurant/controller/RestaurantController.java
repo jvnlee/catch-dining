@@ -1,19 +1,15 @@
 package com.jvnlee.catchdining.domain.restaurant.controller;
 
-import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.common.web.Response;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("/restaurants")
@@ -53,12 +49,6 @@ public class RestaurantController {
     public Response<Void> delete(@PathVariable Long restaurantId) {
         restaurantService.delete(restaurantId);
         return new Response<>("식당 삭제 성공");
-    }
-
-    @ExceptionHandler(DuplicateKeyException.class)
-    @ResponseStatus(BAD_REQUEST)
-    public Response<Void> handleDuplicateName(DuplicateKeyException e) {
-        return new Response<>(e.getMessage());
     }
 
 }
