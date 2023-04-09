@@ -13,9 +13,10 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static java.util.stream.Collectors.*;
 
 @Service
 @Transactional
@@ -40,11 +41,10 @@ public class MenuService {
     @Transactional(readOnly = true)
     public List<MenuViewDto> viewAll(Long restaurantId) {
         List<Menu> menuList = menuRepository.findAllByRestaurantId(restaurantId);
-        List<MenuViewDto> menuViewDtoList = new ArrayList<>();
-        for (Menu menu : menuList) {
-            menuViewDtoList.add(new MenuViewDto(menu));
-        }
-        return menuViewDtoList;
+        return menuList
+                .stream()
+                .map(MenuViewDto::new)
+                .collect(toList());
     }
 
     public void update(Long menuId, MenuDto menuDto) {
