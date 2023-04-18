@@ -1,5 +1,6 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.domain.payment.domain;
 
+import com.jvnlee.catchdining.entity.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
