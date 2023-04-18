@@ -47,4 +47,8 @@ public class Seat extends BaseEntity {
 
     private int availableQuantity;
 
+    public void occupy() {
+        this.availableQuantity--;
+    }
+
 }

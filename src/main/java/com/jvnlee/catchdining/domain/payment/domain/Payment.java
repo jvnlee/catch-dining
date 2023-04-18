@@ -6,9 +6,6 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static javax.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -22,12 +19,17 @@ public class Payment extends BaseEntity {
     @Column(name = "payment_id")
     private Long id;
 
-    @OneToMany(mappedBy = "payment")
-    private List<ReserveMenu> reserveMenus = new ArrayList<>();
+    private String tid;
 
     private int totalPrice;
 
     @Enumerated(EnumType.STRING)
     private PaymentType paymentType;
+
+    public Payment(String tid, int totalPrice, PaymentType paymentType) {
+        this.tid = tid;
+        this.totalPrice = totalPrice;
+        this.paymentType = paymentType;
+    }
 
 }
