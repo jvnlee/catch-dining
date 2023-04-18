@@ -36,7 +36,7 @@ public class PaymentService {
         PaymentType paymentType = paymentDto.getPaymentType();
         int total = paymentDto.getReserveMenus()
                 .stream()
-                .mapToInt(ReserveMenuDto::getReservePrice)
+                .mapToInt(r -> r.getReservePrice() * r.getQuantity())
                 .sum();
 
         // 외부 결제 API 호출 (가상으로 하기 위해 FakePaymentModule 활용)
