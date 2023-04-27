@@ -1,8 +1,11 @@
 package com.jvnlee.catchdining.domain.payment.service;
 
+import org.springframework.stereotype.Component;
+
 import static java.util.UUID.randomUUID;
 
 // 가상의 외부 결제 모듈
+@Component
 public class FakePaymentModule {
 
     public String attemptPayment(int totalPrice) {
