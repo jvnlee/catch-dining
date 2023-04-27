@@ -3,6 +3,8 @@ package com.jvnlee.catchdining.domain.payment.service;
 import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
 import com.jvnlee.catchdining.common.exception.PaymentFailureException;
 import com.jvnlee.catchdining.common.exception.SeatNotFoundException;
+import com.jvnlee.catchdining.domain.menu.domain.Menu;
+import com.jvnlee.catchdining.domain.menu.repository.MenuRepository;
 import com.jvnlee.catchdining.domain.payment.domain.Payment;
 import com.jvnlee.catchdining.domain.payment.domain.PaymentType;
 import com.jvnlee.catchdining.domain.payment.dto.PaymentDto;
@@ -10,9 +12,13 @@ import com.jvnlee.catchdining.domain.payment.dto.ReserveMenuDto;
 import com.jvnlee.catchdining.domain.payment.repository.PaymentRepository;
 import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
+import com.jvnlee.catchdining.entity.ReserveMenu;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
@@ -23,10 +29,15 @@ public class PaymentService {
 
     private final SeatRepository seatRepository;
 
+    private final MenuRepository menuRepository;
+
     private final FakePaymentModule fakePaymentModule;
 
     public void create(PaymentDto paymentDto) {
-        Seat seat = seatRepository.findById(paymentDto.getSeatId()).orElseThrow(SeatNotFoundException::new);
+        Seat seat = seatRepository
+                .findWithLockById(paymentDto.getSeatId())
+                .orElseThrow(SeatNotFoundException::new);
+
         if (seat.getAvailableQuantity() > 0) {
             seat.occupy();
         } else {
@@ -34,7 +45,8 @@ public class PaymentService {
         }
 
         PaymentType paymentType = paymentDto.getPaymentType();
-        int total = paymentDto.getReserveMenus()
+        List<ReserveMenuDto> reserveMenuDtoList = paymentDto.getReserveMenus();
+        int total = reserveMenuDtoList
                 .stream()
                 .mapToInt(r -> r.getReservePrice() * r.getQuantity())
                 .sum();
@@ -46,7 +58,14 @@ public class PaymentService {
             throw new PaymentFailureException();
         }
 
-        Payment payment = new Payment(tid, total, paymentType);
+        List<ReserveMenu> reserveMenuList = new ArrayList<>();
+        for (ReserveMenuDto reserveMenuDto : reserveMenuDtoList) {
+            Menu menu = menuRepository.findById(reserveMenuDto.getMenuId()).orElseThrow();
+            ReserveMenu reserveMenu = new ReserveMenu(menu, reserveMenuDto.getReservePrice(), reserveMenuDto.getQuantity());
+            reserveMenuList.add(reserveMenu);
+        }
+
+        Payment payment = new Payment(tid, reserveMenuList, total, paymentType);
 
         paymentRepository.save(payment);
     }
