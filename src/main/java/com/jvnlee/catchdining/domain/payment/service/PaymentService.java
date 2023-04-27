@@ -33,6 +33,7 @@ public class PaymentService {
 
     private final FakePaymentModule fakePaymentModule;
 
+    @Transactional(timeout = 300)
     public void create(PaymentDto paymentDto) {
         Seat seat = seatRepository
                 .findWithLockById(paymentDto.getSeatId())
