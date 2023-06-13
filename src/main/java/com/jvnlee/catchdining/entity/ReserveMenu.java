@@ -1,6 +1,7 @@
 package com.jvnlee.catchdining.entity;
 
 import com.jvnlee.catchdining.domain.menu.domain.Menu;
+import com.jvnlee.catchdining.domain.payment.domain.Payment;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,5 +32,11 @@ public class ReserveMenu extends BaseEntity {
     private int reservePrice;
 
     private int quantity;
+
+    public ReserveMenu(Menu menu, int reservePrice, int quantity) {
+        this.menu = menu;
+        this.reservePrice = reservePrice;
+        this.quantity = quantity;
+    }
 
 }

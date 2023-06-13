@@ -4,11 +4,15 @@ import com.jvnlee.catchdining.domain.seat.dto.SeatSearchDto;
 import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.seat.model.SeatType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+
+import static javax.persistence.LockModeType.*;
 
 public interface SeatRepository extends JpaRepository<Seat, Long> {
 
@@ -26,5 +30,8 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
             "s.availableQuantity = s.quantity " +
             "where s.availableDate < :today")
     void updatePastDates(LocalDate date, LocalDate today);
+
+    @Lock(PESSIMISTIC_WRITE)
+    Optional<Seat> findWithLockById(Long id);
 
 }

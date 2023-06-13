@@ -1,6 +1,8 @@
 package com.jvnlee.catchdining.common.advice;
 
+import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
+import com.jvnlee.catchdining.common.exception.SeatNotFoundException;
 import com.jvnlee.catchdining.common.exception.UserNotFoundException;
 import com.jvnlee.catchdining.common.web.Response;
 import org.springframework.dao.DuplicateKeyException;
@@ -16,20 +18,32 @@ public class ControllerAdvice {
 
     @ExceptionHandler(DuplicateKeyException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Response handleDuplicateKey(DuplicateKeyException e) {
-        return new Response(e.getMessage());
+    public Response<Void> handleDuplicateKey(DuplicateKeyException e) {
+        return new Response<>(e.getMessage());
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(NOT_FOUND)
-    public Response handleUserNotFound() {
-        return new Response("존재하지 않는 사용자입니다.");
+    public Response<Void> handleUserNotFound() {
+        return new Response<>("존재하지 않는 사용자입니다.");
     }
 
     @ExceptionHandler(RestaurantNotFoundException.class)
     @ResponseStatus(NOT_FOUND)
     public Response<Void> handleRestaurantNotFound() {
         return new Response<>("식당 정보가 존재하지 않습니다.");
+    }
+
+    @ExceptionHandler(SeatNotFoundException.class)
+    @ResponseStatus(NOT_FOUND)
+    public Response<Void> handleSeatNotFound() {
+        return new Response<>("자리 정보가 존재하지 않습니다.");
+    }
+
+    @ExceptionHandler(NotEnoughSeatException.class)
+    @ResponseStatus(NOT_FOUND)
+    public Response<Void> handleNotEnoughSeat() {
+        return new Response<>("잔여 좌석이 존재하지 않습니다.");
     }
 
 }

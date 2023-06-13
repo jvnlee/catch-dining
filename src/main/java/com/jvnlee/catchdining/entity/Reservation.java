@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.entity;
 
+import com.jvnlee.catchdining.domain.payment.domain.Payment;
 import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.user.model.User;
 import lombok.Getter;
