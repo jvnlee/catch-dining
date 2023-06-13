@@ -1,8 +1,9 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.domain.reservation.model;
 
 import com.jvnlee.catchdining.domain.payment.domain.Payment;
 import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.user.model.User;
+import com.jvnlee.catchdining.entity.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -42,5 +43,14 @@ public class Reservation extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
+
+    public Reservation(User user, LocalDateTime time, Seat seat, int headCount, Payment payment, ReservationStatus status) {
+        this.user = user;
+        this.time = time;
+        this.seat = seat;
+        this.headCount = headCount;
+        this.payment = payment;
+        this.status = status;
+    }
 
 }
