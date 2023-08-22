@@ -1,13 +1,17 @@
 package com.jvnlee.catchdining.domain.reservation.service;
 
 import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
+import com.jvnlee.catchdining.common.exception.ReservationNotFoundException;
 import com.jvnlee.catchdining.common.exception.SeatNotFoundException;
 import com.jvnlee.catchdining.common.exception.UserNotFoundException;
 import com.jvnlee.catchdining.domain.payment.domain.Payment;
 import com.jvnlee.catchdining.domain.payment.dto.PaymentDto;
 import com.jvnlee.catchdining.domain.payment.service.PaymentService;
+import com.jvnlee.catchdining.domain.reservation.dto.ReservationRestaurantViewDto;
+import com.jvnlee.catchdining.domain.reservation.dto.ReservationUserViewDto;
 import com.jvnlee.catchdining.domain.reservation.model.Reservation;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationDto;
+import com.jvnlee.catchdining.domain.reservation.model.ReservationStatus;
 import com.jvnlee.catchdining.domain.reservation.repository.ReservationRepository;
 import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
@@ -19,8 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static com.jvnlee.catchdining.domain.reservation.model.ReservationStatus.*;
+import static java.util.stream.Collectors.*;
 
 @Service
 @Transactional
@@ -73,4 +79,27 @@ public class ReservationService {
 
         reservationRepository.save(reservation);
     }
+
+    public List<ReservationUserViewDto> viewByUser(Long userId, ReservationStatus status) {
+        List<ReservationUserViewDto> reservationList = reservationRepository.findAllByUserIdAndStatus(userId, status)
+                .stream()
+                .map(ReservationUserViewDto::new)
+                .collect(toList());
+
+        if (reservationList.isEmpty()) throw new ReservationNotFoundException();
+
+        return reservationList;
+    }
+
+    public List<ReservationRestaurantViewDto> viewByRestaurant(Long restaurantId, ReservationStatus status) {
+        List<ReservationRestaurantViewDto> reservationList = reservationRepository.findAllByRestaurantIdAndStatus(restaurantId, status)
+                .stream()
+                .map(ReservationRestaurantViewDto::new)
+                .collect(toList());
+
+        if (reservationList.isEmpty()) throw new ReservationNotFoundException();
+
+        return reservationList;
+    }
+
 }
