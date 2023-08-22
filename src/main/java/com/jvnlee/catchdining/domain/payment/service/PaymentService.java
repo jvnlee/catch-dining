@@ -27,24 +27,12 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
 
-    private final SeatRepository seatRepository;
-
     private final MenuRepository menuRepository;
 
     private final FakePaymentModule fakePaymentModule;
 
     @Transactional(timeout = 300)
-    public void create(PaymentDto paymentDto) {
-        Seat seat = seatRepository
-                .findWithLockById(paymentDto.getSeatId())
-                .orElseThrow(SeatNotFoundException::new);
-
-        if (seat.getAvailableQuantity() > 0) {
-            seat.occupy();
-        } else {
-            throw new NotEnoughSeatException();
-        }
-
+    public Payment create(PaymentDto paymentDto) {
         PaymentType paymentType = paymentDto.getPaymentType();
         List<ReserveMenuDto> reserveMenuDtoList = paymentDto.getReserveMenus();
         int total = reserveMenuDtoList
@@ -68,7 +56,7 @@ public class PaymentService {
 
         Payment payment = new Payment(tid, reserveMenuList, total, paymentType);
 
-        paymentRepository.save(payment);
+        return paymentRepository.save(payment);
     }
 
 }
