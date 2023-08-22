@@ -63,6 +63,7 @@ public class ReservationService {
         // Reservation 객체 생성 및 영속화
         Reservation reservation = new Reservation(
                 user,
+                seat.getRestaurant(),
                 LocalDateTime.of(seat.getAvailableDate(), seat.getAvailableTime()),
                 seat,
                 reservationDto.getHeadCount(),
