@@ -3,9 +3,10 @@ package com.jvnlee.catchdining.integration;
 import com.jvnlee.catchdining.domain.menu.dto.MenuDto;
 import com.jvnlee.catchdining.domain.menu.service.MenuService;
 import com.jvnlee.catchdining.domain.payment.domain.PaymentType;
-import com.jvnlee.catchdining.domain.payment.dto.PaymentDto;
 import com.jvnlee.catchdining.domain.payment.dto.ReserveMenuDto;
-import com.jvnlee.catchdining.domain.payment.service.PaymentService;
+import com.jvnlee.catchdining.domain.reservation.dto.ReservationDto;
+import com.jvnlee.catchdining.domain.reservation.repository.ReservationRepository;
+import com.jvnlee.catchdining.domain.reservation.service.ReservationService;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.service.RestaurantService;
 import com.jvnlee.catchdining.domain.seat.dto.SeatDto;
@@ -13,10 +14,16 @@ import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.seat.model.SeatType;
 import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
 import com.jvnlee.catchdining.domain.seat.service.SeatService;
+import com.jvnlee.catchdining.domain.user.dto.UserDto;
+import com.jvnlee.catchdining.domain.user.model.UserType;
+import com.jvnlee.catchdining.domain.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -27,7 +34,10 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-class PaymentIntegrationTest {
+class ReservationIntegrationTest {
+
+    @Autowired
+    UserService userService;
 
     @Autowired
     RestaurantService restaurantService;
@@ -39,14 +49,25 @@ class PaymentIntegrationTest {
     MenuService menuService;
 
     @Autowired
-    PaymentService paymentService;
+    ReservationService reservationService;
 
     @Autowired
     SeatRepository seatRepository;
 
+    @Autowired
+    ReservationRepository reservationRepository;
+
     @Test
-    @DisplayName("100개의 결제 요청으로 예약 동시성 테스트")
+    @DisplayName("100개의 예약 요청으로 동시성 테스트")
     void create() throws InterruptedException {
+        int threadCount = 100;
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        for (int i = 0; i < threadCount; i++) {
+            userService.join(new UserDto("user" + i, "1234", i + "", UserType.CUSTOMER));
+        }
+
         restaurantService.register(RestaurantDto.builder().name("r1").build());
 
         seatService.add(1L, new SeatDto(
@@ -59,17 +80,19 @@ class PaymentIntegrationTest {
 
         menuService.add(1L, List.of(new MenuDto("sushi", 10000)));
 
-        int threadCount = 100;
-        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch latch = new CountDownLatch(threadCount);
-
         for (int i = 0; i < threadCount; i++) {
+            int finalI = i;
             executorService.submit(() -> {
+                SecurityContextHolder.getContext().setAuthentication(
+                        new UsernamePasswordAuthenticationToken("user" + finalI, "1234", List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER")))
+                );
+
                 try {
-                    paymentService.create(new PaymentDto(
+                    reservationService.create(new ReservationDto(
                             1L,
                             List.of(new ReserveMenuDto(1L, 8000, 1)),
-                            PaymentType.CREDIT_CARD
+                            PaymentType.CREDIT_CARD,
+                            2
                     ));
                 } finally {
                     latch.countDown();
@@ -81,5 +104,6 @@ class PaymentIntegrationTest {
 
         Seat seat = seatRepository.findById(1L).orElseThrow();
         assertThat(seat.getAvailableQuantity()).isEqualTo(0);
+        assertThat(reservationRepository.findAll().size()).isEqualTo(100);
     }
 }
