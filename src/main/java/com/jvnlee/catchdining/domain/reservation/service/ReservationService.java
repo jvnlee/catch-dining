@@ -4,10 +4,11 @@ import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
 import com.jvnlee.catchdining.common.exception.ReservationNotFoundException;
 import com.jvnlee.catchdining.common.exception.SeatNotFoundException;
 import com.jvnlee.catchdining.common.exception.UserNotFoundException;
-import com.jvnlee.catchdining.domain.payment.domain.Payment;
+import com.jvnlee.catchdining.domain.payment.model.Payment;
 import com.jvnlee.catchdining.domain.payment.dto.PaymentDto;
 import com.jvnlee.catchdining.domain.payment.service.PaymentService;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationRestaurantViewDto;
+import com.jvnlee.catchdining.domain.reservation.dto.ReservationStatusDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationUserViewDto;
 import com.jvnlee.catchdining.domain.reservation.model.Reservation;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationDto;
@@ -100,6 +101,20 @@ public class ReservationService {
         if (reservationList.isEmpty()) throw new ReservationNotFoundException();
 
         return reservationList;
+    }
+
+    public void updateStatus(Long reservationId, ReservationStatusDto reservationStatusDto) {
+        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(ReservationNotFoundException::new);
+        reservation.updateStatus(reservationStatusDto.getStatus());
+    }
+
+    public void cancel(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(ReservationNotFoundException::new);
+        reservation.getSeat().release();
+
+        paymentService.cancel(reservation.getPayment().getId());
+
+        reservation.updateStatus(CANCELED);
     }
 
 }
