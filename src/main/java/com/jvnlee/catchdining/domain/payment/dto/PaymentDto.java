@@ -1,6 +1,6 @@
 package com.jvnlee.catchdining.domain.payment.dto;
 
-import com.jvnlee.catchdining.domain.payment.domain.PaymentType;
+import com.jvnlee.catchdining.domain.payment.model.PaymentType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

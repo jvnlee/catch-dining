@@ -2,7 +2,7 @@ package com.jvnlee.catchdining.integration;
 
 import com.jvnlee.catchdining.domain.menu.dto.MenuDto;
 import com.jvnlee.catchdining.domain.menu.service.MenuService;
-import com.jvnlee.catchdining.domain.payment.domain.PaymentType;
+import com.jvnlee.catchdining.domain.payment.model.PaymentType;
 import com.jvnlee.catchdining.domain.payment.dto.ReserveMenuDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationDto;
 import com.jvnlee.catchdining.domain.reservation.repository.ReservationRepository;

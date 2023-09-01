@@ -1,7 +1,7 @@
 package com.jvnlee.catchdining.entity;
 
 import com.jvnlee.catchdining.domain.menu.domain.Menu;
-import com.jvnlee.catchdining.domain.payment.domain.Payment;
+import com.jvnlee.catchdining.domain.payment.model.Payment;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
