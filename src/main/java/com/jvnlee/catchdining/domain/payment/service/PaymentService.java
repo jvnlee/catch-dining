@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.jvnlee.catchdining.domain.payment.model.PaymentStatus.*;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -51,7 +53,7 @@ public class PaymentService {
             reserveMenuList.add(reserveMenu);
         }
 
-        Payment payment = new Payment(tid, reserveMenuList, total, paymentType);
+        Payment payment = new Payment(tid, reserveMenuList, total, paymentType, COMPLETE);
 
         return paymentRepository.save(payment);
     }
