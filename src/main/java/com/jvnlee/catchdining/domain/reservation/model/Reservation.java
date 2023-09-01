@@ -1,6 +1,6 @@
 package com.jvnlee.catchdining.domain.reservation.model;
 
-import com.jvnlee.catchdining.domain.payment.domain.Payment;
+import com.jvnlee.catchdining.domain.payment.model.Payment;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.user.model.User;
@@ -56,6 +56,10 @@ public class Reservation extends BaseEntity {
         this.seat = seat;
         this.headCount = headCount;
         this.payment = payment;
+        this.status = status;
+    }
+
+    public void updateStatus(ReservationStatus status) {
         this.status = status;
     }
 
