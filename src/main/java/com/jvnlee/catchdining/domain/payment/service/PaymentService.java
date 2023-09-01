@@ -1,17 +1,14 @@
 package com.jvnlee.catchdining.domain.payment.service;
 
-import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
 import com.jvnlee.catchdining.common.exception.PaymentFailureException;
-import com.jvnlee.catchdining.common.exception.SeatNotFoundException;
+import com.jvnlee.catchdining.common.exception.PaymentNotFoundException;
 import com.jvnlee.catchdining.domain.menu.domain.Menu;
 import com.jvnlee.catchdining.domain.menu.repository.MenuRepository;
-import com.jvnlee.catchdining.domain.payment.domain.Payment;
-import com.jvnlee.catchdining.domain.payment.domain.PaymentType;
+import com.jvnlee.catchdining.domain.payment.model.Payment;
+import com.jvnlee.catchdining.domain.payment.model.PaymentType;
 import com.jvnlee.catchdining.domain.payment.dto.PaymentDto;
 import com.jvnlee.catchdining.domain.payment.dto.ReserveMenuDto;
 import com.jvnlee.catchdining.domain.payment.repository.PaymentRepository;
-import com.jvnlee.catchdining.domain.seat.model.Seat;
-import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
 import com.jvnlee.catchdining.entity.ReserveMenu;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -57,6 +54,12 @@ public class PaymentService {
         Payment payment = new Payment(tid, reserveMenuList, total, paymentType);
 
         return paymentRepository.save(payment);
+    }
+
+    public void cancel(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId).orElseThrow(PaymentNotFoundException::new);
+        fakePaymentModule.attemptCancellation(payment.getTid());
+        payment.cancel();
     }
 
 }
