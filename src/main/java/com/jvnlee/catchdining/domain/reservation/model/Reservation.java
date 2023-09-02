@@ -1,8 +1,10 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.domain.reservation.model;
 
-import com.jvnlee.catchdining.domain.payment.domain.Payment;
+import com.jvnlee.catchdining.domain.payment.model.Payment;
+import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.user.model.User;
+import com.jvnlee.catchdining.entity.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -28,6 +30,10 @@ public class Reservation extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "restaurant_id")
+    private Restaurant restaurant;
+
     private LocalDateTime time;
 
     @OneToOne(fetch = LAZY)
@@ -42,5 +48,19 @@ public class Reservation extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
+
+    public Reservation(User user, Restaurant restaurant, LocalDateTime time, Seat seat, int headCount, Payment payment, ReservationStatus status) {
+        this.user = user;
+        this.restaurant = restaurant;
+        this.time = time;
+        this.seat = seat;
+        this.headCount = headCount;
+        this.payment = payment;
+        this.status = status;
+    }
+
+    public void updateStatus(ReservationStatus status) {
+        this.status = status;
+    }
 
 }

@@ -14,4 +14,7 @@ public class FakePaymentModule {
         return totalPrice == 10_000 ? "" : randomUUID().toString();
     }
 
+    public void attemptCancellation(String tid) {
+    }
+
 }

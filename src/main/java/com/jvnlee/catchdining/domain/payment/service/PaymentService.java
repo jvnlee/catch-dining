@@ -1,17 +1,14 @@
 package com.jvnlee.catchdining.domain.payment.service;
 
-import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
 import com.jvnlee.catchdining.common.exception.PaymentFailureException;
-import com.jvnlee.catchdining.common.exception.SeatNotFoundException;
+import com.jvnlee.catchdining.common.exception.PaymentNotFoundException;
 import com.jvnlee.catchdining.domain.menu.domain.Menu;
 import com.jvnlee.catchdining.domain.menu.repository.MenuRepository;
-import com.jvnlee.catchdining.domain.payment.domain.Payment;
-import com.jvnlee.catchdining.domain.payment.domain.PaymentType;
+import com.jvnlee.catchdining.domain.payment.model.Payment;
+import com.jvnlee.catchdining.domain.payment.model.PaymentType;
 import com.jvnlee.catchdining.domain.payment.dto.PaymentDto;
 import com.jvnlee.catchdining.domain.payment.dto.ReserveMenuDto;
 import com.jvnlee.catchdining.domain.payment.repository.PaymentRepository;
-import com.jvnlee.catchdining.domain.seat.model.Seat;
-import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
 import com.jvnlee.catchdining.entity.ReserveMenu;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.jvnlee.catchdining.domain.payment.model.PaymentStatus.*;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -27,24 +26,12 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
 
-    private final SeatRepository seatRepository;
-
     private final MenuRepository menuRepository;
 
     private final FakePaymentModule fakePaymentModule;
 
     @Transactional(timeout = 300)
-    public void create(PaymentDto paymentDto) {
-        Seat seat = seatRepository
-                .findWithLockById(paymentDto.getSeatId())
-                .orElseThrow(SeatNotFoundException::new);
-
-        if (seat.getAvailableQuantity() > 0) {
-            seat.occupy();
-        } else {
-            throw new NotEnoughSeatException();
-        }
-
+    public Payment create(PaymentDto paymentDto) {
         PaymentType paymentType = paymentDto.getPaymentType();
         List<ReserveMenuDto> reserveMenuDtoList = paymentDto.getReserveMenus();
         int total = reserveMenuDtoList
@@ -66,9 +53,15 @@ public class PaymentService {
             reserveMenuList.add(reserveMenu);
         }
 
-        Payment payment = new Payment(tid, reserveMenuList, total, paymentType);
+        Payment payment = new Payment(tid, reserveMenuList, total, paymentType, COMPLETE);
 
-        paymentRepository.save(payment);
+        return paymentRepository.save(payment);
+    }
+
+    public void cancel(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId).orElseThrow(PaymentNotFoundException::new);
+        fakePaymentModule.attemptCancellation(payment.getTid());
+        payment.cancel();
     }
 
 }

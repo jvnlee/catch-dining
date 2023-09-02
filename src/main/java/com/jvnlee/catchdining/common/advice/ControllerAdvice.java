@@ -1,9 +1,6 @@
 package com.jvnlee.catchdining.common.advice;
 
-import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
-import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
-import com.jvnlee.catchdining.common.exception.SeatNotFoundException;
-import com.jvnlee.catchdining.common.exception.UserNotFoundException;
+import com.jvnlee.catchdining.common.exception.*;
 import com.jvnlee.catchdining.common.web.Response;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -41,9 +38,14 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler(NotEnoughSeatException.class)
-    @ResponseStatus(NOT_FOUND)
+    @ResponseStatus(BAD_REQUEST)
     public Response<Void> handleNotEnoughSeat() {
         return new Response<>("잔여 좌석이 존재하지 않습니다.");
     }
 
+    @ExceptionHandler(ReservationNotFoundException.class)
+    @ResponseStatus(NOT_FOUND)
+    public Response<Void> handleReservationNotFound() {
+        return new Response<>("예약 내역이 존재하지 않습니다.");
+    }
 }

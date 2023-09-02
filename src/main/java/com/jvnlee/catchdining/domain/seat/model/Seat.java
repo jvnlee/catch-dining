@@ -51,4 +51,8 @@ public class Seat extends BaseEntity {
         this.availableQuantity--;
     }
 
+    public void release() {
+        this.availableQuantity++;
+    }
+
 }
