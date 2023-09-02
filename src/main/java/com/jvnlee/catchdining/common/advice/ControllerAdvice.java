@@ -38,7 +38,7 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler(NotEnoughSeatException.class)
-    @ResponseStatus(NOT_FOUND)
+    @ResponseStatus(BAD_REQUEST)
     public Response<Void> handleNotEnoughSeat() {
         return new Response<>("잔여 좌석이 존재하지 않습니다.");
     }
