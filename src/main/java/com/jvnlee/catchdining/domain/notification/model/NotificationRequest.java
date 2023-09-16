@@ -3,7 +3,6 @@ package com.jvnlee.catchdining.domain.notification.model;
 import com.jvnlee.catchdining.domain.notification.dto.NotificationRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.user.model.User;
-import com.jvnlee.catchdining.entity.DiningPeriod;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

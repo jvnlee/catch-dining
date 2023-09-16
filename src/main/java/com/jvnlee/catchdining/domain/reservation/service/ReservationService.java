@@ -28,8 +28,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static com.jvnlee.catchdining.domain.reservation.model.ReservationStatus.*;
-import static com.jvnlee.catchdining.entity.DiningPeriod.DINNER;
-import static com.jvnlee.catchdining.entity.DiningPeriod.LUNCH;
+import static com.jvnlee.catchdining.domain.notification.model.DiningPeriod.*;
 import static java.util.stream.Collectors.*;
 
 @Service

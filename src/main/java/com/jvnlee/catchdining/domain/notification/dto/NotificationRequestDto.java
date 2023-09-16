@@ -1,6 +1,6 @@
 package com.jvnlee.catchdining.domain.notification.dto;
 
-import com.jvnlee.catchdining.entity.DiningPeriod;
+import com.jvnlee.catchdining.domain.notification.model.DiningPeriod;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

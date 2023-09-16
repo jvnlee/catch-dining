@@ -15,7 +15,7 @@ import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
-import com.jvnlee.catchdining.entity.DiningPeriod;
+import com.jvnlee.catchdining.domain.notification.model.DiningPeriod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;

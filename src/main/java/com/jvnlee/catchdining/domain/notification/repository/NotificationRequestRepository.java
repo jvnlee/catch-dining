@@ -1,7 +1,7 @@
 package com.jvnlee.catchdining.domain.notification.repository;
 
 import com.jvnlee.catchdining.domain.notification.model.NotificationRequest;
-import com.jvnlee.catchdining.entity.DiningPeriod;
+import com.jvnlee.catchdining.domain.notification.model.DiningPeriod;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
