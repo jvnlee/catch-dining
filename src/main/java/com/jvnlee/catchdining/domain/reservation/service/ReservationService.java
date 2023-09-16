@@ -3,7 +3,7 @@ package com.jvnlee.catchdining.domain.reservation.service;
 import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
 import com.jvnlee.catchdining.common.exception.ReservationNotFoundException;
 import com.jvnlee.catchdining.common.exception.SeatNotFoundException;
-import com.jvnlee.catchdining.common.exception.UserNotFoundException;
+import com.jvnlee.catchdining.domain.notification.service.NotificationRequestService;
 import com.jvnlee.catchdining.domain.payment.model.Payment;
 import com.jvnlee.catchdining.domain.payment.dto.PaymentDto;
 import com.jvnlee.catchdining.domain.payment.service.PaymentService;
@@ -17,16 +17,19 @@ import com.jvnlee.catchdining.domain.reservation.repository.ReservationRepositor
 import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
 import com.jvnlee.catchdining.domain.user.model.User;
-import com.jvnlee.catchdining.domain.user.repository.UserRepository;
+import com.jvnlee.catchdining.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static com.jvnlee.catchdining.domain.reservation.model.ReservationStatus.*;
+import static com.jvnlee.catchdining.entity.DiningPeriod.DINNER;
+import static com.jvnlee.catchdining.entity.DiningPeriod.LUNCH;
 import static java.util.stream.Collectors.*;
 
 @Service
@@ -36,11 +39,13 @@ public class ReservationService {
 
     private final SeatRepository seatRepository;
 
-    private final UserRepository userRepository;
-
     private final ReservationRepository reservationRepository;
 
+    private final UserService userService;
+
     private final PaymentService paymentService;
+
+    private final NotificationRequestService notificationRequestService;
 
     @Transactional(timeout = 500)
     public void create(ReservationDto reservationDto) {
@@ -64,8 +69,7 @@ public class ReservationService {
         );
 
         // 예약 주체인 사용자
-        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+        User user = userService.getCurrentUser();
 
         // Reservation 객체 생성 및 영속화
         Reservation reservation = new Reservation(
@@ -110,7 +114,20 @@ public class ReservationService {
 
     public void cancel(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(ReservationNotFoundException::new);
-        reservation.getSeat().release();
+        Seat seat = reservation.getSeat();
+
+        seat.release();
+
+        Long restaurantId = seat.getRestaurant().getId();
+        LocalDate availableDate = seat.getAvailableDate();
+        int minHeadCount = seat.getMinHeadCount();
+        int maxHeadCount = seat.getMaxHeadCount();
+
+        if (seat.getAvailableTime().isBefore(LocalTime.of(16, 1))) {
+            notificationRequestService.notify(restaurantId, availableDate, LUNCH, minHeadCount, maxHeadCount);
+        } else {
+            notificationRequestService.notify(restaurantId, availableDate, DINNER, minHeadCount, maxHeadCount);
+        }
 
         paymentService.cancel(reservation.getPayment().getId());
 
