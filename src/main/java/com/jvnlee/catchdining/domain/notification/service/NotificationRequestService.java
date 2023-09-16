@@ -93,4 +93,8 @@ public class NotificationRequestService {
                 .collect(toList());
     }
 
+    public void cancel(List<Long> idList) {
+        notificationRequestRepository.deleteAllById(idList);
+    }
+
 }
