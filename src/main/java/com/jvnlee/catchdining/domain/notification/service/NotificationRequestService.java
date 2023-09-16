@@ -19,6 +19,7 @@ import com.jvnlee.catchdining.entity.DiningPeriod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,6 +102,11 @@ public class NotificationRequestService {
 
     public void cancel(List<Long> idList) {
         notificationRequestRepository.deleteAllById(idList);
+    }
+
+    @Scheduled(cron = " 0 0 3 * * *")
+    public void clearPastRequests() {
+        notificationRequestRepository.clearPastRequests(LocalDate.now().minusDays(1));
     }
 
 }
