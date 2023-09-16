@@ -7,6 +7,7 @@ import com.google.firebase.messaging.Notification;
 import com.jvnlee.catchdining.common.exception.FcmTokenNotFoundException;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.notification.dto.NotificationRequestDto;
+import com.jvnlee.catchdining.domain.notification.dto.NotificationRequestViewDto;
 import com.jvnlee.catchdining.domain.notification.model.NotificationRequest;
 import com.jvnlee.catchdining.domain.notification.repository.NotificationRequestRepository;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
@@ -83,6 +84,13 @@ public class NotificationRequestService {
                 throw new FcmTokenNotFoundException();
             }
         }
+    }
+
+    public List<NotificationRequestViewDto> viewAll(Long userId) {
+        return notificationRequestRepository.findAllByUserId(userId)
+                .stream()
+                .map(NotificationRequestViewDto::new)
+                .collect(toList());
     }
 
 }
