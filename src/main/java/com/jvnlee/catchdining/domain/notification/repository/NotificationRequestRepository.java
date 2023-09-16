@@ -3,6 +3,7 @@ package com.jvnlee.catchdining.domain.notification.repository;
 import com.jvnlee.catchdining.domain.notification.model.NotificationRequest;
 import com.jvnlee.catchdining.entity.DiningPeriod;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
@@ -19,5 +20,9 @@ public interface NotificationRequestRepository extends JpaRepository<Notificatio
 
     @Query("select nr from NotificationRequest nr where nr.user.id = :userId")
     List<NotificationRequest> findAllByUserId(Long userId);
+
+    @Modifying
+    @Query("delete NotificationRequest nr where nr.desiredDate <= :baseDate")
+    void clearPastRequests(LocalDate baseDate);
 
 }
