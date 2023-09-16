@@ -17,4 +17,7 @@ public interface NotificationRequestRepository extends JpaRepository<Notificatio
             "and nr.headCount between :minHeadCount and :maxHeadCount")
     List<NotificationRequest> findAllByCond(Long restaurantId, LocalDate date, DiningPeriod diningPeriod, int minHeadCount, int maxHeadCount);
 
+    @Query("select nr from NotificationRequest nr where nr.user.id = :userId")
+    List<NotificationRequest> findAllByUserId(Long userId);
+
 }
