@@ -4,6 +4,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
+import com.jvnlee.catchdining.common.exception.DuplicateNotificationRequestException;
 import com.jvnlee.catchdining.common.exception.FcmTokenNotFoundException;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.notification.dto.NotificationRequestDto;
@@ -16,6 +17,7 @@ import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import com.jvnlee.catchdining.entity.DiningPeriod;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +50,11 @@ public class NotificationRequestService {
 
         NotificationRequest notificationRequest = new NotificationRequest(user, restaurant, notificationRequestDto);
 
-        notificationRequestRepository.save(notificationRequest);
+        try {
+            notificationRequestRepository.save(notificationRequest);
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateNotificationRequestException();
+        }
     }
 
     @Async
