@@ -18,15 +18,13 @@ import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.domain.user.model.User;
-import com.jvnlee.catchdining.domain.user.repository.UserRepository;
+import com.jvnlee.catchdining.domain.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,10 +49,10 @@ class ReservationServiceTest {
     SeatRepository seatRepository;
 
     @Mock
-    UserRepository userRepository;
+    ReservationRepository reservationRepository;
 
     @Mock
-    ReservationRepository reservationRepository;
+    UserService userService;
 
     @Mock
     PaymentService paymentService;
@@ -75,11 +73,9 @@ class ReservationServiceTest {
         Seat seat = mock(Seat.class);
         User user = mock(User.class);
 
-        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(null, null));
-
         when(seatRepository.findWithLockById(anyLong())).thenReturn(Optional.of(seat));
         when(seat.getAvailableQuantity()).thenReturn(999);
-        when(userRepository.findByUsername(any())).thenReturn(Optional.of(user));
+        when(userService.getCurrentUser()).thenReturn(user);
         when(seat.getAvailableDate()).thenReturn(LocalDate.of(2023, 1, 1));
         when(seat.getAvailableTime()).thenReturn(LocalTime.of(13, 0, 0));
 
@@ -99,8 +95,6 @@ class ReservationServiceTest {
         );
 
         Seat seat = mock(Seat.class);
-
-        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(null, null));
 
         when(seatRepository.findWithLockById(anyLong())).thenReturn(Optional.of(seat));
         when(seat.getAvailableQuantity()).thenReturn(0);
@@ -177,7 +171,7 @@ class ReservationServiceTest {
     @DisplayName("예약 상태 업데이트 성공")
     void updateStatus() {
         Reservation reservation = mock(Reservation.class);
-        ReservationStatusDto reservationStatusDto = mock(ReservationStatusDto.class);
+        ReservationStatusDto reservationStatusDto = new ReservationStatusDto(NO_SHOW);
 
         when(reservationRepository.findById(anyLong())).thenReturn(Optional.of(reservation));
 
