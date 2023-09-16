@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.notification.model;
 
+import com.jvnlee.catchdining.domain.notification.dto.NotificationRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.entity.DiningPeriod;
@@ -39,5 +40,13 @@ public class NotificationRequest {
     private DiningPeriod diningPeriod;
 
     private int headCount;
+
+    public NotificationRequest(User user, Restaurant restaurant, NotificationRequestDto notificationRequestDto) {
+        this.user = user;
+        this.restaurant = restaurant;
+        this.desiredDate = notificationRequestDto.getDesiredDate();
+        this.diningPeriod = notificationRequestDto.getDiningPeriod();
+        this.headCount = notificationRequestDto.getHeadCount();
+    }
 
 }
