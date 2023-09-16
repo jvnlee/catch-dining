@@ -48,4 +48,11 @@ public class ControllerAdvice {
     public Response<Void> handleReservationNotFound() {
         return new Response<>("예약 내역이 존재하지 않습니다.");
     }
+
+    @ExceptionHandler(FcmTokenNotFoundException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public Response<Void> handleFcmTokenNotFound() {
+        return new Response<>("유효한 FCM 토큰이 존재하지 않습니다.");
+    }
+
 }
