@@ -18,6 +18,12 @@ import static lombok.AccessLevel.*;
 
 @Entity
 @Getter
+@Table(uniqueConstraints = {
+        @UniqueConstraint(
+                name = "uc",
+                columnNames = {"user_id", "restaurant_id", "desiredDate", "diningPeriod", "headCount"}
+        )
+})
 @NoArgsConstructor(access = PROTECTED)
 public class NotificationRequest {
 
@@ -30,7 +36,7 @@ public class NotificationRequest {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
