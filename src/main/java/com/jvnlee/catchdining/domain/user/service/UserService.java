@@ -62,6 +62,15 @@ public class UserService {
         return userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
     }
 
+    public List<String> getFcmTokens(List<Long> userIdList) {
+        List<String> fcmTokenList = new ArrayList<>();
+        for (Long id : userIdList) {
+            String fcmToken = userRepository.findById(id).orElseThrow(UserNotFoundException::new).getFcmToken();
+            fcmTokenList.add(fcmToken);
+        }
+        return fcmTokenList;
+    }
+
     private void validateUsername(UserDto userDto) {
         if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
             throw new DuplicateKeyException("이미 존재하는 username 입니다.");
