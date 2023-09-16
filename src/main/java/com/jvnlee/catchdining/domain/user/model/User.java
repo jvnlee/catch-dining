@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.user.model;
 
+import com.jvnlee.catchdining.domain.notification.model.NotificationRequest;
 import com.jvnlee.catchdining.domain.reservation.model.Reservation;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.entity.*;
@@ -38,6 +39,8 @@ public class User extends BaseEntity implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
+    private String fcmToken;
+
     @OneToMany(mappedBy = "user")
     private List<Favorite> favorites = new ArrayList<>();
 
@@ -45,7 +48,7 @@ public class User extends BaseEntity implements UserDetails {
     private List<Reservation> reservations = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<Notification> notifications = new ArrayList<>();
+    private List<NotificationRequest> notificationRequests = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     private List<Review> reviews = new ArrayList<>();
@@ -61,6 +64,10 @@ public class User extends BaseEntity implements UserDetails {
         this.username = userDto.getUsername();
         this.password = userDto.getPassword();
         this.phoneNumber = userDto.getPhoneNumber();
+    }
+
+    public void registerFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 
     @Override
