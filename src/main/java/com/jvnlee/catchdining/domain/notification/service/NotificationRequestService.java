@@ -17,6 +17,7 @@ import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import com.jvnlee.catchdining.domain.notification.model.DiningPeriod;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,6 +32,7 @@ import static java.util.stream.Collectors.toList;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationRequestService {
 
     private final RestaurantRepository restaurantRepository;
@@ -84,7 +86,7 @@ public class NotificationRequestService {
                 try {
                     firebaseMessaging.send(message);
                 } catch (FirebaseMessagingException e) {
-                    throw new RuntimeException(e);
+                    log.error(e.getErrorCode().toString() + ": " + e.getMessage());
                 }
 
             } else {
