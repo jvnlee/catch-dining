@@ -3,6 +3,7 @@ package com.jvnlee.catchdining.domain.reservation.service;
 import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
 import com.jvnlee.catchdining.common.exception.PaymentNotFoundException;
 import com.jvnlee.catchdining.common.exception.ReservationNotFoundException;
+import com.jvnlee.catchdining.domain.notification.service.NotificationRequestService;
 import com.jvnlee.catchdining.domain.payment.dto.ReserveMenuDto;
 import com.jvnlee.catchdining.domain.payment.model.Payment;
 import com.jvnlee.catchdining.domain.payment.service.PaymentService;
@@ -32,6 +33,8 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
+import static com.jvnlee.catchdining.domain.notification.model.DiningPeriod.DINNER;
+import static com.jvnlee.catchdining.domain.notification.model.DiningPeriod.LUNCH;
 import static com.jvnlee.catchdining.domain.payment.model.PaymentType.*;
 import static com.jvnlee.catchdining.domain.reservation.model.ReservationStatus.*;
 import static com.jvnlee.catchdining.domain.user.model.UserType.CUSTOMER;
@@ -56,6 +59,9 @@ class ReservationServiceTest {
 
     @Mock
     PaymentService paymentService;
+
+    @Mock
+    NotificationRequestService notificationRequestService;
 
     @InjectMocks
     ReservationService reservationService;
@@ -181,10 +187,18 @@ class ReservationServiceTest {
     }
 
     @Test
-    @DisplayName("예약 취소 성공")
-    void cancel_success() {
+    @DisplayName("예약 취소 성공: LUNCH 시간대 좌석")
+    void cancel_success_lunch_seat() {
         Reservation reservation = mock(Reservation.class);
-        Seat seat = mock(Seat.class);
+        Restaurant restaurant = Restaurant.builder().id(1L).build();
+        LocalDate date = LocalDate.of(2023, 1, 1);
+        Seat seat = Seat.builder()
+                .restaurant(restaurant)
+                .availableDate(date)
+                .availableTime(LocalTime.of(13, 0))
+                .minHeadCount(1)
+                .maxHeadCount(2)
+                .build();
         Payment payment = mock(Payment.class);
 
         when(reservationRepository.findById(anyLong())).thenReturn(Optional.of(reservation));
@@ -194,6 +208,34 @@ class ReservationServiceTest {
 
         reservationService.cancel(1L);
 
+        verify(notificationRequestService).notify(1L, date, LUNCH, 1, 2);
+        verify(paymentService).cancel(anyLong());
+        verify(reservation).updateStatus(CANCELED);
+    }
+
+    @Test
+    @DisplayName("예약 취소 성공: DINNER 시간대 좌석")
+    void cancel_success_dinner_seat() {
+        Reservation reservation = mock(Reservation.class);
+        Restaurant restaurant = Restaurant.builder().id(1L).build();
+        LocalDate date = LocalDate.of(2023, 1, 1);
+        Seat seat = Seat.builder()
+                .restaurant(restaurant)
+                .availableDate(date)
+                .availableTime(LocalTime.of(19, 0))
+                .minHeadCount(1)
+                .maxHeadCount(2)
+                .build();
+        Payment payment = mock(Payment.class);
+
+        when(reservationRepository.findById(anyLong())).thenReturn(Optional.of(reservation));
+        when(reservation.getSeat()).thenReturn(seat);
+        when(reservation.getPayment()).thenReturn(payment);
+        when(payment.getId()).thenReturn(anyLong());
+
+        reservationService.cancel(1L);
+
+        verify(notificationRequestService).notify(1L, date, DINNER, 1, 2);
         verify(paymentService).cancel(anyLong());
         verify(reservation).updateStatus(CANCELED);
     }
@@ -213,6 +255,7 @@ class ReservationServiceTest {
         assertThatThrownBy(() -> reservationService.cancel(1L))
                 .isInstanceOf(PaymentNotFoundException.class);
 
+        verify(notificationRequestService, times(0)).notify(anyLong(), any(), any(), anyInt(), anyInt());
         verify(reservation, times(0)).updateStatus(CANCELED);
     }
 }
