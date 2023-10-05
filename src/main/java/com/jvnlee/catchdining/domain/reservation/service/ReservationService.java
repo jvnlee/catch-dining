@@ -115,8 +115,13 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(ReservationNotFoundException::new);
         Seat seat = reservation.getSeat();
 
+        // 예약되어 있던 좌석의 잔여 수량 원복
         seat.release();
 
+        // 결제 취소
+        paymentService.cancel(reservation.getPayment().getId());
+
+        // 취소된 예약 좌석의 조건에 맞는 빈자리 알림 신청이 존재한다면 알림 발송 (비동기)
         Long restaurantId = seat.getRestaurant().getId();
         LocalDate availableDate = seat.getAvailableDate();
         int minHeadCount = seat.getMinHeadCount();
@@ -127,8 +132,6 @@ public class ReservationService {
         } else {
             notificationRequestService.notify(restaurantId, availableDate, DINNER, minHeadCount, maxHeadCount);
         }
-
-        paymentService.cancel(reservation.getPayment().getId());
 
         reservation.updateStatus(CANCELED);
     }
