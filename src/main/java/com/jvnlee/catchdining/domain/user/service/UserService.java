@@ -12,9 +12,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static java.util.stream.Collectors.*;
 
 @Service
 @Transactional
@@ -63,12 +64,11 @@ public class UserService {
     }
 
     public List<String> getFcmTokens(List<Long> userIdList) {
-        List<String> fcmTokenList = new ArrayList<>();
-        for (Long id : userIdList) {
-            String fcmToken = userRepository.findById(id).orElseThrow(UserNotFoundException::new).getFcmToken();
-            fcmTokenList.add(fcmToken);
-        }
-        return fcmTokenList;
+        return userIdList.stream()
+                .map(id -> userRepository.findById(id)
+                        .orElseThrow(UserNotFoundException::new)
+                        .getFcmToken())
+                .collect(toList());
     }
 
     private void validateUsername(UserDto userDto) {
