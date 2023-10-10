@@ -48,4 +48,17 @@ public class ControllerAdvice {
     public Response<Void> handleReservationNotFound() {
         return new Response<>("예약 내역이 존재하지 않습니다.");
     }
+
+    @ExceptionHandler(FcmTokenNotFoundException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public Response<Void> handleFcmTokenNotFound() {
+        return new Response<>("유효한 FCM 토큰이 존재하지 않습니다.");
+    }
+
+    @ExceptionHandler(DuplicateNotificationRequestException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public Response<Void> handleDuplicateNotificationRequest() {
+        return new Response<>("이미 동일한 빈 자리 알림 신청 내역이 있습니다.");
+    }
+
 }

@@ -7,11 +7,15 @@ import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+
+import static java.util.stream.Collectors.*;
 
 @Service
 @Transactional
@@ -52,6 +56,19 @@ public class UserService {
 
     public void delete(Long id) {
         userRepository.deleteById(id);
+    }
+
+    public User getCurrentUser() {
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+    }
+
+    public List<String> getFcmTokens(List<Long> userIdList) {
+        return userIdList.stream()
+                .map(id -> userRepository.findById(id)
+                        .orElseThrow(UserNotFoundException::new)
+                        .getFcmToken())
+                .collect(toList());
     }
 
     private void validateUsername(UserDto userDto) {
