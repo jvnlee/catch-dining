@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  app:
+    container_name: catch_dining_app
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - cache
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/catch_dining
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
+
+  db:
+    container_name: mysql
+    image: mysql:8.0.32
+    ports:
+      - "3306:3306"
+    restart: always
+    volumes:
+      - ./db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=catch_dining
+
+  cache:
+    container_name: redis
+    image: redis:7.0.14
+    ports:
+      - "6379:6379"
+    restart: always
