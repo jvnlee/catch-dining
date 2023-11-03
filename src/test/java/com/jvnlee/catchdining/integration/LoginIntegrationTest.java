@@ -78,7 +78,7 @@ class LoginIntegrationTest {
 
         resultActions
                 .andExpect(jsonPath("$.message").value("존재하지 않는 사용자입니다."))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
