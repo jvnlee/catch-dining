@@ -9,14 +9,15 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
-      - cache
+      - mysql
+      - redis
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/catch_dining
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/catch_dining
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=1234
+      - SPRING_REDIS_HOST=redis
 
-  db:
+  mysql:
     container_name: mysql
     image: mysql:8.0.32
     ports:
@@ -29,7 +30,7 @@ services:
       - MYSQL_ROOT_PASSWORD=1234
       - MYSQL_DATABASE=catch_dining
 
-  cache:
+  redis:
     container_name: redis
     image: redis:7.0.14
     ports:
