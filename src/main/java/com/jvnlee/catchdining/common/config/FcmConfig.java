@@ -17,9 +17,7 @@ public class FcmConfig {
 
     @Bean
     public FirebaseMessaging firebaseMessaging() throws IOException {
-        ClassPathResource resource = new ClassPathResource(
-                "firebase/catchdining-44d95-firebase-adminsdk-jc9ud-f3e511bc28.json"
-        );
+        ClassPathResource resource = new ClassPathResource("firebase/credentials.json");
 
         InputStream inputStream = resource.getInputStream();
 
