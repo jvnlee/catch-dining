@@ -24,14 +24,14 @@ jobs:
       - name: Complete properties files
         run: |
           cd ./src/main/resources
-          echo "${{ secrets.HIBERNATE }} >> ./application.properties
+          echo "${{ secrets.HIBERNATE }}" >> ./application.properties
           echo "${{ secrets.JWT }}" >> ./application.properties
 
       - name: Import FCM credentials
         run: |
           cd ./src/main/resources
           mkdir firebase
-          echo "${{ secrets.FCM_CREDENTIALS }} >> ./firebase/credentials.json
+          echo "${{ secrets.FCM_CREDENTIALS }}" >> ./firebase/credentials.json
 
       - name: Build with Gradle
         run: ./gradlew build
