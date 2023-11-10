@@ -39,8 +39,7 @@ jobs:
       - name: Complete properties files
         run: |
           cd ./src/main/resources
-          echo "${{ secrets.HIBERNATE }}" >> ./application.properties
-          echo "${{ secrets.JWT }}" >> ./application.properties
+          echo "${{ secrets.APP_CONFIG }}" >> ./application.properties
           
           cd ../../../src/test/resources
           echo "${{ secrets.TEST_CONFIG }}" >> ./application.properties
