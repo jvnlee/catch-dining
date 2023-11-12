@@ -46,6 +46,11 @@ jobs:
           cd ../../../src/test/resources
           echo "${{ secrets.TEST_CONFIG }}" >> ./application.properties
 
+      - name: Add database schema
+        run: |
+          cd ./src/main/resources
+          echo "${{ secrets.DB_SCHEMA }}" >> ./schema.sql
+
       - name: Import FCM credentials
         run: |
           cd ./src/main/resources
