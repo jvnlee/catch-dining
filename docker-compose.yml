@@ -5,7 +5,7 @@ services:
     container_name: catch_dining_app
     image: ${DOCKERHUB_USERNAME}/catch-dining-app
     ports:
-      - "8080:8080"
+      - "80:8080"
     depends_on:
       - mysql
       - redis
