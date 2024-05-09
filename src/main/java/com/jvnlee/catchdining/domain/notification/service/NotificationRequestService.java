@@ -61,35 +61,43 @@ public class NotificationRequestService {
 
     @Async
     public void notify(Long restaurantId, LocalDate date, DiningPeriod diningPeriod, int minHeadCount, int maxHeadCount) {
-        List<NotificationRequest> list = notificationRequestRepository.findAllByCond(restaurantId, date, diningPeriod, minHeadCount, maxHeadCount);
+        List<NotificationRequest> list = notificationRequestRepository
+                .findAllByCond(
+                        restaurantId,
+                        date,
+                        diningPeriod,
+                        minHeadCount,
+                        maxHeadCount
+                );
+
         if (list.isEmpty()) return;
 
-        List<Long> userIdList = list.stream()
+        List<Long> userIdList = list
+                .stream()
                 .map(nr -> nr.getUser().getId())
                 .collect(toList());
 
         List<String> fcmTokens = userService.getFcmTokens(userIdList);
 
         for (String fcmToken : fcmTokens) {
-            if (fcmToken != null) {
-                Notification notification = Notification.builder()
-                        .setTitle("빈 자리 알림")
-                        .setBody("신청하신 시간대에 빈 자리가 생겼습니다. 지금 예약해보세요!")
-                        .build();
-
-                Message message = Message.builder()
-                        .setToken(fcmToken)
-                        .setNotification(notification)
-                        .build();
-
-                try {
-                    firebaseMessagingService.send(message);
-                } catch (FirebaseMessagingException e) {
-                    log.error(e.getErrorCode().toString() + ": " + e.getMessage());
-                }
-
-            } else {
+            if (fcmToken == null) {
                 throw new FcmTokenNotFoundException();
+            }
+
+            Notification notification = Notification.builder()
+                    .setTitle("빈 자리 알림")
+                    .setBody("신청하신 시간대에 빈 자리가 생겼습니다. 지금 예약해보세요!")
+                    .build();
+
+            Message message = Message.builder()
+                    .setToken(fcmToken)
+                    .setNotification(notification)
+                    .build();
+
+            try {
+                firebaseMessagingService.send(message);
+            } catch (FirebaseMessagingException e) {
+                log.error(e.getErrorCode().toString() + ": " + e.getMessage());
             }
         }
     }
