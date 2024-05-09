@@ -1,6 +1,5 @@
 package com.jvnlee.catchdining.domain.notification.service;
 
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
@@ -41,7 +40,7 @@ public class NotificationRequestService {
 
     private final NotificationRequestRepository notificationRequestRepository;
 
-    private final FirebaseMessaging firebaseMessaging;
+    private final FirebaseMessagingService firebaseMessagingService;
 
     public void request(Long restaurantId, NotificationRequestDto notificationRequestDto) {
         String fcmToken = notificationRequestDto.getFcmToken();
@@ -84,7 +83,7 @@ public class NotificationRequestService {
                         .build();
 
                 try {
-                    firebaseMessaging.send(message);
+                    firebaseMessagingService.send(message);
                 } catch (FirebaseMessagingException e) {
                     log.error(e.getErrorCode().toString() + ": " + e.getMessage());
                 }
