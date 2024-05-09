@@ -1,20 +1,20 @@
 package com.jvnlee.catchdining.domain.notification.service;
 
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import com.jvnlee.catchdining.common.exception.DuplicateNotificationRequestException;
 import com.jvnlee.catchdining.common.exception.FcmTokenNotFoundException;
+import com.jvnlee.catchdining.common.exception.MessageSendingFailureException;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.notification.dto.NotificationRequestDto;
 import com.jvnlee.catchdining.domain.notification.dto.NotificationRequestViewDto;
+import com.jvnlee.catchdining.domain.notification.model.DiningPeriod;
 import com.jvnlee.catchdining.domain.notification.model.NotificationRequest;
 import com.jvnlee.catchdining.domain.notification.repository.NotificationRequestRepository;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
-import com.jvnlee.catchdining.domain.notification.model.DiningPeriod;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -96,8 +96,8 @@ public class NotificationRequestService {
 
             try {
                 firebaseMessagingService.send(message);
-            } catch (FirebaseMessagingException e) {
-                log.error(e.getErrorCode().toString() + ": " + e.getMessage());
+            } catch (MessageSendingFailureException e) {
+                log.error(e.getMessage());
             }
         }
     }
