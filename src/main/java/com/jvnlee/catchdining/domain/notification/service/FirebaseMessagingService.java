@@ -18,7 +18,6 @@ public class FirebaseMessagingService {
     @Retryable(
             value = MessageSendingFailureException.class,
             backoff = @Backoff(delay = 500L)
-            // maxAttempts = 3 (default)
     )
     public void send(Message message) throws MessageSendingFailureException {
         try {
