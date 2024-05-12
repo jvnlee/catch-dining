@@ -61,7 +61,7 @@ public class NotificationRequestService {
 
     @Async
     public void notify(Long restaurantId, LocalDate date, DiningPeriod diningPeriod, int minHeadCount, int maxHeadCount) {
-        List<NotificationRequest> list = notificationRequestRepository
+        List<NotificationRequest> notificationRequests = notificationRequestRepository
                 .findAllByCond(
                         restaurantId,
                         date,
@@ -70,24 +70,24 @@ public class NotificationRequestService {
                         maxHeadCount
                 );
 
-        if (list.isEmpty()) return;
+        if (notificationRequests.isEmpty()) return;
 
-        List<Long> userIdList = list
+        List<Long> userIds = notificationRequests
                 .stream()
                 .map(nr -> nr.getUser().getId())
                 .collect(toList());
 
-        List<String> fcmTokens = userService.getFcmTokens(userIdList);
+        List<String> fcmTokens = userService.getFcmTokens(userIds);
+
+        Notification notification = Notification.builder()
+                .setTitle("빈 자리 알림")
+                .setBody("신청하신 시간대에 빈 자리가 생겼습니다. 지금 예약해보세요!")
+                .build();
 
         for (String fcmToken : fcmTokens) {
             if (fcmToken == null) {
                 throw new FcmTokenNotFoundException();
             }
-
-            Notification notification = Notification.builder()
-                    .setTitle("빈 자리 알림")
-                    .setBody("신청하신 시간대에 빈 자리가 생겼습니다. 지금 예약해보세요!")
-                    .build();
 
             Message message = Message.builder()
                     .setToken(fcmToken)
