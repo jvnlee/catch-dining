@@ -1,7 +1,5 @@
 package com.jvnlee.catchdining.domain.notification.service;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.jvnlee.catchdining.common.exception.DuplicateNotificationRequestException;
 import com.jvnlee.catchdining.common.exception.FcmTokenNotFoundException;
@@ -27,9 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.jvnlee.catchdining.domain.notification.model.DiningPeriod.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.jvnlee.catchdining.domain.notification.model.DiningPeriod.LUNCH;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +43,7 @@ class NotificationRequestServiceTest {
     NotificationRequestRepository notificationRequestRepository;
 
     @Mock
-    FirebaseMessaging firebaseMessaging;
+    FirebaseMessagingService firebaseMessagingService;
 
     @InjectMocks
     NotificationRequestService notificationRequestService;
@@ -102,7 +100,7 @@ class NotificationRequestServiceTest {
 
     @Test
     @DisplayName("알림 발행 성공")
-    void notify_success() throws FirebaseMessagingException {
+    void notify_success() {
         Long restaurantId = 1L;
         LocalDate date = LocalDate.of(2023, 1, 1);
 
@@ -112,7 +110,7 @@ class NotificationRequestServiceTest {
 
         notificationRequestService.notify(restaurantId, date, LUNCH, 1, 2);
 
-        verify(firebaseMessaging).send(any(Message.class));
+        verify(firebaseMessagingService).send(any(Message.class));
     }
 
     @Test

@@ -1,21 +1,20 @@
 package com.jvnlee.catchdining.domain.notification.service;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import com.jvnlee.catchdining.common.exception.DuplicateNotificationRequestException;
 import com.jvnlee.catchdining.common.exception.FcmTokenNotFoundException;
+import com.jvnlee.catchdining.common.exception.MessageSendingFailureException;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.notification.dto.NotificationRequestDto;
 import com.jvnlee.catchdining.domain.notification.dto.NotificationRequestViewDto;
+import com.jvnlee.catchdining.domain.notification.model.DiningPeriod;
 import com.jvnlee.catchdining.domain.notification.model.NotificationRequest;
 import com.jvnlee.catchdining.domain.notification.repository.NotificationRequestRepository;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
-import com.jvnlee.catchdining.domain.notification.model.DiningPeriod;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -41,7 +40,7 @@ public class NotificationRequestService {
 
     private final NotificationRequestRepository notificationRequestRepository;
 
-    private final FirebaseMessaging firebaseMessaging;
+    private final FirebaseMessagingService firebaseMessagingService;
 
     public void request(Long restaurantId, NotificationRequestDto notificationRequestDto) {
         String fcmToken = notificationRequestDto.getFcmToken();
@@ -62,35 +61,43 @@ public class NotificationRequestService {
 
     @Async
     public void notify(Long restaurantId, LocalDate date, DiningPeriod diningPeriod, int minHeadCount, int maxHeadCount) {
-        List<NotificationRequest> list = notificationRequestRepository.findAllByCond(restaurantId, date, diningPeriod, minHeadCount, maxHeadCount);
-        if (list.isEmpty()) return;
+        List<NotificationRequest> notificationRequests = notificationRequestRepository
+                .findAllByCond(
+                        restaurantId,
+                        date,
+                        diningPeriod,
+                        minHeadCount,
+                        maxHeadCount
+                );
 
-        List<Long> userIdList = list.stream()
+        if (notificationRequests.isEmpty()) return;
+
+        List<Long> userIds = notificationRequests
+                .stream()
                 .map(nr -> nr.getUser().getId())
                 .collect(toList());
 
-        List<String> fcmTokens = userService.getFcmTokens(userIdList);
+        List<String> fcmTokens = userService.getFcmTokens(userIds);
+
+        Notification notification = Notification.builder()
+                .setTitle("빈 자리 알림")
+                .setBody("신청하신 시간대에 빈 자리가 생겼습니다. 지금 예약해보세요!")
+                .build();
 
         for (String fcmToken : fcmTokens) {
-            if (fcmToken != null) {
-                Notification notification = Notification.builder()
-                        .setTitle("빈 자리 알림")
-                        .setBody("신청하신 시간대에 빈 자리가 생겼습니다. 지금 예약해보세요!")
-                        .build();
-
-                Message message = Message.builder()
-                        .setToken(fcmToken)
-                        .setNotification(notification)
-                        .build();
-
-                try {
-                    firebaseMessaging.send(message);
-                } catch (FirebaseMessagingException e) {
-                    log.error(e.getErrorCode().toString() + ": " + e.getMessage());
-                }
-
-            } else {
+            if (fcmToken == null) {
                 throw new FcmTokenNotFoundException();
+            }
+
+            Message message = Message.builder()
+                    .setToken(fcmToken)
+                    .setNotification(notification)
+                    .build();
+
+            try {
+                firebaseMessagingService.send(message);
+            } catch (MessageSendingFailureException e) {
+                log.error(e.getMessage());
             }
         }
     }
