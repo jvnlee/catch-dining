@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/catch_dining
+    username: root
+    password: 1234
+
+  redis:
+    host: localhost
+    port: 6379
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+
+  sql:
+    init:
+      mode: always
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
+        type: trace
+      springframework:
+        security: debug
+
+jwt:
+  secret: 5bc35db8b6c3725c3b1e767fbfccc78d6067abcdcb70fa3ce9973837351dab03
+  alg: HS256
+  access:
+    exp: 900000
+  refresh:
+    exp: 3600000

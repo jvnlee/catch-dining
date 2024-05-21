@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@TestPropertySource(locations = "file:src/test/resources/application.properties")
+@ActiveProfiles("test")
 class LoginIntegrationTest {
 
     @Autowired
