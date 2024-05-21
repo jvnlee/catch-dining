@@ -37,6 +37,7 @@ dependencies {
 	testImplementation 'org.testcontainers:testcontainers:1.19.8'
 	testImplementation 'org.testcontainers:mysql:1.19.8'
 	testImplementation 'com.redis:testcontainers-redis:2.2.2'
+	testImplementation 'io.rest-assured:rest-assured:5.4.0'
 }
 
 tasks.named('test') {
