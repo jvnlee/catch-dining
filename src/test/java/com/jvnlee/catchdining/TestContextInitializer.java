@@ -8,14 +8,25 @@ public class TestContextInitializer implements ApplicationContextInitializer<Con
 
     @Override
     public void initialize(ConfigurableApplicationContext applicationContext) {
-        GenericContainer redis = new GenericContainer("redis:7.0.14")
-                .withExposedPorts(6379)
-                .withReuse(true);
+        RedisContainerManager.start();
+    }
 
-        redis.start();
+    static class RedisContainerManager {
+        private static GenericContainer redis;
 
-        System.setProperty("spring.redis.host", redis.getHost());
-        System.setProperty("spring.redis.port", redis.getMappedPort(6379).toString());
+        private RedisContainerManager() {}
+
+        public static void start() {
+            if (redis == null) {
+                redis = new GenericContainer("redis:7.0.14")
+                        .withExposedPorts(6379);
+
+                redis.start();
+
+                System.setProperty("spring.redis.host", redis.getHost());
+                System.setProperty("spring.redis.port", redis.getMappedPort(6379).toString());
+            }
+        }
     }
 
 }
