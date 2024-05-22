@@ -20,7 +20,7 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(NOT_FOUND)
+    @ResponseStatus(BAD_REQUEST)
     public Response<Void> handleUserNotFound() {
         return new Response<>("존재하지 않는 사용자입니다.");
     }
