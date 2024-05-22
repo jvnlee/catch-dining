@@ -231,5 +231,17 @@ class LoginIntegrationTest {
                 .body("message", equalTo("Authorization header의 형식이 올바르지 않습니다."));
     }
 
+    @Test
+    @DisplayName("JWT 로그인 실패: Scheme이 Bearer가 아닌 유효하지 않은 Authorization 헤더")
+    void jwt_login_fail_invalid_scheme() {
+        RestAssured
+                .given().log().all()
+                .header(AUTHORIZATION, "WrongScheme ... ...")
+                .get("/someUrl")
+                .then().log().all()
+                .assertThat()
+                .statusCode(BAD_REQUEST.value())
+                .body("message", equalTo("Authorization header의 scheme이 올바르지 않습니다."));
+    }
 
 }
