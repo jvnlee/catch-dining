@@ -36,13 +36,10 @@ jobs:
           redis version: '7.0.14'
           number of databases: 1
 
-      - name: Complete properties files
+      - name: Create application-prod.yml
         run: |
           cd ./src/main/resources
-          echo "${{ secrets.APP_CONFIG }}" >> ./application.properties
-          
-          cd ../../../src/test/resources
-          echo "${{ secrets.TEST_CONFIG }}" >> ./application.properties
+          echo "${{ secrets.PROD_CONFIG }}" >> ./application-prod.yml
 
       - name: Add database schema
         run: |
