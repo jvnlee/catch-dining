@@ -1,14 +1,14 @@
 package com.jvnlee.catchdining;
 
-import com.redis.testcontainers.RedisContainer;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.testcontainers.containers.GenericContainer;
 
 public class TestContextInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     @Override
     public void initialize(ConfigurableApplicationContext applicationContext) {
-        RedisContainer redis = new RedisContainer("redis:7.0.14")
+        GenericContainer redis = new GenericContainer("redis:7.0.14")
                 .withExposedPorts(6379)
                 .withReuse(true);
 
