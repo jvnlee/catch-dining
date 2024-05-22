@@ -21,21 +21,6 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      - name: Set up MySQL
-        uses: mirromutth/mysql-action@v1.1
-        with:
-          mysql version: '8.0.32'
-          mysql database: 'catch_dining'
-          mysql root password: ${{ secrets.DB_PASSWORD }}
-          mysql user: ${{ secrets.DB_USERNAME }}
-          mysql password: ${{ secrets.DB_PASSWORD }}
-
-      - name: Set up Redis
-        uses: zhulik/redis-action@1.1.0
-        with:
-          redis version: '7.0.14'
-          number of databases: 1
-
       - name: Create application-prod.yml
         run: |
           cd ./src/main/resources
