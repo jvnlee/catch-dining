@@ -6,6 +6,7 @@ import com.google.firebase.messaging.Message;
 import com.jvnlee.catchdining.TestContextInitializer;
 import com.jvnlee.catchdining.common.exception.MessageSendingFailureException;
 import com.jvnlee.catchdining.domain.notification.service.FirebaseMessagingService;
+import com.jvnlee.catchdining.util.IntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@ContextConfiguration(initializers = TestContextInitializer.class)
+@IntegrationTest
 @EnableRetry
 public class FirebaseMessagingServiceTest {
 

@@ -6,6 +6,7 @@ import com.jvnlee.catchdining.domain.user.dto.UserLoginDto;
 import com.jvnlee.catchdining.domain.user.repository.UserRepository;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import com.jvnlee.catchdining.TestContextInitializer;
+import com.jvnlee.catchdining.util.IntegrationTest;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -27,9 +28,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.http.HttpStatus.*;
 
-@ActiveProfiles("test")
-@SpringBootTest(webEnvironment = RANDOM_PORT)
-@ContextConfiguration(initializers = TestContextInitializer.class)
+@IntegrationTest
 class LoginIntegrationTest {
 
     @LocalServerPort
