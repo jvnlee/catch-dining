@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.integration;
 
+import com.jvnlee.catchdining.TestContextInitializer;
 import com.jvnlee.catchdining.domain.menu.dto.MenuDto;
 import com.jvnlee.catchdining.domain.menu.service.MenuService;
 import com.jvnlee.catchdining.domain.payment.model.PaymentType;
@@ -25,6 +26,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -36,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@ContextConfiguration(initializers = TestContextInitializer.class)
 class ReservationIntegrationTest {
 
     @Autowired
