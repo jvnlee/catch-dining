@@ -3,10 +3,12 @@ package com.jvnlee.catchdining.domain.reservation.dto;
 import com.jvnlee.catchdining.domain.reservation.model.Reservation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class ReservationUserViewDto {
 
