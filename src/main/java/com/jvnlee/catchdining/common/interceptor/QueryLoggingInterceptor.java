@@ -3,6 +3,7 @@ package com.jvnlee.catchdining.common.interceptor;
 import com.jvnlee.catchdining.common.util.QueryInspector;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
+@Profile("dev")
 @Component
 @RequiredArgsConstructor
 public class QueryLoggingInterceptor implements HandlerInterceptor {
