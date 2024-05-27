@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.jvnlee.catchdining.domain.restaurant.model.CountryType.일식;
-import static com.jvnlee.catchdining.domain.restaurant.model.MenuType.스시;
+import static com.jvnlee.catchdining.domain.restaurant.model.FoodType.스시;
 import static com.jvnlee.catchdining.domain.restaurant.model.ServingType.오마카세;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
