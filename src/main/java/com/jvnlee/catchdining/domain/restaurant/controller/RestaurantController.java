@@ -26,8 +26,11 @@ public class RestaurantController {
     }
 
     @GetMapping
-    public Response<Page<RestaurantSearchDto>> search(@RequestParam String name, Pageable pageable) {
-        Page<RestaurantSearchDto> data = restaurantService.search(name, pageable);
+    public Response<Page<RestaurantSearchResponseDto>> search(@RequestParam String keyword,
+                                                              @RequestParam(required = false) String sort,
+                                                              Pageable pageable) {
+        Page<RestaurantSearchResponseDto> data = restaurantService
+                .search(new RestaurantSearchRequestDto(keyword, sort, pageable));
         return new Response<>("식당 검색 결과", data);
     }
 
