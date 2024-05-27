@@ -2,7 +2,8 @@ package com.jvnlee.catchdining.domain.restaurant.service;
 
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
@@ -30,9 +31,26 @@ public class RestaurantService {
     }
 
     @Transactional(readOnly = true)
-    public Page<RestaurantSearchDto> search(String name, Pageable pageable) {
-        Page<RestaurantSearchDto> page = restaurantRepository.findPageByName(name, pageable);
-        if (page.getTotalElements() == 0) throw new RestaurantNotFoundException();
+    public Page<RestaurantSearchResponseDto> search(RestaurantSearchRequestDto restaurantSearchRequestDto) {
+        String keyword = restaurantSearchRequestDto.getKeyword();
+        String sort = restaurantSearchRequestDto.getSort();
+        Pageable pageable = restaurantSearchRequestDto.getPageable();
+
+        Page<RestaurantSearchResponseDto> page = Page.empty();
+
+        if (sort == null) {
+            page = restaurantRepository.findPageByKeyword(keyword, pageable);
+        } else {
+            if (sort.equals("rating")) {
+                page = restaurantRepository.findPageByKeywordOrderByRating(keyword, pageable);
+            } else if (sort.equals("reviewCount")) {
+                page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
+            }
+        }
+
+        if (page.getTotalElements() == 0) {
+            throw new RestaurantNotFoundException();
+        }
         return page;
     }
 
