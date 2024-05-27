@@ -3,7 +3,9 @@ package com.jvnlee.catchdining.domain.restaurant.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Address;
 import com.jvnlee.catchdining.domain.restaurant.service.RestaurantService;
@@ -16,6 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -25,9 +28,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.util.List;
 
 import static com.jvnlee.catchdining.domain.restaurant.model.CountryType.*;
-import static com.jvnlee.catchdining.domain.restaurant.model.FoodType.*;
+import static com.jvnlee.catchdining.domain.restaurant.model.MenuType.*;
 import static com.jvnlee.catchdining.domain.restaurant.model.ServingType.*;
 import static java.nio.charset.StandardCharsets.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -98,8 +102,8 @@ class RestaurantControllerTest {
     }
 
     @Test
-    @DisplayName("식당 검색 성공")
-    void search_result() throws Exception {
+    @DisplayName("식당 검색 성공: sort 옵션 없음")
+    void search_success_sort_by_none() throws Exception {
         String name = "식당";
         PageRequest pageRequest = PageRequest.of(0, 3);
 
@@ -107,28 +111,105 @@ class RestaurantControllerTest {
         Address address2 = new Address("서울특별시", "", "강남구", "아무대로", "123");
         Address address3 = new Address("서울특별시", "", "강남구", "아무대로", "123");
 
-        List<RestaurantSearchDto> content = List.of(
-                new RestaurantSearchDto("식당1", address1),
-                new RestaurantSearchDto("식당2", address2),
-                new RestaurantSearchDto("식당3", address3)
+        List<RestaurantSearchResponseDto> content = List.of(
+                new RestaurantSearchResponseDto(1L, "식당1", address1, 0.0, 0),
+                new RestaurantSearchResponseDto(2L, "식당2", address2, 0.0, 0),
+                new RestaurantSearchResponseDto(3L, "식당3", address3, 0.0, 0)
         );
 
-        PageImpl<RestaurantSearchDto> page = new PageImpl<>(content);
+        PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
 
-        when(service.search(name, pageRequest)).thenReturn(page);
+        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, null, pageRequest);
+        when(service.search(restaurantSearchRequestDto)).thenReturn(page);
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
-                        .param("name", name)
+                        .param("keyword", name)
                         .param("page", pageRequest.getPageNumber() + "")
                         .param("size", pageRequest.getPageSize() + "")
         );
 
-        verify(service).search(name, pageRequest);
+        verify(service).search(restaurantSearchRequestDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 검색 결과"))
                 .andExpect(jsonPath("$.data").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("식당 검색 성공: sort 옵션 rating")
+    void search_success_sort_by_rating() throws Exception {
+        String name = "식당";
+        String sortBy = "rating";
+        PageRequest pageRequest = PageRequest.of(0, 3);
+
+        Address address1 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+        Address address2 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+        Address address3 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+
+        List<RestaurantSearchResponseDto> content = List.of(
+                new RestaurantSearchResponseDto(1L, "식당1", address1, 5.0, 998),
+                new RestaurantSearchResponseDto(2L, "식당2", address2, 4.0, 999),
+                new RestaurantSearchResponseDto(3L, "식당3", address3, 3.0, 1000)
+        );
+
+        PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
+
+        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, sortBy, pageRequest);
+        when(service.search(restaurantSearchRequestDto)).thenReturn(page);
+
+        ResultActions resultActions = mockMvc.perform(
+                get("/restaurants")
+                        .param("keyword", name)
+                        .param("sortBy", sortBy)
+                        .param("page", pageRequest.getPageNumber() + "")
+                        .param("size", pageRequest.getPageSize() + "")
+        );
+
+        verify(service).search(restaurantSearchRequestDto);
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("식당 검색 결과"))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.content[0].rating").value(5.0));
+    }
+
+    @Test
+    @DisplayName("식당 검색 성공: sort 옵션 reviewCount")
+    void search_success_sort_by_review_count() throws Exception {
+        String name = "식당";
+        String sortBy = "reviewCount";
+        PageRequest pageRequest = PageRequest.of(0, 3);
+
+        Address address1 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+        Address address2 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+        Address address3 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+
+        List<RestaurantSearchResponseDto> content = List.of(
+                new RestaurantSearchResponseDto(3L, "식당3", address3, 3.0, 1000),
+                new RestaurantSearchResponseDto(2L, "식당2", address2, 4.0, 999),
+                new RestaurantSearchResponseDto(1L, "식당1", address1, 5.0, 998)
+        );
+
+        PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
+
+        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, sortBy, pageRequest);
+        when(service.search(restaurantSearchRequestDto)).thenReturn(page);
+
+        ResultActions resultActions = mockMvc.perform(
+                get("/restaurants")
+                        .param("keyword", name)
+                        .param("sortBy", sortBy)
+                        .param("page", pageRequest.getPageNumber() + "")
+                        .param("size", pageRequest.getPageSize() + "")
+        );
+
+        verify(service).search(restaurantSearchRequestDto);
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("식당 검색 결과"))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.content[0].reviewCount").value(1000));
     }
 
     @Test
@@ -137,19 +218,43 @@ class RestaurantControllerTest {
         String name = "식당";
         PageRequest pageRequest = PageRequest.of(0, 3);
 
-        doThrow(new RestaurantNotFoundException()).when(service).search(name, pageRequest);
+        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, null, pageRequest);
+        doThrow(new RestaurantNotFoundException()).when(service).search(restaurantSearchRequestDto);
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
-                        .param("name", name)
+                        .param("keyword", name)
                         .param("page", pageRequest.getPageNumber() + "")
                         .param("size", pageRequest.getPageSize() + "")
         );
 
-        verify(service).search(name, pageRequest);
+        verify(service).search(restaurantSearchRequestDto);
         resultActions
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("식당 정보가 존재하지 않습니다."))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    @DisplayName("식당 검색 실패: 유효하지 않은 sort 옵션")
+    void search_fail_invalid_sort_by_option() throws Exception {
+        String name = "식당";
+        String sortBy = "invalidOption";
+        PageRequest pageRequest = PageRequest.of(0, 3);
+
+        when(service.search(new RestaurantSearchRequestDto(name, sortBy, pageRequest)))
+                .thenThrow(new IllegalArgumentException("유효하지 않은 정렬 파라미터입니다."));
+
+        ResultActions resultActions = mockMvc.perform(
+                get("/restaurants")
+                        .param("keyword", name)
+                        .param("sortBy", sortBy)
+                        .param("page", pageRequest.getPageNumber() + "")
+                        .param("size", pageRequest.getPageSize() + "")
+        );
+
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("유효하지 않은 정렬 파라미터입니다."))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
