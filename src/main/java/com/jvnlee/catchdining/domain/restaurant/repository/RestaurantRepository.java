@@ -1,6 +1,6 @@
 package com.jvnlee.catchdining.domain.restaurant.repository;
 
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +20,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
             "where r.name like concat('%', :keyword, '%') " +
             "group by r.id"
     )
-    Page<RestaurantSearchResponseDto> findPageByKeyword(String keyword, Pageable pageable);
+    Page<RestaurantSearchResultDto> findPageByKeyword(String keyword, Pageable pageable);
 
     @Query(
             "select r.id as id, r.name as name, r.address as address, round((avg(rv.tasteRating) + avg(rv.moodRating) + avg(rv.serviceRating)) / 3, 2) as rating, count(rv.id) as reviewCount " +
@@ -30,7 +30,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
             "group by r.id " +
             "order by (avg(rv.tasteRating) + avg(rv.moodRating) + avg(rv.serviceRating)) / 3 desc"
     )
-    Page<RestaurantSearchResponseDto> findPageByKeywordOrderByRating(String keyword, Pageable pageable);
+    Page<RestaurantSearchResultDto> findPageByKeywordOrderByRating(String keyword, Pageable pageable);
 
     @Query(
             "select r.id as id, r.name as name, r.address as address, round((avg(rv.tasteRating) + avg(rv.moodRating) + avg(rv.serviceRating)) / 3, 2) as rating, count(rv.id) as reviewCount " +
@@ -40,6 +40,6 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
             "group by r.id " +
             "order by count(rv.id) desc"
     )
-    Page<RestaurantSearchResponseDto> findPageByKeywordOrderByReviewCount(String keyword, Pageable pageable);
+    Page<RestaurantSearchResultDto> findPageByKeywordOrderByReviewCount(String keyword, Pageable pageable);
 
 }

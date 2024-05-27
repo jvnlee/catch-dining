@@ -1,17 +1,31 @@
 package com.jvnlee.catchdining.domain.restaurant.dto;
 
 import com.jvnlee.catchdining.domain.restaurant.model.Address;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public interface RestaurantSearchResponseDto {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class RestaurantSearchResponseDto {
 
-    Long getId();
+    private Long id;
 
-    String getName();
+    private String name;
 
-    Address getAddress();
+    private Address address;
 
-    double getRating();
+    private double rating;
 
-    int getReviewCount();
+    private int reviewCount;
+
+    public RestaurantSearchResponseDto(RestaurantSearchResultDto r) {
+        this.id = r.getId();
+        this.name = r.getName();
+        this.address = r.getAddress();
+        this.rating = r.getRating();
+        this.reviewCount = r.getReviewCount();
+    }
 
 }

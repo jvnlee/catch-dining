@@ -3,6 +3,7 @@ package com.jvnlee.catchdining.domain.restaurant.service;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
@@ -36,7 +37,7 @@ public class RestaurantService {
         String sort = restaurantSearchRequestDto.getSort();
         Pageable pageable = restaurantSearchRequestDto.getPageable();
 
-        Page<RestaurantSearchResponseDto> page = Page.empty();
+        Page<RestaurantSearchResultDto> page = Page.empty();
 
         if (sort == null) {
             page = restaurantRepository.findPageByKeyword(keyword, pageable);
@@ -51,7 +52,7 @@ public class RestaurantService {
         if (page.getTotalElements() == 0) {
             throw new RestaurantNotFoundException();
         }
-        return page;
+        return page.map(r -> new RestaurantSearchResponseDto(r));
     }
 
     @Transactional(readOnly = true)
