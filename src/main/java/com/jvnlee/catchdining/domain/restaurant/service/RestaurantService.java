@@ -37,7 +37,7 @@ public class RestaurantService {
         String sortBy = restaurantSearchRequestDto.getSort();
         Pageable pageable = restaurantSearchRequestDto.getPageable();
 
-        Page<RestaurantSearchResultDto> page = Page.empty();
+        Page<RestaurantSearchResultDto> page;
 
         if (sortBy == null) {
             page = restaurantRepository.findPageByKeyword(keyword, pageable);
@@ -46,6 +46,8 @@ public class RestaurantService {
                 page = restaurantRepository.findPageByKeywordOrderByRating(keyword, pageable);
             } else if (sortBy.equals("reviewCount")) {
                 page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
+            } else {
+                throw new IllegalArgumentException("유효하지 않은 정렬 파라미터입니다.");
             }
         }
 
