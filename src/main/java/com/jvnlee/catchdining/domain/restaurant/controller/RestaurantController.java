@@ -2,7 +2,8 @@ package com.jvnlee.catchdining.domain.restaurant.controller;
 
 import com.jvnlee.catchdining.common.web.Response;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.service.RestaurantService;
 import lombok.RequiredArgsConstructor;

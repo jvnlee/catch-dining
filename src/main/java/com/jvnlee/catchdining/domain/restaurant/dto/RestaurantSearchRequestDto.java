@@ -1,17 +1,19 @@
 package com.jvnlee.catchdining.domain.restaurant.dto;
 
-import com.jvnlee.catchdining.domain.restaurant.model.Address;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Pageable;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RestaurantSearchDto {
+public class RestaurantSearchRequestDto {
 
-    private String name;
+    private String keyword;
 
-    private Address address;
+    private String sort;
+
+    private Pageable pageable;
 
 }
