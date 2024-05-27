@@ -2,7 +2,9 @@ package com.jvnlee.catchdining.domain.restaurant.service;
 
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Address;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
@@ -15,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
@@ -23,10 +26,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.jvnlee.catchdining.domain.restaurant.model.CountryType.일식;
-import static com.jvnlee.catchdining.domain.restaurant.model.FoodType.스시;
+import static com.jvnlee.catchdining.domain.restaurant.model.MenuType.스시;
 import static com.jvnlee.catchdining.domain.restaurant.model.ServingType.오마카세;
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -38,6 +40,47 @@ class RestaurantServiceTest {
 
     @InjectMocks
     RestaurantService service;
+
+    class RestaurantSearchResultDtoImpl implements RestaurantSearchResultDto {
+        private Long id;
+        private String name;
+        private Address address;
+        private double rating;
+        private int reviewCount;
+
+        public RestaurantSearchResultDtoImpl(Long id, String name, Address address, double rating, int reviewCount) {
+            this.id = id;
+            this.name = name;
+            this.address = address;
+            this.rating = rating;
+            this.reviewCount = reviewCount;
+        }
+
+        @Override
+        public Long getId() {
+            return id;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public Address getAddress() {
+            return address;
+        }
+
+        @Override
+        public double getRating() {
+            return rating;
+        }
+
+        @Override
+        public int getReviewCount() {
+            return reviewCount;
+        }
+    }
 
     @Test
     @DisplayName("식당 등록 성공")
@@ -66,7 +109,7 @@ class RestaurantServiceTest {
     }
 
     @Test
-    @DisplayName("식당 검색 성공")
+    @DisplayName("식당 검색 성공: sort 옵션 없음")
     void search_success() {
         String name = "식당";
         PageRequest pageRequest = PageRequest.of(0, 3);
@@ -75,33 +118,105 @@ class RestaurantServiceTest {
         Address address2 = new Address("서울특별시", "", "강남구", "아무대로", "123");
         Address address3 = new Address("서울특별시", "", "강남구", "아무대로", "123");
 
-        List<RestaurantSearchDto> content = List.of(
-                new RestaurantSearchDto("식당1", address1),
-                new RestaurantSearchDto("식당2", address2),
-                new RestaurantSearchDto("식당3", address3)
+        List<RestaurantSearchResultDto> content = List.of(
+                new RestaurantSearchResultDtoImpl(1L, "식당1", address1, 0.0, 0),
+                new RestaurantSearchResultDtoImpl(2L, "식당2", address2, 0.0, 0),
+                new RestaurantSearchResultDtoImpl(3L, "식당3", address3, 0.0, 0)
         );
 
-        PageImpl<RestaurantSearchDto> page = new PageImpl<>(content);
+        PageImpl<RestaurantSearchResultDto> page = new PageImpl<>(content);
 
-        when(repository.findPageByName(name, pageRequest)).thenReturn(page);
+        when(repository.findPageByKeyword(name, pageRequest)).thenReturn(page);
 
-        assertThat(service.search(name, pageRequest).getContent().size()).isEqualTo(3);
+        assertThat(service.search(new RestaurantSearchRequestDto(name, null, pageRequest)).getContent().size())
+                .isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("식당 검색 성공: sort 옵션 rating")
+    void search_success_sort_by_rating() {
+        String name = "식당";
+        String sortBy = "rating";
+        PageRequest pageRequest = PageRequest.of(0, 3);
+
+        Address address1 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+        Address address2 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+        Address address3 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+
+        List<RestaurantSearchResultDto> content = List.of(
+                new RestaurantSearchResultDtoImpl(1L, "식당1", address1, 5.0, 998),
+                new RestaurantSearchResultDtoImpl(2L, "식당2", address2, 4.0, 999),
+                new RestaurantSearchResultDtoImpl(3L, "식당3", address3, 3.0, 1000)
+        );
+
+        PageImpl<RestaurantSearchResultDto> page = new PageImpl<>(content);
+
+        when(repository.findPageByKeywordOrderByRating(name, pageRequest)).thenReturn(page);
+
+        Page<RestaurantSearchResponseDto> searchPage = service.search(new RestaurantSearchRequestDto(name, sortBy, pageRequest));
+
+        assertThat(searchPage.getContent().get(0))
+                .isInstanceOf(RestaurantSearchResponseDto.class);
+        assertThat(searchPage.getContent().size())
+                .isEqualTo(3);
+        verify(repository).findPageByKeywordOrderByRating(name, pageRequest);
+    }
+
+    @Test
+    @DisplayName("식당 검색 성공: sort 옵션 reviewCount")
+    void search_success_sort_by_review_count() {
+        String name = "식당";
+        String sortBy = "reviewCount";
+        PageRequest pageRequest = PageRequest.of(0, 3);
+
+        Address address1 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+        Address address2 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+        Address address3 = new Address("서울특별시", "", "강남구", "아무대로", "123");
+
+        List<RestaurantSearchResultDto> content = List.of(
+                new RestaurantSearchResultDtoImpl(3L, "식당3", address3, 3.0, 1000),
+                new RestaurantSearchResultDtoImpl(2L, "식당2", address2, 4.0, 999),
+                new RestaurantSearchResultDtoImpl(1L, "식당1", address1, 5.0, 998)
+        );
+
+        PageImpl<RestaurantSearchResultDto> page = new PageImpl<>(content);
+
+        when(repository.findPageByKeywordOrderByReviewCount(name, pageRequest)).thenReturn(page);
+
+        Page<RestaurantSearchResponseDto> searchPage = service.search(new RestaurantSearchRequestDto(name, sortBy, pageRequest));
+
+        assertThat(searchPage.getContent().get(0))
+                .isInstanceOf(RestaurantSearchResponseDto.class);
+        assertThat(searchPage.getContent().size())
+                .isEqualTo(3);
+        verify(repository).findPageByKeywordOrderByReviewCount(name, pageRequest);
     }
 
     @Test
     @DisplayName("식당 검색 실패: 결과 없음")
-    void search_fail() {
+    void search_fail_no_result() {
         String name = "식당";
         PageRequest pageRequest = PageRequest.of(0, 3);
 
-        List<RestaurantSearchDto> content = Collections.emptyList();
+        List<RestaurantSearchResultDto> content = Collections.emptyList();
 
-        PageImpl<RestaurantSearchDto> page = new PageImpl<>(content);
+        PageImpl<RestaurantSearchResultDto> page = new PageImpl<>(content);
 
-        when(repository.findPageByName(name, pageRequest)).thenReturn(page);
+        when(repository.findPageByKeyword(name, pageRequest)).thenReturn(page);
 
-        assertThatThrownBy(() -> service.search(name, pageRequest))
+        assertThatThrownBy(() -> service.search(new RestaurantSearchRequestDto(name, null, pageRequest)))
                 .isInstanceOf(RestaurantNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("식당 검색 실패: 유효하지 않은 sort 옵션")
+    void search_fail_invalid_sort_by_option() {
+        String name = "식당";
+        String sortBy = "invalidOption";
+        PageRequest pageRequest = PageRequest.of(0, 3);
+
+        assertThatThrownBy(() -> service.search(new RestaurantSearchRequestDto(name, sortBy, pageRequest)))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
