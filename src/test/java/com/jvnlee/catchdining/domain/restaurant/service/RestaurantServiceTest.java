@@ -151,7 +151,7 @@ class RestaurantServiceTest {
 
         PageImpl<RestaurantSearchResultDto> page = new PageImpl<>(content);
 
-        when(repository.findPageByKeywordOrderByRating(name, pageRequest)).thenReturn(page);
+        when(repository.findPageByKeywordOrderByRatingWithSubQuery(name, pageRequest)).thenReturn(page);
 
         Page<RestaurantSearchResponseDto> searchPage = service.search(new RestaurantSearchRequestDto(name, sortBy, pageRequest));
 
@@ -159,7 +159,7 @@ class RestaurantServiceTest {
                 .isInstanceOf(RestaurantSearchResponseDto.class);
         assertThat(searchPage.getContent().size())
                 .isEqualTo(3);
-        verify(repository).findPageByKeywordOrderByRating(name, pageRequest);
+        verify(repository).findPageByKeywordOrderByRatingWithSubQuery(name, pageRequest);
     }
 
     @Test
