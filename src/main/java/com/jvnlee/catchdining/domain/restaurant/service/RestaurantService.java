@@ -43,7 +43,8 @@ public class RestaurantService {
             page = restaurantRepository.findPageByKeyword(keyword, pageable);
         } else {
             if (sortBy.equals("rating")) {
-                page = restaurantRepository.findPageByKeywordOrderByRating(keyword, pageable);
+//                page = restaurantRepository.findPageByKeywordOrderByRating(keyword, pageable);
+                page = restaurantRepository.findPageByKeywordOrderByRatingWithSubQuery(keyword, pageable);
             } else if (sortBy.equals("reviewCount")) {
                 page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
             } else {
@@ -54,6 +55,9 @@ public class RestaurantService {
         if (page.getTotalElements() == 0) {
             throw new RestaurantNotFoundException();
         }
+
+
+
         return page.map(RestaurantSearchResponseDto::new);
     }
 
