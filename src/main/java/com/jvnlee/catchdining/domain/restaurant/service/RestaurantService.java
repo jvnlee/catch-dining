@@ -46,10 +46,8 @@ public class RestaurantService {
             if (sortBy.equals(SortBy.RATING)) {
 //                page = restaurantRepository.findPageByKeywordOrderByRating(keyword, pageable);
                 page = restaurantRepository.findPageByKeywordOrderByRatingWithSubQuery(keyword, pageable);
-            } else if (sortBy.equals(SortBy.REVIEW_COUNT)) {
-                page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
             } else {
-                throw new IllegalArgumentException("유효하지 않은 정렬 파라미터입니다.");
+                page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
             }
         }
 
