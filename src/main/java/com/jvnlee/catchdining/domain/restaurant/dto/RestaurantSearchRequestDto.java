@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.restaurant.dto;
 
+import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ public class RestaurantSearchRequestDto {
 
     private String keyword;
 
-    private String sort;
+    private SortBy sortBy;
 
     private Pageable pageable;
 
