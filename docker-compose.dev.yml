@@ -1,0 +1,64 @@
+version: "3"
+
+services:
+  app:
+    container_name: catch-dining-app
+    build: .
+    ports:
+      - "80:8080"
+    depends_on:
+      - write-db
+      - read-db
+      - redis
+    networks:
+      - catch-dining-net
+
+  write-db:
+    container_name: write-db
+    image: mysql:8.0.32
+    ports:
+      - "3306:3306"
+    restart: always
+    volumes:
+      - ./write-db:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_USER=andy
+      - MYSQL_PASSWORD=1234
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=catch_dining
+    networks:
+      - catch-dining-net
+
+  read-db:
+    container_name: read-db
+    image: mysql:8.0.32
+    ports:
+      - "3307:3306"
+    restart: always
+    volumes:
+      - ./read-db:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_USER=andy
+      - MYSQL_PASSWORD=1234
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=catch_dining
+    networks:
+      - catch-dining-net
+
+
+  redis:
+    container_name: redis
+    image: redis:7.0.14
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+      - catch-dining-net
+
+networks:
+  catch-dining-net:
+    driver: bridge
