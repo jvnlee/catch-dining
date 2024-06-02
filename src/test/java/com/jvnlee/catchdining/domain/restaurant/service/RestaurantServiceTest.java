@@ -119,16 +119,19 @@ class RestaurantServiceTest {
         Address address3 = new Address("서울특별시", "", "강남구", "아무대로", "123");
 
         List<RestaurantSearchResultDto> content = List.of(
-                new RestaurantSearchResultDtoImpl(1L, "식당1", address1, 0.0, 0),
-                new RestaurantSearchResultDtoImpl(2L, "식당2", address2, 0.0, 0),
-                new RestaurantSearchResultDtoImpl(3L, "식당3", address3, 0.0, 0)
+                new RestaurantSearchResultDtoImpl(1L, "식당1", address1, 5.0, 999),
+                new RestaurantSearchResultDtoImpl(2L, "식당2", address2, 3.0, 1000),
+                new RestaurantSearchResultDtoImpl(3L, "식당3", address3, 4.0, 998)
         );
 
         PageImpl<RestaurantSearchResultDto> page = new PageImpl<>(content);
 
         when(repository.findPageByKeyword(name, pageRequest)).thenReturn(page);
 
-        assertThat(service.search(new RestaurantSearchRequestDto(name, null, pageRequest)).getContent().size())
+        Page<RestaurantSearchResponseDto> searchPage = service.search(new RestaurantSearchRequestDto(name, SortBy.NONE, pageRequest));
+
+        verify(repository).findPageByKeyword(name, pageRequest);
+        assertThat(searchPage.getContent().size())
                 .isEqualTo(3);
     }
 
@@ -155,11 +158,11 @@ class RestaurantServiceTest {
 
         Page<RestaurantSearchResponseDto> searchPage = service.search(new RestaurantSearchRequestDto(name, SortBy.RATING, pageRequest));
 
+        verify(repository).findPageByKeywordOrderByRatingWithSubQuery(name, pageRequest);
         assertThat(searchPage.getContent().get(0))
                 .isInstanceOf(RestaurantSearchResponseDto.class);
         assertThat(searchPage.getContent().size())
                 .isEqualTo(3);
-        verify(repository).findPageByKeywordOrderByRatingWithSubQuery(name, pageRequest);
     }
 
     @Test
@@ -185,11 +188,11 @@ class RestaurantServiceTest {
 
         Page<RestaurantSearchResponseDto> searchPage = service.search(new RestaurantSearchRequestDto(name, SortBy.REVIEWCOUNT, pageRequest));
 
+        verify(repository).findPageByKeywordOrderByReviewCount(name, pageRequest);
         assertThat(searchPage.getContent().get(0))
                 .isInstanceOf(RestaurantSearchResponseDto.class);
         assertThat(searchPage.getContent().size())
                 .isEqualTo(3);
-        verify(repository).findPageByKeywordOrderByReviewCount(name, pageRequest);
     }
 
     @Test

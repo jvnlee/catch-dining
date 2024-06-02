@@ -170,7 +170,9 @@ class RestaurantControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 검색 결과"))
                 .andExpect(jsonPath("$.data").isNotEmpty())
-                .andExpect(jsonPath("$.data.content[0].rating").value(5.0));
+                .andExpect(jsonPath("$.data.content[0].rating").value(5.0))
+                .andExpect(jsonPath("$.data.content[1].rating").value(4.0))
+                .andExpect(jsonPath("$.data.content[2].rating").value(3.0));
     }
 
     @Test
@@ -208,7 +210,9 @@ class RestaurantControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 검색 결과"))
                 .andExpect(jsonPath("$.data").isNotEmpty())
-                .andExpect(jsonPath("$.data.content[0].reviewCount").value(1000));
+                .andExpect(jsonPath("$.data.content[0].reviewCount").value(1000))
+                .andExpect(jsonPath("$.data.content[1].reviewCount").value(999))
+                .andExpect(jsonPath("$.data.content[2].reviewCount").value(998));
     }
 
     @Test
