@@ -8,6 +8,7 @@ import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Address;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
+import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -153,7 +154,7 @@ class RestaurantServiceTest {
 
         when(repository.findPageByKeywordOrderByRatingWithSubQuery(name, pageRequest)).thenReturn(page);
 
-        Page<RestaurantSearchResponseDto> searchPage = service.search(new RestaurantSearchRequestDto(name, sortBy, pageRequest));
+        Page<RestaurantSearchResponseDto> searchPage = service.search(new RestaurantSearchRequestDto(name, SortBy.RATING, pageRequest));
 
         assertThat(searchPage.getContent().get(0))
                 .isInstanceOf(RestaurantSearchResponseDto.class);
@@ -183,7 +184,7 @@ class RestaurantServiceTest {
 
         when(repository.findPageByKeywordOrderByReviewCount(name, pageRequest)).thenReturn(page);
 
-        Page<RestaurantSearchResponseDto> searchPage = service.search(new RestaurantSearchRequestDto(name, sortBy, pageRequest));
+        Page<RestaurantSearchResponseDto> searchPage = service.search(new RestaurantSearchRequestDto(name, SortBy.REVIEWCOUNT, pageRequest));
 
         assertThat(searchPage.getContent().get(0))
                 .isInstanceOf(RestaurantSearchResponseDto.class);
@@ -206,17 +207,6 @@ class RestaurantServiceTest {
 
         assertThatThrownBy(() -> service.search(new RestaurantSearchRequestDto(name, null, pageRequest)))
                 .isInstanceOf(RestaurantNotFoundException.class);
-    }
-
-    @Test
-    @DisplayName("식당 검색 실패: 유효하지 않은 sort 옵션")
-    void search_fail_invalid_sort_by_option() {
-        String name = "식당";
-        String sortBy = "invalidOption";
-        PageRequest pageRequest = PageRequest.of(0, 3);
-
-        assertThatThrownBy(() -> service.search(new RestaurantSearchRequestDto(name, sortBy, pageRequest)))
-                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

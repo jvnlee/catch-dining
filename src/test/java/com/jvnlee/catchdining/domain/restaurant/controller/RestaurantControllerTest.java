@@ -7,6 +7,7 @@ import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Address;
+import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
 import com.jvnlee.catchdining.domain.restaurant.service.RestaurantService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -152,7 +153,7 @@ class RestaurantControllerTest {
 
         PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
 
-        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, sortBy, pageRequest);
+        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.RATING, pageRequest);
         when(service.search(restaurantSearchRequestDto)).thenReturn(page);
 
         ResultActions resultActions = mockMvc.perform(
@@ -190,7 +191,7 @@ class RestaurantControllerTest {
 
         PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
 
-        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, sortBy, pageRequest);
+        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.REVIEWCOUNT, pageRequest);
         when(service.search(restaurantSearchRequestDto)).thenReturn(page);
 
         ResultActions resultActions = mockMvc.perform(
@@ -238,9 +239,6 @@ class RestaurantControllerTest {
         String name = "식당";
         String sortBy = "invalidOption";
         PageRequest pageRequest = PageRequest.of(0, 3);
-
-        when(service.search(new RestaurantSearchRequestDto(name, sortBy, pageRequest)))
-                .thenThrow(new IllegalArgumentException("유효하지 않은 정렬 파라미터입니다."));
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
