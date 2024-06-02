@@ -7,9 +7,12 @@ services:
     ports:
       - "80:8080"
     depends_on:
-      - write-db
-      - read-db
-      - redis
+      write-db:
+        condition: service_healthy
+      read-db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - catch-dining-net
 
@@ -28,6 +31,11 @@ services:
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_DATABASE=catch_dining
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - catch-dining-net
 
@@ -46,6 +54,11 @@ services:
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_DATABASE=catch_dining
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - catch-dining-net
 
