@@ -21,11 +21,7 @@ public class RestaurantSearchResponseDto {
     private int reviewCount;
 
     public RestaurantSearchResponseDto(RestaurantSearchResultDto r) {
-        this.id = r.getId();
-        this.name = r.getName();
-        this.address = r.getAddress();
-        this.rating = r.getRating();
-        this.reviewCount = r.getReviewCount();
+        this(r.getId(), r.getName(), r.getAddress(), r.getRating(), r.getReviewCount());
     }
 
 }
