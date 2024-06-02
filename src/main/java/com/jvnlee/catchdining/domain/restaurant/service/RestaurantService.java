@@ -49,10 +49,6 @@ public class RestaurantService {
             page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
         }
 
-        if (page.getTotalElements() == 0) {
-            throw new RestaurantNotFoundException();
-        }
-
         return page.map(RestaurantSearchResponseDto::new);
     }
 
