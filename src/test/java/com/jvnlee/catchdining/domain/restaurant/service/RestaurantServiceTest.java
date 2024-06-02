@@ -22,7 +22,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -199,14 +198,12 @@ class RestaurantServiceTest {
         String name = "식당";
         PageRequest pageRequest = PageRequest.of(0, 3);
 
-        List<RestaurantSearchResultDto> content = Collections.emptyList();
+        when(repository.findPageByKeyword(name, pageRequest)).thenReturn(Page.empty());
 
-        PageImpl<RestaurantSearchResultDto> page = new PageImpl<>(content);
+        Page<RestaurantSearchResponseDto> searchPage = service.search(new RestaurantSearchRequestDto(name, SortBy.NONE, pageRequest));
 
-        when(repository.findPageByKeyword(name, pageRequest)).thenReturn(page);
-
-        assertThatThrownBy(() -> service.search(new RestaurantSearchRequestDto(name, null, pageRequest)))
-                .isInstanceOf(RestaurantNotFoundException.class);
+        verify(repository).findPageByKeyword(name, pageRequest);
+        assertThat(searchPage.getContent().isEmpty()).isTrue();
     }
 
     @Test

@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
@@ -117,7 +118,7 @@ class RestaurantControllerTest {
 
         PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
 
-        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, null, pageRequest);
+        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.NONE, pageRequest);
         when(service.search(restaurantSearchRequestDto)).thenReturn(page);
 
         ResultActions resultActions = mockMvc.perform(
@@ -216,8 +217,8 @@ class RestaurantControllerTest {
         String name = "식당";
         PageRequest pageRequest = PageRequest.of(0, 3);
 
-        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, null, pageRequest);
-        doThrow(new RestaurantNotFoundException()).when(service).search(restaurantSearchRequestDto);
+        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.NONE, pageRequest);
+        when(service.search(restaurantSearchRequestDto)).thenReturn(Page.empty());
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
@@ -228,9 +229,9 @@ class RestaurantControllerTest {
 
         verify(service).search(restaurantSearchRequestDto);
         resultActions
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("식당 정보가 존재하지 않습니다."))
-                .andExpect(jsonPath("$.data").isEmpty());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("식당 검색 결과"))
+                .andExpect(jsonPath("$.data.content").isEmpty());
     }
 
     @Test
