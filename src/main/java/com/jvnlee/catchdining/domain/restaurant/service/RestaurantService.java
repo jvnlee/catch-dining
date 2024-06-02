@@ -40,15 +40,13 @@ public class RestaurantService {
 
         Page<RestaurantSearchResultDto> page;
 
-        if (sortBy == null) {
+        if (sortBy.equals(SortBy.NONE)) {
             page = restaurantRepository.findPageByKeyword(keyword, pageable);
-        } else {
-            if (sortBy.equals(SortBy.RATING)) {
+        } else if (sortBy.equals(SortBy.RATING)) {
 //                page = restaurantRepository.findPageByKeywordOrderByRating(keyword, pageable);
-                page = restaurantRepository.findPageByKeywordOrderByRatingWithSubQuery(keyword, pageable);
-            } else {
-                page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
-            }
+            page = restaurantRepository.findPageByKeywordOrderByRatingWithSubQuery(keyword, pageable);
+        } else {
+            page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
         }
 
         if (page.getTotalElements() == 0) {

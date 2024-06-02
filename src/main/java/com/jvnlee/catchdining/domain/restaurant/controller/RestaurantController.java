@@ -29,7 +29,7 @@ public class RestaurantController {
 
     @GetMapping
     public Response<Page<RestaurantSearchResponseDto>> search(@RequestParam String keyword,
-                                                            @RequestParam(required = false) SortBy sortBy,
+                                                            @RequestParam(required = false, defaultValue = "none") SortBy sortBy,
                                                             Pageable pageable) {
         Page<RestaurantSearchResponseDto> data = restaurantService
                 .search(new RestaurantSearchRequestDto(keyword, sortBy, pageable));
