@@ -1,21 +1,23 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/catch_dining
-    username: root
+    url: jdbc:mysql://write-db:3306/catch_dining?serverTimezone=UTC
+    username: andy
     password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    read-db:
+      url: jdbc:mysql://read-db:3306/catch_dining?serverTimezone=UTC
+      username: andy
+      password: 1234
+      driver-class-name: com.mysql.cj.jdbc.Driver
 
   redis:
-    host: localhost
+    host: redis
     port: 6379
 
   jpa:
     properties:
       hibernate:
         format_sql: true
-
-  sql:
-    init:
-      mode: always
 
 logging:
   level:
