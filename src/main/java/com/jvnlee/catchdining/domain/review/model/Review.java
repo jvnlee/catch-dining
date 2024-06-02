@@ -1,9 +1,9 @@
 package com.jvnlee.catchdining.domain.review.model;
 
+import com.jvnlee.catchdining.domain.BaseEntity;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.user.model.User;
-import com.jvnlee.catchdining.entity.BaseEntity;
-import com.jvnlee.catchdining.entity.ReviewComment;
+import com.jvnlee.catchdining.undeveloped.ReviewComment;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,10 +34,13 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
+    @Column(name = "taste_rating")
     private double tasteRating;
 
+    @Column(name = "mood_rating")
     private double moodRating;
 
+    @Column(name = "service_rating")
     private double serviceRating;
 
     private String content;

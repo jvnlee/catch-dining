@@ -2,14 +2,14 @@ package com.jvnlee.catchdining.domain.payment.service;
 
 import com.jvnlee.catchdining.common.exception.PaymentFailureException;
 import com.jvnlee.catchdining.common.exception.PaymentNotFoundException;
-import com.jvnlee.catchdining.domain.menu.domain.Menu;
+import com.jvnlee.catchdining.domain.menu.model.Menu;
 import com.jvnlee.catchdining.domain.menu.repository.MenuRepository;
 import com.jvnlee.catchdining.domain.payment.model.Payment;
 import com.jvnlee.catchdining.domain.payment.model.PaymentType;
 import com.jvnlee.catchdining.domain.payment.dto.PaymentDto;
 import com.jvnlee.catchdining.domain.payment.dto.ReserveMenuDto;
 import com.jvnlee.catchdining.domain.payment.repository.PaymentRepository;
-import com.jvnlee.catchdining.entity.ReserveMenu;
+import com.jvnlee.catchdining.undeveloped.ReserveMenu;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

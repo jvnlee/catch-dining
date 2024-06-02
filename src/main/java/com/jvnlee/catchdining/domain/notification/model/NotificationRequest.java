@@ -20,7 +20,7 @@ import static lombok.AccessLevel.*;
 @Table(uniqueConstraints = {
         @UniqueConstraint(
                 name = "uc",
-                columnNames = {"user_id", "restaurant_id", "desiredDate", "diningPeriod", "headCount"}
+                columnNames = {"user_id", "restaurant_id", "desired_date", "dining_period", "head_count"}
         )
 })
 @NoArgsConstructor(access = PROTECTED)
@@ -39,11 +39,14 @@ public class NotificationRequest {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
+    @Column(name = "desired_date")
     private LocalDate desiredDate;
 
     @Enumerated(STRING)
+    @Column(name = "dining_period")
     private DiningPeriod diningPeriod;
 
+    @Column(name = "head_count")
     private int headCount;
 
     public NotificationRequest(User user, Restaurant restaurant, NotificationRequestDto notificationRequestDto) {

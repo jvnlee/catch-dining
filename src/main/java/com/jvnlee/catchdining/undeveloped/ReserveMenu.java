@@ -1,6 +1,7 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.undeveloped;
 
-import com.jvnlee.catchdining.domain.menu.domain.Menu;
+import com.jvnlee.catchdining.domain.BaseEntity;
+import com.jvnlee.catchdining.domain.menu.model.Menu;
 import com.jvnlee.catchdining.domain.payment.model.Payment;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,7 @@ public class ReserveMenu extends BaseEntity {
     @JoinColumn(name = "menu_id")
     private Menu menu;
 
+    @Column(name = "reserve_price")
     private int reservePrice;
 
     private int quantity;

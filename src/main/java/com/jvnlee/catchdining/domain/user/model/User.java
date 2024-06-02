@@ -1,10 +1,11 @@
 package com.jvnlee.catchdining.domain.user.model;
 
+import com.jvnlee.catchdining.domain.BaseEntity;
 import com.jvnlee.catchdining.domain.notification.model.NotificationRequest;
 import com.jvnlee.catchdining.domain.reservation.model.Reservation;
 import com.jvnlee.catchdining.domain.review.model.Review;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
-import com.jvnlee.catchdining.entity.*;
+import com.jvnlee.catchdining.undeveloped.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,7 +26,8 @@ import static lombok.AccessLevel.*;
 @NoArgsConstructor(access = PROTECTED)
 public class User extends BaseEntity implements UserDetails {
 
-    @Id @GeneratedValue(strategy = IDENTITY)
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
     @Column(name = "user_id")
     private Long id;
 
@@ -34,25 +36,27 @@ public class User extends BaseEntity implements UserDetails {
 
     private String password;
 
-    @Column(unique = true)
+    @Column(name = "phone_number", unique = true)
     private String phoneNumber;
 
+    @Column(name = "user_type")
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
+    @Column(name = "fcm_token")
     private String fcmToken;
 
     @OneToMany(mappedBy = "user")
-    private List<Favorite> favorites = new ArrayList<>();
+    private final List<Favorite> favorites = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<Reservation> reservations = new ArrayList<>();
+    private final List<Reservation> reservations = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<NotificationRequest> notificationRequests = new ArrayList<>();
+    private final List<NotificationRequest> notificationRequests = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<Review> reviews = new ArrayList<>();
+    private final List<Review> reviews = new ArrayList<>();
 
     public User(UserDto userDto) {
         this.username = userDto.getUsername();

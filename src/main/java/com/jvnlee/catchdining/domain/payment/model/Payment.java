@@ -1,7 +1,7 @@
 package com.jvnlee.catchdining.domain.payment.model;
 
-import com.jvnlee.catchdining.entity.BaseEntity;
-import com.jvnlee.catchdining.entity.ReserveMenu;
+import com.jvnlee.catchdining.domain.BaseEntity;
+import com.jvnlee.catchdining.undeveloped.ReserveMenu;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -30,12 +30,15 @@ public class Payment extends BaseEntity {
     @OneToMany(mappedBy = "payment", cascade = ALL)
     private List<ReserveMenu> reserveMenus = new ArrayList<>();
 
+    @Column(name = "total_price")
     private int totalPrice;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "payment_type")
     private PaymentType paymentType;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status")
     private PaymentStatus paymentStatus;
 
     public Payment(String tid, List<ReserveMenu> reserveMenus, int totalPrice, PaymentType paymentType, PaymentStatus paymentStatus) {

@@ -1,10 +1,10 @@
 package com.jvnlee.catchdining.domain.restaurant.model;
 
-import com.jvnlee.catchdining.domain.menu.domain.Menu;
+import com.jvnlee.catchdining.domain.BaseEntity;
+import com.jvnlee.catchdining.domain.menu.model.Menu;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.review.model.Review;
 import com.jvnlee.catchdining.domain.seat.model.Seat;
-import com.jvnlee.catchdining.entity.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,6 +35,7 @@ public class Restaurant extends BaseEntity {
     @Embedded
     private Address address;
 
+    @Column(name = "phone_number")
     private String phoneNumber;
 
     private String description;
@@ -46,12 +47,15 @@ public class Restaurant extends BaseEntity {
     private List<Seat> seats = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "country_type")
     private CountryType countryType;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "food_type")
     private FoodType foodType;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "serving_type")
     private ServingType servingType;
 
     @Builder.Default
