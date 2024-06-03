@@ -12,6 +12,10 @@ public class DataSourceRouter extends AbstractRoutingDataSource {
         currentDataSource.set(DataSourceType.READ_ONLY);
     }
 
+    public void reset() {
+        currentDataSource.set(DataSourceType.WRITE_ONLY);
+    }
+
     @Override
     protected Object determineCurrentLookupKey() {
         DataSourceType dataSourceType = currentDataSource.get();
