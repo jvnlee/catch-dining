@@ -2,9 +2,12 @@ package com.jvnlee.catchdining.domain.restaurant.service;
 
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
+import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
@@ -30,10 +33,23 @@ public class RestaurantService {
     }
 
     @Transactional(readOnly = true)
-    public Page<RestaurantSearchDto> search(String name, Pageable pageable) {
-        Page<RestaurantSearchDto> page = restaurantRepository.findPageByName(name, pageable);
-        if (page.getTotalElements() == 0) throw new RestaurantNotFoundException();
-        return page;
+    public Page<RestaurantSearchResponseDto> search(RestaurantSearchRequestDto restaurantSearchRequestDto) {
+        String keyword = restaurantSearchRequestDto.getKeyword();
+        SortBy sortBy = restaurantSearchRequestDto.getSortBy();
+        Pageable pageable = restaurantSearchRequestDto.getPageable();
+
+        Page<RestaurantSearchResultDto> page;
+
+        if (sortBy.equals(SortBy.NONE)) {
+            page = restaurantRepository.findPageByKeyword(keyword, pageable);
+        } else if (sortBy.equals(SortBy.RATING)) {
+//                page = restaurantRepository.findPageByKeywordOrderByRating(keyword, pageable);
+            page = restaurantRepository.findPageByKeywordOrderByRatingWithSubQuery(keyword, pageable);
+        } else {
+            page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
+        }
+
+        return page.map(RestaurantSearchResponseDto::new);
     }
 
     @Transactional(readOnly = true)

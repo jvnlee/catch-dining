@@ -2,8 +2,10 @@ package com.jvnlee.catchdining.domain.restaurant.controller;
 
 import com.jvnlee.catchdining.common.web.Response;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
+import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
 import com.jvnlee.catchdining.domain.restaurant.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,8 +28,11 @@ public class RestaurantController {
     }
 
     @GetMapping
-    public Response<Page<RestaurantSearchDto>> search(@RequestParam String name, Pageable pageable) {
-        Page<RestaurantSearchDto> data = restaurantService.search(name, pageable);
+    public Response<Page<RestaurantSearchResponseDto>> search(@RequestParam String keyword,
+                                                            @RequestParam(required = false, defaultValue = "none") SortBy sortBy,
+                                                            Pageable pageable) {
+        Page<RestaurantSearchResponseDto> data = restaurantService
+                .search(new RestaurantSearchRequestDto(keyword, sortBy, pageable));
         return new Response<>("식당 검색 결과", data);
     }
 

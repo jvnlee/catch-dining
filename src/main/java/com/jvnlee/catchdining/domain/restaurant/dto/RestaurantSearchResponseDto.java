@@ -8,10 +8,20 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RestaurantSearchDto {
+public class RestaurantSearchResponseDto {
+
+    private Long id;
 
     private String name;
 
     private Address address;
+
+    private double rating;
+
+    private int reviewCount;
+
+    public RestaurantSearchResponseDto(RestaurantSearchResultDto r) {
+        this(r.getId(), r.getName(), r.getAddress(), r.getRating(), r.getReviewCount());
+    }
 
 }

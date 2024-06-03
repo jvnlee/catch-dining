@@ -14,8 +14,14 @@ import static org.springframework.http.HttpStatus.*;
 public class ControllerAdvice {
 
     @ExceptionHandler(DuplicateKeyException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(BAD_REQUEST)
     public Response<Void> handleDuplicateKey(DuplicateKeyException e) {
+        return new Response<>(e.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public Response<Void> handleIllegalArgument(IllegalArgumentException e) {
         return new Response<>(e.getMessage());
     }
 
