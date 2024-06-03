@@ -9,16 +9,12 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
 
 @Configuration
-public class TransactionRoutingConfig {
+public class DataSourceConfig {
 
     @Value("${spring.datasource.read-db.url}")
     private String READ_DB_URL;
@@ -64,8 +60,8 @@ public class TransactionRoutingConfig {
         return dataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
-    @Bean
-    public DataSource dataSource() {
+    @Bean(name = "dataSourceRouter")
+    public DataSource dataSourceRouter() {
         HashMap<Object, Object> dataSourceMap = new HashMap<>();
         final DataSource writeDataSource = writeDataSource();
         dataSourceMap.put(DataSourceType.WRITE_ONLY, writeDataSource);
@@ -78,27 +74,9 @@ public class TransactionRoutingConfig {
         return dataSourceRouter;
     }
 
-    @Bean
-    public DataSource lazyDataSource(DataSource dataSource) {
+    @Bean(name = "lazyDataSource")
+    public DataSource lazyDataSource(@Qualifier("dataSourceRouter") DataSource dataSource) {
         return new LazyConnectionDataSourceProxy(dataSource);
-    }
-
-    @Bean(name = "entityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(
-            @Qualifier("lazyDataSource") DataSource dataSource) {
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(dataSource);
-        em.setPackagesToScan("com.jvnlee.catchdining");
-        em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-        return em;
-    }
-
-    @Bean(name = "transactionManager")
-    public PlatformTransactionManager transactionManager(
-            @Qualifier("entityManagerFactory") LocalContainerEntityManagerFactoryBean entityManagerFactory) {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory.getObject());
-        return transactionManager;
     }
 
 }
