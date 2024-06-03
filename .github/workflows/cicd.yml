@@ -26,10 +26,9 @@ jobs:
           cd ./src/main/resources
           echo "${{ secrets.PROD_CONFIG }}" >> ./application-prod.yml
 
-      - name: Add database schema
+      - name: Add init.sql
         run: |
-          cd ./src/main/resources
-          echo "${{ secrets.DB_SCHEMA }}" >> ./schema.sql
+          echo "${{ secrets.INIT_SQL }}" >> ./init.sql
 
       - name: Import FCM credentials
         run: |
@@ -59,5 +58,6 @@ jobs:
             DB_URL=${{ secrets.DB_URL }} \
             DB_USERNAME=${{ secrets.DB_USERNAME }} \
             DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }} \
             docker-compose up -d
             docker image prune -f
