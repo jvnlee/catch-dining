@@ -47,16 +47,16 @@ public class User extends BaseEntity implements UserDetails {
     private String fcmToken;
 
     @OneToMany(mappedBy = "user")
-    private final List<Favorite> favorites = new ArrayList<>();
+    private List<Favorite> favorites = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private final List<Reservation> reservations = new ArrayList<>();
+    private List<Reservation> reservations = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private final List<NotificationRequest> notificationRequests = new ArrayList<>();
+    private List<NotificationRequest> notificationRequests = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private final List<Review> reviews = new ArrayList<>();
+    private List<Review> reviews = new ArrayList<>();
 
     public User(UserDto userDto) {
         this.username = userDto.getUsername();

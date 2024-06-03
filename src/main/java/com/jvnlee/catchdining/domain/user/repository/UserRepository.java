@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.user.repository;
 
+import com.jvnlee.catchdining.domain.user.dto.UserSearchResultDto;
 import com.jvnlee.catchdining.domain.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,5 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select u from User u where u.phoneNumber = :phoneNumber")
     Optional<User> findByPhoneNumber(@Param("phoneNumber") String phoneNumber);
+
+    Optional<UserSearchResultDto> findInfoByUsername(String username);
 
 }

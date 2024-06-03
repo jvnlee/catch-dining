@@ -1,7 +1,8 @@
 package com.jvnlee.catchdining.domain.user.service;
 
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
-import com.jvnlee.catchdining.domain.user.dto.UserSearchDto;
+import com.jvnlee.catchdining.domain.user.dto.UserSearchRequestDto;
+import com.jvnlee.catchdining.domain.user.dto.UserSearchResponseDto;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.model.UserType;
 import com.jvnlee.catchdining.domain.user.repository.UserRepository;
@@ -18,7 +19,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,26 +70,28 @@ class UserServiceTest {
     @Test
     @DisplayName("회원 검색 성공")
     void search_success() {
-        UserDto userDto = new UserDto("user", "123", "01012345678", UserType.CUSTOMER);
+        String username = "user";
+        UserDto userDto = new UserDto(username, "123", "01012345678", UserType.CUSTOMER);
         User user = new User(userDto);
 
         when(userRepository.findByUsername(any())).thenReturn(Optional.of(user));
 
-        UserSearchDto userSearchDto = userService.search("user");
+        UserSearchResponseDto userSearchResponseDto = userService.search(new UserSearchRequestDto(username));
 
         verify(userRepository).findByUsername("user");
-        assertThat(userSearchDto.getUsername()).isEqualTo("user");
+        assertThat(userSearchResponseDto.getUsername()).isEqualTo("user");
     }
 
     @Test
     @DisplayName("회원 검색 실패")
     void search_fail() {
+        String username = "user";
         UserDto userDto = new UserDto("user", "123", "01012345678", UserType.CUSTOMER);
         User user = new User(userDto);
 
         when(userRepository.findByUsername(any())).thenThrow(NoSuchElementException.class);
 
-        assertThatThrownBy(() -> userService.search("user"))
+        assertThatThrownBy(() -> userService.search(new UserSearchRequestDto(username)))
                 .isInstanceOf(NoSuchElementException.class);
     }
 

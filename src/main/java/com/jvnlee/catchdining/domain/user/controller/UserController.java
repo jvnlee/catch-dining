@@ -2,7 +2,8 @@ package com.jvnlee.catchdining.domain.user.controller;
 
 import com.jvnlee.catchdining.common.web.Response;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
-import com.jvnlee.catchdining.domain.user.dto.UserSearchDto;
+import com.jvnlee.catchdining.domain.user.dto.UserSearchRequestDto;
+import com.jvnlee.catchdining.domain.user.dto.UserSearchResponseDto;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +22,8 @@ public class UserController {
     }
 
     @GetMapping
-    public Response<UserSearchDto> search(@RequestParam String username) {
-        UserSearchDto data = userService.search(username);
+    public Response<UserSearchResponseDto> search(@RequestParam String username) {
+        UserSearchResponseDto data = userService.search(new UserSearchRequestDto(username));
         return new Response<>("회원 검색 성공", data);
     }
 

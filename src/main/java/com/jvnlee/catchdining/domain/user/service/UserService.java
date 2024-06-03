@@ -2,7 +2,9 @@ package com.jvnlee.catchdining.domain.user.service;
 
 import com.jvnlee.catchdining.common.exception.UserNotFoundException;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
-import com.jvnlee.catchdining.domain.user.dto.UserSearchDto;
+import com.jvnlee.catchdining.domain.user.dto.UserSearchRequestDto;
+import com.jvnlee.catchdining.domain.user.dto.UserSearchResponseDto;
+import com.jvnlee.catchdining.domain.user.dto.UserSearchResultDto;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +39,11 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserSearchDto search(String username) {
-        User user = userRepository
-                .findByUsername(username)
+    public UserSearchResponseDto search(UserSearchRequestDto userSearchRequestDto) {
+        UserSearchResultDto userSearchResultDto = userRepository
+                .findInfoByUsername(userSearchRequestDto.getUsername())
                 .orElseThrow(UserNotFoundException::new);
-        return new UserSearchDto(user);
+        return new UserSearchResponseDto(userSearchResultDto);
     }
 
     public void update(Long id, UserDto userDto) {
