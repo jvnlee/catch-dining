@@ -1,7 +1,7 @@
 package com.jvnlee.catchdining.domain.user.dto;
 
 import com.jvnlee.catchdining.undeveloped.Favorite;
-import com.jvnlee.catchdining.undeveloped.Review;
+import com.jvnlee.catchdining.domain.review.model.Review;
 
 import java.util.List;
 

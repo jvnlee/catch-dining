@@ -1,11 +1,15 @@
 package com.jvnlee.catchdining.domain.user.service;
 
+import com.jvnlee.catchdining.common.exception.UserNotFoundException;
+import com.jvnlee.catchdining.domain.review.model.Review;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.domain.user.dto.UserSearchRequestDto;
 import com.jvnlee.catchdining.domain.user.dto.UserSearchResponseDto;
+import com.jvnlee.catchdining.domain.user.dto.UserSearchResultDto;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.model.UserType;
 import com.jvnlee.catchdining.domain.user.repository.UserRepository;
+import com.jvnlee.catchdining.undeveloped.Favorite;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +19,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.NoSuchElementException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -32,6 +37,40 @@ class UserServiceTest {
 
     @InjectMocks
     UserService userService;
+
+    class UserSearchResultDtoImpl implements UserSearchResultDto {
+        private Long id;
+        private String username;
+        private List<Favorite> favorites;
+        private List<Review> reviews;
+
+        protected UserSearchResultDtoImpl(Long id, String username, List<Favorite> favorites, List<Review> reviews) {
+            this.id = id;
+            this.username = username;
+            this.favorites = favorites;
+            this.reviews = reviews;
+        }
+
+        @Override
+        public Long getId() {
+            return id;
+        }
+
+        @Override
+        public String getUsername() {
+            return username;
+        }
+
+        @Override
+        public List<Favorite> getFavorites() {
+            return favorites;
+        }
+
+        @Override
+        public List<Review> getReviews() {
+            return reviews;
+        }
+    }
 
     @Test
     @DisplayName("회원 가입 성공")
@@ -70,29 +109,24 @@ class UserServiceTest {
     @Test
     @DisplayName("회원 검색 성공")
     void search_success() {
-        String username = "user";
-        UserDto userDto = new UserDto(username, "123", "01012345678", UserType.CUSTOMER);
-        User user = new User(userDto);
+        UserSearchResultDtoImpl userSearchResultDto = new UserSearchResultDtoImpl(1L, "user", Collections.emptyList(), Collections.emptyList());
 
-        when(userRepository.findByUsername(any())).thenReturn(Optional.of(user));
+        when(userRepository.findInfoByUsername(any())).thenReturn(Optional.of(userSearchResultDto));
 
-        UserSearchResponseDto userSearchResponseDto = userService.search(new UserSearchRequestDto(username));
+        UserSearchResponseDto userSearchResponseDto = userService.search(new UserSearchRequestDto("user"));
 
-        verify(userRepository).findByUsername("user");
+        verify(userRepository).findInfoByUsername(any());
         assertThat(userSearchResponseDto.getUsername()).isEqualTo("user");
     }
 
     @Test
     @DisplayName("회원 검색 실패")
     void search_fail() {
-        String username = "user";
-        UserDto userDto = new UserDto("user", "123", "01012345678", UserType.CUSTOMER);
-        User user = new User(userDto);
+        when(userRepository.findInfoByUsername(any())).thenReturn(Optional.empty());
 
-        when(userRepository.findByUsername(any())).thenThrow(NoSuchElementException.class);
-
-        assertThatThrownBy(() -> userService.search(new UserSearchRequestDto(username)))
-                .isInstanceOf(NoSuchElementException.class);
+        assertThatThrownBy(() -> userService.search(new UserSearchRequestDto("user")))
+                .isInstanceOf(UserNotFoundException.class);
+        verify(userRepository).findInfoByUsername(any());
     }
 
     @Test
