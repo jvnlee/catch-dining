@@ -61,7 +61,7 @@ public class DataSourceConfig {
     }
 
     @Bean(name = "dataSourceRouter")
-    public DataSource dataSourceRouter() {
+    public DataSourceRouter dataSourceRouter() {
         HashMap<Object, Object> dataSourceMap = new HashMap<>();
         final DataSource writeDataSource = writeDataSource();
         dataSourceMap.put(DataSourceType.WRITE_ONLY, writeDataSource);

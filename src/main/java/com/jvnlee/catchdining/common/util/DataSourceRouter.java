@@ -8,6 +8,10 @@ public class DataSourceRouter extends AbstractRoutingDataSource {
 
     private final ThreadLocal<DataSourceType> currentDataSource = ThreadLocal.withInitial(() -> DataSourceType.WRITE_ONLY);
 
+    public void setReadOnly() {
+        currentDataSource.set(DataSourceType.READ_ONLY);
+    }
+
     @Override
     protected Object determineCurrentLookupKey() {
         DataSourceType dataSourceType = currentDataSource.get();
