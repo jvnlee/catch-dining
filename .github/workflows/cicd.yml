@@ -52,7 +52,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_PEM }}
           source: "docker-compose.prod.yml"
-          target: "/"
+          target: "~/"
 
       - name: Execute Docker Compose
         uses: appleboy/ssh-action@master
@@ -61,10 +61,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_PEM }}
           script: |
-            sudo docker rm -f $(docker ps -qa)
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/catch-dining-app
             DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
-            DB_URL=${{ secrets.DB_URL }} \
             DB_USERNAME=${{ secrets.DB_USERNAME }} \
             DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }} \
