@@ -2,6 +2,7 @@ package com.jvnlee.catchdining.domain.user.model;
 
 import com.jvnlee.catchdining.domain.notification.model.NotificationRequest;
 import com.jvnlee.catchdining.domain.reservation.model.Reservation;
+import com.jvnlee.catchdining.domain.review.model.Review;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.entity.*;
 import lombok.Getter;

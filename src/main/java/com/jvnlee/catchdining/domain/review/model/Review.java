@@ -1,4 +1,4 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.domain.review.model;
 
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.user.model.User;

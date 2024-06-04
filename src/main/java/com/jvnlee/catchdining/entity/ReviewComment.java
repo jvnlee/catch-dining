@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.entity;
 
+import com.jvnlee.catchdining.domain.review.model.Review;
 import com.jvnlee.catchdining.domain.user.model.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,4 +30,5 @@ public class ReviewComment extends BaseEntity {
     private User user;
 
     private String content;
+
 }
