@@ -27,4 +27,17 @@ public class ReviewViewByUserResponseDto {
 
     private int commentCount;
 
+    public ReviewViewByUserResponseDto(ReviewViewByUserResultDto r) {
+        this(
+                r.getReviewId(),
+                r.getRestaurantName(),
+                r.getCreatedDate(),
+                r.getTasteRating(),
+                r.getMoodRating(),
+                r.getServiceRating(),
+                r.getContent(),
+                r.getCommentCount()
+        );
+    }
+
 }
