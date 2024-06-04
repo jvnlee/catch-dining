@@ -51,8 +51,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_PEM }}
-          source: docker.compose.prod.yml
-          target: /docker.compose.prod.yml
+          source: "docker-compose.prod.yml"
+          target: "/"
 
       - name: Execute Docker Compose
         uses: appleboy/ssh-action@master
@@ -68,5 +68,5 @@ jobs:
             DB_USERNAME=${{ secrets.DB_USERNAME }} \
             DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }} \
-            docker-compose -f docker.compose.prod.yml up -d --build
+            docker-compose -f docker-compose.prod.yml up -d --build
             docker image prune -f
