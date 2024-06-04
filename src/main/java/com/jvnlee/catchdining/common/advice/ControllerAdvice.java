@@ -32,7 +32,7 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler(RestaurantNotFoundException.class)
-    @ResponseStatus(NOT_FOUND)
+    @ResponseStatus(BAD_REQUEST)
     public Response<Void> handleRestaurantNotFound() {
         return new Response<>("식당 정보가 존재하지 않습니다.");
     }
