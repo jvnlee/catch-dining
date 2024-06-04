@@ -2,6 +2,8 @@ package com.jvnlee.catchdining.domain.review.model;
 
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.user.model.User;
+import com.jvnlee.catchdining.entity.BaseEntity;
+import com.jvnlee.catchdining.entity.ReviewComment;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -42,5 +44,14 @@ public class Review extends BaseEntity {
 
     @OneToMany(mappedBy = "review")
     private List<ReviewComment> reviewComments = new ArrayList<>();
+
+    public Review(User user, Restaurant restaurant, double tasteRating, double moodRating, double serviceRating, String content) {
+        this.user = user;
+        this.restaurant = restaurant;
+        this.tasteRating = tasteRating;
+        this.moodRating = moodRating;
+        this.serviceRating = serviceRating;
+        this.content = content;
+    }
 
 }
