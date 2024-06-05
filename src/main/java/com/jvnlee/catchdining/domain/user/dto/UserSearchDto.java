@@ -2,7 +2,7 @@ package com.jvnlee.catchdining.domain.user.dto;
 
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.entity.Favorite;
-import com.jvnlee.catchdining.entity.Review;
+import com.jvnlee.catchdining.domain.review.model.Review;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
