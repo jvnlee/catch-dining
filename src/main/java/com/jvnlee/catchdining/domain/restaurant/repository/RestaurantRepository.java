@@ -42,13 +42,4 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     )
     Page<RestaurantSearchResultDto> findPageByKeywordOrderByReviewCount(String keyword, Pageable pageable);
 
-    @Query(
-            "select r.id as id, r.name as name, r.address as address, rs.rating as rating, rs.reviewCount as reviewCount " +
-            "from Restaurant r " +
-            "left join ReviewStats rs on r.id = rs.id " +
-            "where r.name like concat('%', :keyword, '%') " +
-            "order by rs.rating desc"
-    )
-    Page<RestaurantSearchResultDto> findPageByKeywordOrderByRatingWithSubQuery(String keyword, Pageable pageable);
-
 }

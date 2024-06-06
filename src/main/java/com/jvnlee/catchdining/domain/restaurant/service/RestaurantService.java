@@ -43,8 +43,7 @@ public class RestaurantService {
         if (sortBy.equals(SortBy.NONE)) {
             page = restaurantRepository.findPageByKeyword(keyword, pageable);
         } else if (sortBy.equals(SortBy.RATING)) {
-//                page = restaurantRepository.findPageByKeywordOrderByRating(keyword, pageable);
-            page = restaurantRepository.findPageByKeywordOrderByRatingWithSubQuery(keyword, pageable);
+            page = restaurantRepository.findPageByKeywordOrderByRating(keyword, pageable);
         } else {
             page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
         }
