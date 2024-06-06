@@ -15,6 +15,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -44,7 +45,7 @@ public class Restaurant extends BaseEntity {
     private double rating;
 
     @Builder.Default
-    @OneToMany(mappedBy = "restaurant")
+    @OneToMany(mappedBy = "restaurant", cascade = ALL, orphanRemoval = true)
     private List<Seat> seats = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
@@ -60,11 +61,11 @@ public class Restaurant extends BaseEntity {
     private ServingType servingType;
 
     @Builder.Default
-    @OneToMany(mappedBy = "restaurant")
+    @OneToMany(mappedBy = "restaurant", cascade = ALL, orphanRemoval = true)
     private List<Menu> menus = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "restaurant")
+    @OneToMany(mappedBy = "restaurant", cascade = ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 
     public Restaurant(RestaurantDto restaurantDto) {

@@ -12,6 +12,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.FetchType.*;
 import static javax.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -46,7 +47,7 @@ public class Review extends BaseEntity {
 
     private String content;
 
-    @OneToMany(mappedBy = "review")
+    @OneToMany(mappedBy = "review", cascade = ALL, orphanRemoval = true)
     private List<ReviewComment> reviewComments = new ArrayList<>();
 
     public Review(User user, Restaurant restaurant, double tasteRating, double moodRating, double serviceRating, String content) {

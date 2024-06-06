@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static javax.persistence.CascadeType.*;
 import static javax.persistence.GenerationType.*;
 import static lombok.AccessLevel.*;
 
@@ -47,16 +48,16 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "fcm_token")
     private String fcmToken;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     private List<Favorite> favorites = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     private List<Reservation> reservations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     private List<NotificationRequest> notificationRequests = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 
     public User(UserDto userDto) {

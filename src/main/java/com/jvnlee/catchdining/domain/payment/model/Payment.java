@@ -28,7 +28,7 @@ public class Payment extends BaseEntity {
 
     private String tid;
 
-    @OneToMany(mappedBy = "payment", cascade = ALL)
+    @OneToMany(mappedBy = "payment", cascade = ALL, orphanRemoval = true)
     private List<ReserveMenu> reserveMenus = new ArrayList<>();
 
     @Column(name = "total_price")
