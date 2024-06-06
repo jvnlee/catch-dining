@@ -29,8 +29,6 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - MYSQL_ROOT_HOST=%
-      - MYSQL_USER=andy
-      - MYSQL_PASSWORD=1234
       - MYSQL_ROOT_PASSWORD=1234
       - MYSQL_DATABASE=catch_dining
     healthcheck:
@@ -52,8 +50,6 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - MYSQL_ROOT_HOST=%
-      - MYSQL_USER=andy
-      - MYSQL_PASSWORD=1234
       - MYSQL_ROOT_PASSWORD=1234
       - MYSQL_DATABASE=catch_dining
     healthcheck:
@@ -63,7 +59,6 @@ services:
       retries: 5
     networks:
       - catch-dining-net
-
 
   redis:
     container_name: redis
