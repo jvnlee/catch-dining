@@ -26,7 +26,7 @@ jobs:
           cd ./src/main/resources
           echo "${{ secrets.PROD_CONFIG }}" >> ./application-prod.yml
 
-      - name: Add init.sql
+      - name: Create init.sql
         run: |
           echo "${{ secrets.INIT_SQL }}" >> ./init.sql
 
@@ -54,6 +54,15 @@ jobs:
           source: "docker-compose.prod.yml"
           target: "~/"
 
+      - name: Transfer init.sql to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_PEM }}
+          source: "init.sql"
+          target: "~/"
+
       - name: Execute Docker Compose
         uses: appleboy/ssh-action@master
         with:
@@ -62,8 +71,6 @@ jobs:
           key: ${{ secrets.EC2_PEM }}
           script: |
             DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
-            DB_USERNAME=${{ secrets.DB_USERNAME }} \
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }} \
             docker-compose -f docker-compose.prod.yml up -d --build
             docker image prune -f
