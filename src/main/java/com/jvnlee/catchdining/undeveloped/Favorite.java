@@ -15,6 +15,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
+@Table(name = "favorite")
 public class Favorite extends BaseEntity {
 
     @Id @GeneratedValue(strategy = IDENTITY)

@@ -23,6 +23,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Builder
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor
+@Table(name = "restaurant")
 public class Restaurant extends BaseEntity {
 
     @Id @GeneratedValue(strategy = IDENTITY)

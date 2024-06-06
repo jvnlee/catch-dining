@@ -17,7 +17,8 @@ import static lombok.AccessLevel.*;
 
 @Entity
 @Getter
-@Table(uniqueConstraints = {
+@Table(name = "notification_request",
+        uniqueConstraints = {
         @UniqueConstraint(
                 name = "uc",
                 columnNames = {"user_id", "restaurant_id", "desired_date", "dining_period", "head_count"}

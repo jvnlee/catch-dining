@@ -18,6 +18,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
+@Table(name = "payment")
 public class Payment extends BaseEntity {
 
     @Id

@@ -21,6 +21,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Builder
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor
+@Table(name = "seat")
 public class Seat extends BaseEntity {
 
     @Id

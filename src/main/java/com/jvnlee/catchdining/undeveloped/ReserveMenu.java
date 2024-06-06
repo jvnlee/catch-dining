@@ -15,6 +15,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
+@Table(name = "reserve_menu")
 public class ReserveMenu extends BaseEntity {
 
     @Id
