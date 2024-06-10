@@ -1,6 +1,6 @@
 package com.jvnlee.catchdining.common.aspect;
 
-import com.jvnlee.catchdining.common.annotation.ReadOnly;
+import com.jvnlee.catchdining.common.annotation.AggregatedData;
 import com.jvnlee.catchdining.common.util.DataSourceRouter;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.annotation.Aspect;
@@ -16,8 +16,8 @@ public class DataSourceRoutingAspect {
 
     private final DataSourceRouter dataSourceRouter;
 
-    @Before("@annotation(readOnly)")
-    public void routeToReadOnlyDataSource(ReadOnly readOnly) {
+    @Before("@annotation(aggregatedData)")
+    public void routeToReadOnlyDataSource(AggregatedData aggregatedData) {
         dataSourceRouter.setReadOnly();
     }
 
