@@ -9,11 +9,9 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import static javax.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -25,8 +23,7 @@ import static lombok.AccessLevel.PROTECTED;
 public class RestaurantReviewStat {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(name = "restaurant_id")
+    @Column(name = "restaurant_review_stat_id")
     private Long id;
 
     @Column(unique = true)
@@ -60,7 +57,7 @@ public class RestaurantReviewStat {
 
     public static RestaurantReviewStat from(Restaurant r) {
         return new RestaurantReviewStat(
-                null,
+                r.getId(),
                 r.getName(),
                 r.getAddress(),
                 r.getPhoneNumber(),
