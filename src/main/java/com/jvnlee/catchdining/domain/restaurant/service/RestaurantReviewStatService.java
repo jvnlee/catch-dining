@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.restaurant.service;
 
+import com.jvnlee.catchdining.common.annotation.AggregatedData;
 import com.jvnlee.catchdining.domain.restaurant.model.RestaurantReviewStat;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantReviewStatRepository;
 import com.jvnlee.catchdining.domain.review.model.Review;
@@ -20,6 +21,7 @@ public class RestaurantReviewStatService {
 
     private final ReviewRepository reviewRepository;
 
+    @AggregatedData
     @Transactional(propagation = REQUIRES_NEW)
     public void update(Long reviewId) {
         Review review = reviewRepository.findById(reviewId).orElseThrow(NoSuchElementException::new);
