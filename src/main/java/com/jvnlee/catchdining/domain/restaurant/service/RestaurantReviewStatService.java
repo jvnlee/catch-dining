@@ -31,7 +31,11 @@ public class RestaurantReviewStatService {
 
         RestaurantReviewStat restaurantReviewStat = restaurantReviewStatRepository
                 .findById(review.getRestaurant().getId())
-                .orElseGet(() -> RestaurantReviewStat.from(review.getRestaurant()));
+                .orElseGet(() -> {
+                    RestaurantReviewStat r = RestaurantReviewStat.from(review.getRestaurant());
+                    restaurantReviewStatRepository.save(r);
+                    return r;
+                });
 
         restaurantReviewStat.update(tasteRating, moodRating, serviceRating);
     }
