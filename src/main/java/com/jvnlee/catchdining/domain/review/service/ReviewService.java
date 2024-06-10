@@ -6,11 +6,13 @@ import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import com.jvnlee.catchdining.domain.review.dto.ReviewViewByRestaurantResponseDto;
 import com.jvnlee.catchdining.domain.review.dto.ReviewViewByUserResponseDto;
 import com.jvnlee.catchdining.domain.review.dto.ReviewCreateRequestDto;
+import com.jvnlee.catchdining.domain.review.event.ReviewCreatedEvent;
 import com.jvnlee.catchdining.domain.review.model.Review;
 import com.jvnlee.catchdining.domain.review.repository.ReviewRepository;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,8 @@ public class ReviewService {
 
     private final UserService userService;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     public void create(ReviewCreateRequestDto reviewCreateRequestDto) {
         User user = userService.getCurrentUser();
         Restaurant restaurant = restaurantRepository
@@ -45,6 +49,8 @@ public class ReviewService {
         );
 
         reviewRepository.save(review);
+        ReviewCreatedEvent reviewCreatedEvent = new ReviewCreatedEvent(review.getId());
+        eventPublisher.publishEvent(reviewCreatedEvent);
     }
 
     public List<ReviewViewByUserResponseDto> viewByUser(Long userId) {
