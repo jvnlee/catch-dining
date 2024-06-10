@@ -52,5 +52,7 @@ public class QueryLoggingInterceptor implements HandlerInterceptor {
                 executionCount
             );
         }
+
+        queryInspector.resetExecutionCount();
     }
 }

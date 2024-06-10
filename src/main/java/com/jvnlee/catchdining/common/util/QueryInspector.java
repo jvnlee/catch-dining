@@ -8,13 +8,11 @@ import org.springframework.web.context.annotation.RequestScope;
 
 @Profile("dev")
 @Component
-@RequestScope
-@Getter
 public class QueryInspector implements StatementInspector {
 
     private final Long requestStartTime = System.currentTimeMillis();
 
-    private int executionCount;
+    private ThreadLocal<Integer> executionCount = ThreadLocal.withInitial(() -> 0);
 
     public Long getElapsedTime() {
         return System.currentTimeMillis() - requestStartTime;
@@ -22,8 +20,21 @@ public class QueryInspector implements StatementInspector {
 
     @Override
     public String inspect(String sql) {
-        executionCount++;
+        incrementExecutionCount();
         return sql;
+    }
+
+    private void incrementExecutionCount() {
+        Integer prevCount = executionCount.get();
+        executionCount.set(prevCount + 1);
+    }
+
+    public int getExecutionCount() {
+        return executionCount.get();
+    }
+
+    public void resetExecutionCount() {
+        executionCount.set(0);
     }
 
 }
