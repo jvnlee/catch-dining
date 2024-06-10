@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.restaurant.model;
 
+import com.jvnlee.catchdining.domain.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,7 @@ import static lombok.AccessLevel.PROTECTED;
 @AllArgsConstructor(access = PRIVATE)
 @Getter
 @Table(name = "restaurant_review_stat")
-public class RestaurantReviewStat {
+public class RestaurantReviewStat extends BaseEntity {
 
     @Id
     @Column(name = "restaurant_review_stat_id")
