@@ -1,6 +1,7 @@
 package com.jvnlee.catchdining.domain.restaurant.service;
 
 import com.jvnlee.catchdining.common.annotation.AggregatedData;
+import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
@@ -26,6 +27,14 @@ public class RestaurantReviewStatService {
 
     private final RestaurantReviewStatRepository restaurantReviewStatRepository;
 
+    @AggregatedData
+    @Transactional
+    public void register(Restaurant restaurant) {
+        restaurantReviewStatRepository.save(RestaurantReviewStat.from(restaurant));
+    }
+
+    @AggregatedData
+    @Transactional(readOnly = true)
     public Page<RestaurantSearchResponseDto> search(RestaurantSearchRequestDto restaurantSearchRequestDto) {
         String keyword = restaurantSearchRequestDto.getKeyword();
         SortBy sortBy = restaurantSearchRequestDto.getSortBy();
@@ -54,11 +63,7 @@ public class RestaurantReviewStatService {
     public void update(Restaurant restaurant, double tasteRating, double moodRating, double serviceRating) {
         RestaurantReviewStat restaurantReviewStat = restaurantReviewStatRepository
                 .findById(restaurant.getId())
-                .orElseGet(() -> {
-                    RestaurantReviewStat r = RestaurantReviewStat.from(restaurant);
-                    restaurantReviewStatRepository.save(r);
-                    return r;
-                });
+                .orElseThrow(RestaurantNotFoundException::new);
 
         restaurantReviewStat.update(tasteRating, moodRating, serviceRating);
     }

@@ -2,18 +2,14 @@ package com.jvnlee.catchdining.domain.restaurant.service;
 
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
+import com.jvnlee.catchdining.domain.restaurant.event.RestaurantCreatedEvent;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
-import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,10 +22,13 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     public void register(RestaurantDto restaurantDto) {
         validateName(restaurantDto.getName());
         Restaurant restaurant = new Restaurant(restaurantDto);
         restaurantRepository.save(restaurant);
+        eventPublisher.publishEvent(new RestaurantCreatedEvent(restaurant));
     }
 
     @Transactional(readOnly = true)
