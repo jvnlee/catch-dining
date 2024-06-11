@@ -77,11 +77,11 @@ public class RestaurantReviewStat extends BaseEntity {
     }
 
     public void update(double tasteRating, double moodRating, double serviceRating) {
-        double newRating = tasteRating + moodRating + serviceRating / 3;
-        double totalRating = avgRating * reviewCount;
+        double newRating = (tasteRating + moodRating + serviceRating) / 3.0;
+        double totalRating = this.avgRating * this.reviewCount;
 
         this.reviewCount++;
-        this.avgRating = totalRating + newRating / this.reviewCount;
+        this.avgRating = Math.round((totalRating + newRating) / this.reviewCount * 100.0) / 100.0;
     }
 
 }
