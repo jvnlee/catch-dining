@@ -12,6 +12,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Version;
 
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
@@ -56,6 +57,9 @@ public class RestaurantReviewStat extends BaseEntity {
     @Column(name = "serving_type")
     private ServingType servingType;
 
+    @Version
+    private Integer version;
+
     public static RestaurantReviewStat from(Restaurant r) {
         return new RestaurantReviewStat(
                 r.getId(),
@@ -67,7 +71,8 @@ public class RestaurantReviewStat extends BaseEntity {
                 0,
                 r.getCountryType(),
                 r.getFoodType(),
-                r.getServingType()
+                r.getServingType(),
+                null
         );
     }
 
