@@ -15,7 +15,12 @@ public class ReviewCreatedEventHandler {
     @Async
     @TransactionalEventListener
     public void handle(ReviewCreatedEvent event) {
-        restaurantReviewStatService.update(event.getReviewId());
+        restaurantReviewStatService.update(
+                event.getRestaurant(),
+                event.getTasteRating(),
+                event.getMoodRating(),
+                event.getServiceRating()
+        );
     }
 
 }

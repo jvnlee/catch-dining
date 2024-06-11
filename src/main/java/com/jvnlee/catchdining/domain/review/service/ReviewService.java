@@ -49,7 +49,7 @@ public class ReviewService {
         );
 
         reviewRepository.save(review);
-        ReviewCreatedEvent reviewCreatedEvent = new ReviewCreatedEvent(review.getId());
+        ReviewCreatedEvent reviewCreatedEvent = new ReviewCreatedEvent(review);
         eventPublisher.publishEvent(reviewCreatedEvent);
     }
 
