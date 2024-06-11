@@ -41,7 +41,7 @@ public class RestaurantController {
 
     @GetMapping("/{restaurantId}")
     public Response<RestaurantViewDto> view(@PathVariable Long restaurantId) {
-        RestaurantViewDto data = restaurantService.view(restaurantId);
+        RestaurantViewDto data = restaurantReviewStatService.view(restaurantId);
         return new Response<>("식당 정보 조회 결과", data);
     }
 

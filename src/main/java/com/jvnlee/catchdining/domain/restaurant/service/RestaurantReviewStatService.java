@@ -5,6 +5,7 @@ import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.model.RestaurantReviewStat;
 import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
@@ -28,7 +29,7 @@ public class RestaurantReviewStatService {
     private final RestaurantReviewStatRepository restaurantReviewStatRepository;
 
     @AggregatedData
-    @Transactional
+    @Transactional(propagation = REQUIRES_NEW)
     public void register(Restaurant restaurant) {
         restaurantReviewStatRepository.save(RestaurantReviewStat.from(restaurant));
     }
@@ -51,6 +52,15 @@ public class RestaurantReviewStatService {
         }
 
         return page.map(RestaurantSearchResponseDto::new);
+    }
+
+    @AggregatedData
+    @Transactional(readOnly = true)
+    public RestaurantViewDto view(Long id) {
+        RestaurantReviewStat restaurant = restaurantReviewStatRepository
+                .findById(id)
+                .orElseThrow(RestaurantNotFoundException::new);
+        return new RestaurantViewDto(restaurant);
     }
 
     @Retryable(

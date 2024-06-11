@@ -42,12 +42,6 @@ public class Restaurant extends BaseEntity {
 
     private String description;
 
-    private double rating;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "restaurant", cascade = ALL, orphanRemoval = true)
-    private List<Seat> seats = new ArrayList<>();
-
     @Enumerated(EnumType.STRING)
     @Column(name = "country_type")
     private CountryType countryType;
@@ -59,6 +53,10 @@ public class Restaurant extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "serving_type")
     private ServingType servingType;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "restaurant", cascade = ALL, orphanRemoval = true)
+    private List<Seat> seats = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "restaurant", cascade = ALL, orphanRemoval = true)
