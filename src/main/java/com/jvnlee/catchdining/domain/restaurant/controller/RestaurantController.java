@@ -32,7 +32,7 @@ public class RestaurantController {
 
     @GetMapping
     public Response<Page<RestaurantSearchResponseDto>> search(@RequestParam String keyword,
-                                                            @RequestParam(required = false, defaultValue = "none") SortBy sortBy,
+                                                            @RequestParam(required = false, defaultValue = "NONE") SortBy sortBy,
                                                             Pageable pageable) {
         Page<RestaurantSearchResponseDto> data = restaurantReviewStatService
                 .search(new RestaurantSearchRequestDto(keyword, sortBy, pageable));

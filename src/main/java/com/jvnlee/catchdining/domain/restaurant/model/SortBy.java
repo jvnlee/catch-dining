@@ -1,5 +1,5 @@
 package com.jvnlee.catchdining.domain.restaurant.model;
 
 public enum SortBy {
-    NONE, RATING, REVIEWCOUNT
+    NONE, AVG_RATING, REVIEW_COUNT
 }
