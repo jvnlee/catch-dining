@@ -16,12 +16,12 @@ public class RestaurantSearchResponseDto {
 
     private Address address;
 
-    private double rating;
+    private double avgRating;
 
     private int reviewCount;
 
     public RestaurantSearchResponseDto(RestaurantSearchResultDto r) {
-        this(r.getId(), r.getName(), r.getAddress(), r.getRating(), r.getReviewCount());
+        this(r.getId(), r.getName(), r.getAddress(), r.getAvgRating(), r.getReviewCount());
     }
 
 }
