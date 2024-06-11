@@ -3,6 +3,7 @@ package com.jvnlee.catchdining.domain.restaurant.service;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.event.RestaurantCreatedEvent;
+import com.jvnlee.catchdining.domain.restaurant.event.RestaurantUpdatedEvent;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +31,13 @@ public class RestaurantService {
         eventPublisher.publishEvent(new RestaurantCreatedEvent(restaurant));
     }
 
-    public void update(Long id, RestaurantDto restaurantDto) {
-        validateName(id, restaurantDto.getName());
+    public void update(Long id, RestaurantDto restaurantUpdateDto) {
+        validateName(id, restaurantUpdateDto.getName());
         Restaurant restaurant = restaurantRepository
                 .findById(id)
                 .orElseThrow(RestaurantNotFoundException::new);
-        restaurant.update(restaurantDto);
+        restaurant.update(restaurantUpdateDto);
+        eventPublisher.publishEvent(new RestaurantUpdatedEvent(id, restaurantUpdateDto));
     }
 
     public void delete(Long id) {

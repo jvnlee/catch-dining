@@ -2,6 +2,7 @@ package com.jvnlee.catchdining.domain.restaurant.service;
 
 import com.jvnlee.catchdining.common.annotation.AggregatedData;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
@@ -70,12 +71,22 @@ public class RestaurantReviewStatService {
     )
     @AggregatedData
     @Transactional(propagation = REQUIRES_NEW)
-    public void update(Restaurant restaurant, double tasteRating, double moodRating, double serviceRating) {
+    public void updateReviewData(Long restaurantId, double tasteRating, double moodRating, double serviceRating) {
         RestaurantReviewStat restaurantReviewStat = restaurantReviewStatRepository
-                .findById(restaurant.getId())
+                .findById(restaurantId)
                 .orElseThrow(RestaurantNotFoundException::new);
 
-        restaurantReviewStat.update(tasteRating, moodRating, serviceRating);
+        restaurantReviewStat.updateReviewData(tasteRating, moodRating, serviceRating);
+    }
+
+    @AggregatedData
+    @Transactional(propagation = REQUIRES_NEW)
+    public void update(Long restaurantId, RestaurantDto restaurantDto) {
+        RestaurantReviewStat restaurantReviewStat = restaurantReviewStatRepository
+                .findById(restaurantId)
+                .orElseThrow(RestaurantNotFoundException::new);
+
+        restaurantReviewStat.update(restaurantDto);
     }
 
 }

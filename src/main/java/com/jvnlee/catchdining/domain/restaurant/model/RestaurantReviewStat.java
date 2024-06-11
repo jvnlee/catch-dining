@@ -1,6 +1,7 @@
 package com.jvnlee.catchdining.domain.restaurant.model;
 
 import com.jvnlee.catchdining.domain.BaseEntity;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -76,12 +77,22 @@ public class RestaurantReviewStat extends BaseEntity {
         );
     }
 
-    public void update(double tasteRating, double moodRating, double serviceRating) {
+    public void updateReviewData(double tasteRating, double moodRating, double serviceRating) {
         double newRating = (tasteRating + moodRating + serviceRating) / 3.0;
         double totalRating = this.avgRating * this.reviewCount;
 
         this.reviewCount++;
         this.avgRating = Math.round((totalRating + newRating) / this.reviewCount * 100.0) / 100.0;
+    }
+
+    public void update(RestaurantDto r) {
+        this.name = r.getName();
+        this.address = r.getAddress();
+        this.phoneNumber = r.getPhoneNumber();
+        this.description = r.getDescription();
+        this.countryType = r.getCountryType();
+        this.foodType = r.getFoodType();
+        this.servingType = r.getServingType();
     }
 
 }

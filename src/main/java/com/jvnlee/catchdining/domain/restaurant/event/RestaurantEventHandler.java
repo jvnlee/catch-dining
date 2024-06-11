@@ -8,14 +8,20 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
-public class RestaurantCreatedEventHandler {
+public class RestaurantEventHandler {
 
     private final RestaurantReviewStatService restaurantReviewStatService;
 
     @Async
     @TransactionalEventListener
-    public void handle(RestaurantCreatedEvent event) {
+    public void handleCreated(RestaurantCreatedEvent event) {
         restaurantReviewStatService.register(event.getRestaurant());
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void handleUpdated(RestaurantUpdatedEvent event) {
+        restaurantReviewStatService.update(event.getRestaurantId(), event.getRestaurantDto());
     }
 
 }

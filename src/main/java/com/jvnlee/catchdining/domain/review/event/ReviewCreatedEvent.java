@@ -1,6 +1,5 @@
 package com.jvnlee.catchdining.domain.review.event;
 
-import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.review.model.Review;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ReviewCreatedEvent {
 
-    private Restaurant restaurant;
+    private Long restaurantId;
 
     private double tasteRating;
 
@@ -17,8 +16,8 @@ public class ReviewCreatedEvent {
 
     private double serviceRating;
 
-    public ReviewCreatedEvent(Review rv) {
-        this(rv.getRestaurant(), rv.getTasteRating(), rv.getMoodRating(), rv.getServiceRating());
+    public ReviewCreatedEvent(Long restaurantId, Review rv) {
+        this(restaurantId, rv.getTasteRating(), rv.getMoodRating(), rv.getServiceRating());
     }
 
 }

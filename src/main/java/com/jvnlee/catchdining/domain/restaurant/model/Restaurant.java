@@ -76,13 +76,13 @@ public class Restaurant extends BaseEntity {
         this.servingType = restaurantDto.getServingType();
     }
 
-    public void update(RestaurantDto restaurantDto) {
-        this.name = restaurantDto.getName();
-        this.address = restaurantDto.getAddress();
-        this.phoneNumber = restaurantDto.getPhoneNumber();
-        this.description = restaurantDto.getDescription();
-        this.countryType = restaurantDto.getCountryType();
-        this.foodType = restaurantDto.getFoodType();
-        this.servingType = restaurantDto.getServingType();
+    public void update(RestaurantDto restaurantUpdateDto) {
+        this.name = restaurantUpdateDto.getName();
+        this.address = restaurantUpdateDto.getAddress();
+        this.phoneNumber = restaurantUpdateDto.getPhoneNumber();
+        this.description = restaurantUpdateDto.getDescription();
+        this.countryType = restaurantUpdateDto.getCountryType();
+        this.foodType = restaurantUpdateDto.getFoodType();
+        this.servingType = restaurantUpdateDto.getServingType();
     }
 }
