@@ -1,10 +1,16 @@
 package com.jvnlee.catchdining.domain.restaurant.service;
 
 import com.jvnlee.catchdining.common.annotation.AggregatedData;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.model.RestaurantReviewStat;
+import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantReviewStatRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -19,6 +25,24 @@ import static org.springframework.transaction.annotation.Propagation.REQUIRES_NE
 public class RestaurantReviewStatService {
 
     private final RestaurantReviewStatRepository restaurantReviewStatRepository;
+
+    public Page<RestaurantSearchResponseDto> search(RestaurantSearchRequestDto restaurantSearchRequestDto) {
+        String keyword = restaurantSearchRequestDto.getKeyword();
+        SortBy sortBy = restaurantSearchRequestDto.getSortBy();
+        Pageable pageable = restaurantSearchRequestDto.getPageable();
+
+        Page<RestaurantSearchResultDto> page;
+
+        if (sortBy.equals(SortBy.AVG_RATING)) {
+            page = restaurantReviewStatRepository.findPageByKeywordWithSort(keyword, "avgRating", pageable);
+        } else if (sortBy.equals(SortBy.REVIEW_COUNT)) {
+            page = restaurantReviewStatRepository.findPageByKeywordWithSort(keyword, "reviewCount", pageable);
+        } else {
+            page = restaurantReviewStatRepository.findPageByKeyword(keyword, pageable);
+        }
+
+        return page.map(RestaurantSearchResponseDto::new);
+    }
 
     @Retryable(
             value = OptimisticLockException.class,

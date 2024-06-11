@@ -33,25 +33,6 @@ public class RestaurantService {
     }
 
     @Transactional(readOnly = true)
-    public Page<RestaurantSearchResponseDto> search(RestaurantSearchRequestDto restaurantSearchRequestDto) {
-        String keyword = restaurantSearchRequestDto.getKeyword();
-        SortBy sortBy = restaurantSearchRequestDto.getSortBy();
-        Pageable pageable = restaurantSearchRequestDto.getPageable();
-
-        Page<RestaurantSearchResultDto> page;
-
-        if (sortBy.equals(SortBy.NONE)) {
-            page = restaurantRepository.findPageByKeyword(keyword, pageable);
-        } else if (sortBy.equals(SortBy.RATING)) {
-            page = restaurantRepository.findPageByKeywordOrderByRating(keyword, pageable);
-        } else {
-            page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
-        }
-
-        return page.map(RestaurantSearchResponseDto::new);
-    }
-
-    @Transactional(readOnly = true)
     public RestaurantViewDto view(Long id) {
         Restaurant restaurant = restaurantRepository
                 .findById(id)
