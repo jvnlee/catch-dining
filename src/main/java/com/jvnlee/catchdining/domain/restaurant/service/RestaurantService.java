@@ -3,6 +3,7 @@ package com.jvnlee.catchdining.domain.restaurant.service;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.event.RestaurantCreatedEvent;
+import com.jvnlee.catchdining.domain.restaurant.event.RestaurantDeletedEvent;
 import com.jvnlee.catchdining.domain.restaurant.event.RestaurantUpdatedEvent;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
@@ -41,11 +42,8 @@ public class RestaurantService {
     }
 
     public void delete(Long id) {
-        try {
-            restaurantRepository.deleteById(id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new RestaurantNotFoundException();
-        }
+        restaurantRepository.deleteById(id);
+        eventPublisher.publishEvent(new RestaurantDeletedEvent(id));
     }
 
     private void validateName(String name) {

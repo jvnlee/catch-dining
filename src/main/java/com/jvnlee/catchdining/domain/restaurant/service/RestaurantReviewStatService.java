@@ -89,4 +89,10 @@ public class RestaurantReviewStatService {
         restaurantReviewStat.update(restaurantDto);
     }
 
+    @AggregatedData
+    @Transactional(propagation = REQUIRES_NEW)
+    public void delete(Long restaurantId) {
+        restaurantReviewStatRepository.deleteById(restaurantId);
+    }
+
 }

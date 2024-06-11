@@ -24,4 +24,10 @@ public class RestaurantEventHandler {
         restaurantReviewStatService.update(event.getRestaurantId(), event.getRestaurantDto());
     }
 
+    @Async
+    @TransactionalEventListener
+    public void handleDeleted(RestaurantDeletedEvent event) {
+        restaurantReviewStatService.delete(event.getRestaurantId());
+    }
+
 }
