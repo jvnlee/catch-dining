@@ -6,9 +6,12 @@ import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantReviewStatR
 import com.jvnlee.catchdining.domain.review.model.Review;
 import com.jvnlee.catchdining.domain.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.OptimisticLockException;
 import java.util.NoSuchElementException;
 
 import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
@@ -21,6 +24,11 @@ public class RestaurantReviewStatService {
 
     private final ReviewRepository reviewRepository;
 
+    @Retryable(
+            value = OptimisticLockException.class,
+            backoff = @Backoff(delay = 100L),
+            maxAttempts = 10
+    )
     @AggregatedData
     @Transactional(propagation = REQUIRES_NEW)
     public void update(Long reviewId) {
