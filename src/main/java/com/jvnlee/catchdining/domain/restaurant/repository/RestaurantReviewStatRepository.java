@@ -9,8 +9,11 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface RestaurantReviewStatRepository extends JpaRepository<RestaurantReviewStat, Long> {
 
-    @Query("select r from RestaurantReviewStat r where r.name like concat('%', :keyword, '%') order by :sortBy desc")
-    Page<RestaurantSearchResultDto> findPageByKeywordWithSort(String keyword, String sortBy, Pageable pageable);
+    @Query("select r from RestaurantReviewStat r where r.name like concat('%', :keyword, '%') order by r.avgRating desc")
+    Page<RestaurantSearchResultDto> findPageByKeywordSortByAvgRating(String keyword, Pageable pageable);
+
+    @Query("select r from RestaurantReviewStat r where r.name like concat('%', :keyword, '%') order by r.reviewCount desc")
+    Page<RestaurantSearchResultDto> findPageByKeywordSortByReviewCount(String keyword, Pageable pageable);
 
     @Query("select r from RestaurantReviewStat r where r.name like concat('%', :keyword, '%')")
     Page<RestaurantSearchResultDto> findPageByKeyword(String keyword, Pageable pageable);

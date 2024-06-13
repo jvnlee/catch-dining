@@ -45,9 +45,9 @@ public class RestaurantReviewStatService {
         Page<RestaurantSearchResultDto> page;
 
         if (sortBy.equals(SortBy.AVG_RATING)) {
-            page = restaurantReviewStatRepository.findPageByKeywordWithSort(keyword, "avgRating", pageable);
+            page = restaurantReviewStatRepository.findPageByKeywordSortByAvgRating(keyword, pageable);
         } else if (sortBy.equals(SortBy.REVIEW_COUNT)) {
-            page = restaurantReviewStatRepository.findPageByKeywordWithSort(keyword, "reviewCount", pageable);
+            page = restaurantReviewStatRepository.findPageByKeywordSortByReviewCount(keyword, pageable);
         } else {
             page = restaurantReviewStatRepository.findPageByKeyword(keyword, pageable);
         }

@@ -116,8 +116,7 @@ public class RestaurantReviewStatServiceTest {
     @Test
     @DisplayName("식당 검색 성공: sort 옵션 avgRating")
     void search_success_sort_by_rating() {
-        String name = "식당";
-        String sortBy = "avgRating";
+        String keyword = "식당";
         PageRequest pageRequest = PageRequest.of(0, 3);
 
         Address address1 = new Address("서울특별시", "", "강남구", "아무대로", "123");
@@ -132,19 +131,18 @@ public class RestaurantReviewStatServiceTest {
 
         PageImpl<RestaurantSearchResultDto> page = new PageImpl<>(content);
 
-        when(repository.findPageByKeywordWithSort(name, sortBy, pageRequest)).thenReturn(page);
+        when(repository.findPageByKeywordSortByAvgRating(keyword, pageRequest)).thenReturn(page);
 
-        assertThat(service.search(new RestaurantSearchRequestDto(name, SortBy.AVG_RATING, pageRequest)).getContent())
+        assertThat(service.search(new RestaurantSearchRequestDto(keyword, SortBy.AVG_RATING, pageRequest)).getContent())
                 .hasOnlyElementsOfType(RestaurantSearchResponseDto.class)
                 .hasSize(3);
-        verify(repository).findPageByKeywordWithSort(name, sortBy, pageRequest);
+        verify(repository).findPageByKeywordSortByAvgRating(keyword, pageRequest);
     }
 
     @Test
     @DisplayName("식당 검색 성공: sort 옵션 reviewCount")
     void search_success_sort_by_review_count() {
-        String name = "식당";
-        String sortBy = "reviewCount";
+        String keyword = "식당";
         PageRequest pageRequest = PageRequest.of(0, 3);
 
         Address address1 = new Address("서울특별시", "", "강남구", "아무대로", "123");
@@ -159,12 +157,12 @@ public class RestaurantReviewStatServiceTest {
 
         PageImpl<RestaurantSearchResultDto> page = new PageImpl<>(content);
 
-        when(repository.findPageByKeywordWithSort(name, sortBy, pageRequest)).thenReturn(page);
+        when(repository.findPageByKeywordSortByReviewCount(keyword, pageRequest)).thenReturn(page);
 
-        assertThat(service.search(new RestaurantSearchRequestDto(name, SortBy.REVIEW_COUNT, pageRequest)).getContent())
+        assertThat(service.search(new RestaurantSearchRequestDto(keyword, SortBy.REVIEW_COUNT, pageRequest)).getContent())
                 .hasOnlyElementsOfType(RestaurantSearchResponseDto.class)
                 .hasSize(3);
-        verify(repository).findPageByKeywordWithSort(name, sortBy, pageRequest);
+        verify(repository).findPageByKeywordSortByReviewCount(keyword, pageRequest);
     }
 
     @Test
