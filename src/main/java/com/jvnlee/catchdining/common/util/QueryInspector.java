@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
-@Profile("dev")
+@Profile({"dev", "test"})
 @Component
 public class QueryInspector implements StatementInspector {
 

@@ -14,7 +14,7 @@ import javax.sql.DataSource;
 import java.util.Map;
 
 @Configuration
-@Profile("dev")
+@Profile({"dev", "test"})
 @RequiredArgsConstructor
 public class DevEntityManagerFactoryConfig {
 
