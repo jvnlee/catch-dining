@@ -10,7 +10,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@Profile("!test")
+@Profile("!controller-test")
 @Component
 @RequiredArgsConstructor
 public class DataSourceRouterCleanerInterceptor implements HandlerInterceptor {

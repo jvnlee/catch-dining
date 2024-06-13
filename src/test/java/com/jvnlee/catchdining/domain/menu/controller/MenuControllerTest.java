@@ -24,7 +24,7 @@ import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ActiveProfiles("test")
+@ActiveProfiles("controller-test")
 @WebMvcTest(
         controllers = {MenuController.class},
         excludeAutoConfiguration = SecurityAutoConfiguration.class

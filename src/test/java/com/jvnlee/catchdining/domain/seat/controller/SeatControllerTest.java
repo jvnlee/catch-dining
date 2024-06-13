@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ActiveProfiles("test")
+@ActiveProfiles("controller-test")
 @WebMvcTest(
         controllers = {SeatController.class},
         excludeAutoConfiguration = SecurityAutoConfiguration.class

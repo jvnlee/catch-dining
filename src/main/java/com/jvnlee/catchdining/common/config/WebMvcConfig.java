@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Profile("!test")
+@Profile("!controller-test")
 @Configuration
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
