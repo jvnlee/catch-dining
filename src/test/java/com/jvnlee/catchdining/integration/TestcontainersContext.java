@@ -12,7 +12,8 @@ public class TestcontainersContext {
     private static final JdbcDatabaseContainer<?> WRITE_DB;
     private static final JdbcDatabaseContainer<?> READ_DB;
     private static final String DATABASE_NAME = "catch_dining";
-    private static final String INIT_SCRIPT_NAME = "init-test.sql";
+    private static final String WRITE_DB_INIT_SCRIPT_NAME = "init-write-db.test.sql";
+    private static final String READ_DB_INIT_SCRIPT_NAME = "init-read-db.test.sql";
 
     private static final String REDIS_IMAGE = "redis:7.0.14";
     private static final GenericContainer<?> REDIS;
@@ -21,10 +22,10 @@ public class TestcontainersContext {
     static {
         WRITE_DB = new MySQLContainer<>(MYSQL_IMAGE)
                 .withDatabaseName(DATABASE_NAME)
-                .withInitScript(INIT_SCRIPT_NAME);
+                .withInitScript(WRITE_DB_INIT_SCRIPT_NAME);
         READ_DB = new MySQLContainer<>(MYSQL_IMAGE)
                 .withDatabaseName(DATABASE_NAME)
-                .withInitScript(INIT_SCRIPT_NAME);
+                .withInitScript(READ_DB_INIT_SCRIPT_NAME);
         REDIS = new GenericContainer<>(REDIS_IMAGE)
                 .withExposedPorts(REDIS_PORT);
 
@@ -34,7 +35,7 @@ public class TestcontainersContext {
     }
 
     @DynamicPropertySource
-    public static void dynamicProperties(DynamicPropertyRegistry registry) {
+    protected static void dynamicProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", WRITE_DB::getJdbcUrl);
         registry.add("spring.datasource.username", WRITE_DB::getUsername);
         registry.add("spring.datasource.password", WRITE_DB::getPassword);
