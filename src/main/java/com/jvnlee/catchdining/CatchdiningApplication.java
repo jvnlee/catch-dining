@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableJpaAuditing
 @EnableScheduling
-@EnableAsync
 @EnableRetry
 public class CatchdiningApplication {
 
