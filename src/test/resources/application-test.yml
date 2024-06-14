@@ -11,6 +11,6 @@ jwt:
   secret: 5bc35db8b6c3725c3b1e767fbfccc78d6067abcdcb70fa3ce9973837351dab03
   alg: HS256
   access:
-    exp: 3000
+    exp: 900000
   refresh:
-    exp: 6000
+    exp: 3600000
