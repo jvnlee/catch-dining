@@ -24,7 +24,7 @@ services:
     restart: always
     volumes:
       - ./write-db:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init-write-db.sql:/docker-entrypoint-initdb.d/init-write-db.sql
     environment:
       - MYSQL_ROOT_HOST=%
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
@@ -45,7 +45,7 @@ services:
     restart: always
     volumes:
       - ./read-db:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init-read-db.sql:/docker-entrypoint-initdb.d/init-read-db.sql
     environment:
       - MYSQL_ROOT_HOST=%
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
