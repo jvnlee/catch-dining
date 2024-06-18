@@ -17,7 +17,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.TimeUnit;
 
 import static com.jvnlee.catchdining.domain.user.model.UserType.CUSTOMER;
 import static io.restassured.http.ContentType.JSON;
@@ -42,6 +45,9 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
 
     @Autowired
     RestaurantReviewStatRepository restaurantReviewStatRepository;
+
+    @Autowired
+    ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     String authHeader;
 
@@ -78,24 +84,28 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
     @Test
     @DisplayName("READ-DB에 RestaurantReviewStat 생성 전파 테스트")
     void create_propagation_test() throws Exception {
-        String restaurantName = "restaurant";
+        String restaurantName = "create_propagation_test";
         RestaurantDto restaurantCreateDto = RestaurantDto.builder().name(restaurantName).build();
         String restaurantCreateRequestBody = om.writeValueAsString(restaurantCreateDto);
 
         // WRITE-DB에 Restaurant 생성
-        RestAssured
+        ExtractableResponse<Response> response = RestAssured
                 .given().log().all()
                 .header(AUTHORIZATION, authHeader)
                 .body(restaurantCreateRequestBody)
                 .contentType(JSON)
                 .when()
                 .post("/restaurants")
-                .then().log().all();
+                .then().log().all().extract();
+
+        Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
+
+        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
 
         // READ-DB에서 조회하여 RestaurantReviewStat 생성 확인
         RestAssured
                 .given().log().all()
-                .pathParam("restaurantId", 1L)
+                .pathParam("restaurantId", restaurantId)
                 .header(AUTHORIZATION, authHeader)
                 .when()
                 .get("/restaurants/{restaurantId}")
@@ -107,29 +117,30 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
     @Test
     @DisplayName("READ-DB에 RestaurantReviewStat 별점, 리뷰 개수 업데이트 전파 테스트")
     void review_data_update_propagation_test() throws Exception {
-        String restaurantName = "restaurant";
-        RestaurantDto restaurantCreateDto = RestaurantDto.builder().name(restaurantName).build();
+        RestaurantDto restaurantCreateDto = RestaurantDto.builder().name("review_data_update_propagation_test").build();
         String restaurantCreateRequestBody = om.writeValueAsString(restaurantCreateDto);
 
         // WRITE-DB에 Restaurant 생성
-        RestAssured
+        ExtractableResponse<Response> response = RestAssured
                 .given().log().all()
                 .header(AUTHORIZATION, authHeader)
                 .body(restaurantCreateRequestBody)
                 .contentType(JSON)
                 .when()
                 .post("/restaurants")
-                .then().log().all();
+                .then().log().all().extract();
 
-        Thread.sleep(5000);
+        Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
 
-        ReviewCreateRequestDto reviewCreateDto = new ReviewCreateRequestDto(1L, 4.0, 4.5, 5.0, "Love this place!");
+        ReviewCreateRequestDto reviewCreateDto = new ReviewCreateRequestDto(restaurantId, 4.0, 4.5, 5.0, "Love this place!");
         String reviewCreateRequestBody = om.writeValueAsString(reviewCreateDto);
+
+        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
 
         // WRITE-DB에 Review 생성
         RestAssured
                 .given().log().all()
-                .pathParam("restaurantId", 1L)
+                .pathParam("restaurantId", restaurantId)
                 .header(AUTHORIZATION, authHeader)
                 .body(reviewCreateRequestBody)
                 .contentType(JSON)
@@ -137,12 +148,12 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .post("/restaurants/{restaurantId}/reviews")
                 .then().log().all();
 
-        Thread.sleep(5000);
+        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
 
         // READ-DB에서 조회하여 RestaurantReviewStat 업데이트 반영 확인
         RestAssured
                 .given().log().all()
-                .pathParam("restaurantId", 1L)
+                .pathParam("restaurantId", restaurantId)
                 .header(AUTHORIZATION, authHeader)
                 .when()
                 .get("/restaurants/{restaurantId}")
@@ -155,28 +166,31 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
     @Test
     @DisplayName("READ-DB에 RestaurantReviewStat 업데이트 전파 테스트")
     void update_propagation_test() throws Exception {
-        String restaurantName = "restaurant";
-        RestaurantDto restaurantCreateDto = RestaurantDto.builder().name(restaurantName).build();
+        RestaurantDto restaurantCreateDto = RestaurantDto.builder().name("update_propagation_test").build();
         String restaurantCreateRequestBody = om.writeValueAsString(restaurantCreateDto);
 
         // WRITE-DB에 Restaurant 생성
-        RestAssured
+        ExtractableResponse<Response> response = RestAssured
                 .given().log().all()
                 .header(AUTHORIZATION, authHeader)
                 .body(restaurantCreateRequestBody)
                 .contentType(JSON)
                 .when()
                 .post("/restaurants")
-                .then().log().all();
+                .then().log().all().extract();
 
-        String updatedRestaurantName = "updatedRestaurantName";
+        Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
+
+        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
+
+        String updatedRestaurantName = "update_propagation_test_2";
         RestaurantDto restaurantUpdateDto = RestaurantDto.builder().name(updatedRestaurantName).build();
         String restaurantUpdateRequestBody = om.writeValueAsString(restaurantUpdateDto);
 
         // WRITE-DB에 Restaurant 업데이트
         RestAssured
                 .given().log().all()
-                .pathParam("restaurantId", 1L)
+                .pathParam("restaurantId", restaurantId)
                 .header(AUTHORIZATION, authHeader)
                 .body(restaurantUpdateRequestBody)
                 .contentType(JSON)
@@ -184,11 +198,13 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .put("/restaurants/{restaurantId}")
                 .then().log().all();
 
+        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
+
         // READ-DB에서 조회하여 RestaurantReviewStat 업데이트 반영 확인
         RestAssured
                 .given().log().all()
                 .header(AUTHORIZATION, authHeader)
-                .pathParam("restaurantId", 1L)
+                .pathParam("restaurantId", restaurantId)
                 .when()
                 .get("/restaurants/{restaurantId}")
                 .then().log().all()
@@ -199,34 +215,39 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
     @Test
     @DisplayName("READ-DB에 RestaurantReviewStat 삭제 전파 테스트")
     void delete_propagation_test() throws Exception {
-        String restaurantName = "restaurant";
-        RestaurantDto restaurantCreateDto = RestaurantDto.builder().name(restaurantName).build();
+        RestaurantDto restaurantCreateDto = RestaurantDto.builder().name("delete_propagation_test").build();
         String restaurantCreateRequestBody = om.writeValueAsString(restaurantCreateDto);
 
         // WRITE-DB에 Restaurant 생성
-        RestAssured
+        ExtractableResponse<Response> response = RestAssured
                 .given().log().all()
                 .header(AUTHORIZATION, authHeader)
                 .body(restaurantCreateRequestBody)
                 .contentType(JSON)
                 .when()
                 .post("/restaurants")
-                .then().log().all();
+                .then().log().all().extract();
+
+        Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
+
+        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
 
         // WRITE-DB에 Restaurant 삭제
         RestAssured
                 .given().log().all()
-                .pathParam("restaurantId", 1L)
+                .pathParam("restaurantId", restaurantId)
                 .header(AUTHORIZATION, authHeader)
                 .when()
                 .delete("/restaurants/{restaurantId}")
                 .then().log().all();
 
+        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
+
         // READ-DB에서 조회하여 RestaurantReviewStat 삭제 반영 확인
         RestAssured
                 .given().log().all()
                 .header(AUTHORIZATION, authHeader)
-                .pathParam("restaurantId", 1L)
+                .pathParam("restaurantId", restaurantId)
                 .when()
                 .get("/restaurants/{restaurantId}")
                 .then().log().all()
