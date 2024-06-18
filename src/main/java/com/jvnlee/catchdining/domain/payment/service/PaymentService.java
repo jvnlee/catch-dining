@@ -26,8 +26,6 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
 
-    private final MenuRepository menuRepository;
-
     private final FakePaymentModule fakePaymentModule;
 
     @Transactional(timeout = 300)
@@ -46,14 +44,13 @@ public class PaymentService {
             throw new PaymentFailureException();
         }
 
-        List<ReserveMenu> reserveMenuList = new ArrayList<>();
+        Payment payment = new Payment(tid, total, paymentType, COMPLETE);
+
+        List<ReserveMenu> reserveMenuList = payment.getReserveMenus();
         for (ReserveMenuDto reserveMenuDto : reserveMenuDtoList) {
-            Menu menu = menuRepository.findById(reserveMenuDto.getMenuId()).orElseThrow();
-            ReserveMenu reserveMenu = new ReserveMenu(menu, reserveMenuDto.getReservePrice(), reserveMenuDto.getQuantity());
+            ReserveMenu reserveMenu = new ReserveMenu(payment, reserveMenuDto.getMenuName(), reserveMenuDto.getReservePrice(), reserveMenuDto.getQuantity());
             reserveMenuList.add(reserveMenu);
         }
-
-        Payment payment = new Payment(tid, reserveMenuList, total, paymentType, COMPLETE);
 
         return paymentRepository.save(payment);
     }

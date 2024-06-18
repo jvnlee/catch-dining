@@ -78,9 +78,8 @@ CREATE TABLE IF NOT EXISTS reserve_menu
     last_modified_date DATETIME(6) NOT NULL,
     quantity           INT,
     reserve_price      INT,
-    menu_id            BIGINT,
+    menu_name          VARCHAR(255),
     payment_id         BIGINT,
-    FOREIGN KEY (menu_id) REFERENCES menu (menu_id),
     FOREIGN KEY (payment_id) REFERENCES payment (payment_id)
 );
 

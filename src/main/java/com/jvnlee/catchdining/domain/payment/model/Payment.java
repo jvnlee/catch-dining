@@ -28,9 +28,6 @@ public class Payment extends BaseEntity {
 
     private String tid;
 
-    @OneToMany(mappedBy = "payment", cascade = ALL, orphanRemoval = true)
-    private List<ReserveMenu> reserveMenus = new ArrayList<>();
-
     @Column(name = "total_price")
     private int totalPrice;
 
@@ -42,9 +39,11 @@ public class Payment extends BaseEntity {
     @Column(name = "payment_status")
     private PaymentStatus paymentStatus;
 
-    public Payment(String tid, List<ReserveMenu> reserveMenus, int totalPrice, PaymentType paymentType, PaymentStatus paymentStatus) {
+    @OneToMany(mappedBy = "payment", cascade = ALL, orphanRemoval = true)
+    private List<ReserveMenu> reserveMenus = new ArrayList<>();
+
+    public Payment(String tid, int totalPrice, PaymentType paymentType, PaymentStatus paymentStatus) {
         this.tid = tid;
-        this.reserveMenus = reserveMenus;
         this.totalPrice = totalPrice;
         this.paymentType = paymentType;
         this.paymentStatus = paymentStatus;

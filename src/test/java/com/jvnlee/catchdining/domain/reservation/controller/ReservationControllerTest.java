@@ -55,7 +55,7 @@ class ReservationControllerTest {
     void create_success() throws Exception {
         ReservationDto reservationDto = new ReservationDto(
                 1L,
-                List.of(new ReserveMenuDto(1L, 8000, 1)),
+                List.of(new ReserveMenuDto("Sushi", 8000, 1)),
                 CREDIT_CARD,
                 2
         );
@@ -79,7 +79,7 @@ class ReservationControllerTest {
     void create_fail() throws Exception {
         ReservationDto reservationDto = new ReservationDto(
                 1L,
-                List.of(new ReserveMenuDto(1L, 8000, 1)),
+                List.of(new ReserveMenuDto("Sushi", 8000, 1)),
                 CREDIT_CARD,
                 2
         );
