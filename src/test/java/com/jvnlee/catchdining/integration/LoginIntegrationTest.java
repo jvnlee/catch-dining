@@ -15,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.jvnlee.catchdining.domain.user.model.UserType.*;
 import static io.restassured.http.ContentType.JSON;
@@ -24,6 +25,7 @@ import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.http.HttpStatus.*;
 
 @IntegrationTest
+@Transactional
 class LoginIntegrationTest extends TestcontainersContext {
 
     @LocalServerPort
@@ -41,19 +43,22 @@ class LoginIntegrationTest extends TestcontainersContext {
     @BeforeEach
     void beforeEach() {
         RestAssured.port = port;
-
-        UserDto userDto = new UserDto("andy", "12345", "01012345678", CUSTOMER);
-        userService.join(userDto);
-    }
-
-    @AfterEach
-    void afterEach() {
-        userRepository.deleteAll();
     }
 
     @Test
     @DisplayName("username password 로그인 성공")
     void login_success() throws Exception {
+        UserDto userJoinDto = new UserDto("andy", "12345", "01012345678", CUSTOMER);
+        String userJoinRequestBody = om.writeValueAsString(userJoinDto);
+
+        RestAssured
+                .given().log().all()
+                .body(userJoinRequestBody)
+                .contentType(JSON)
+                .when()
+                .post("/users")
+                .then().log().all();
+
         UserLoginDto userLoginDto = new UserLoginDto("andy", "12345");
         String requestBody = om.writeValueAsString(userLoginDto);
 
@@ -73,6 +78,17 @@ class LoginIntegrationTest extends TestcontainersContext {
     @Test
     @DisplayName("username password 로그인 실패: 잘못된 username")
     void login_fail_username() throws Exception {
+        UserDto userJoinDto = new UserDto("andy", "12345", "01012345678", CUSTOMER);
+        String userJoinRequestBody = om.writeValueAsString(userJoinDto);
+
+        RestAssured
+                .given().log().all()
+                .body(userJoinRequestBody)
+                .contentType(JSON)
+                .when()
+                .post("/users")
+                .then().log().all();
+
         UserLoginDto userLoginDto = new UserLoginDto("wrong", "12345");
         String requestBody = om.writeValueAsString(userLoginDto);
 
@@ -91,6 +107,17 @@ class LoginIntegrationTest extends TestcontainersContext {
     @Test
     @DisplayName("username password 로그인 실패: 잘못된 password")
     void login_fail_password() throws Exception {
+        UserDto userJoinDto = new UserDto("andy", "12345", "01012345678", CUSTOMER);
+        String userJoinRequestBody = om.writeValueAsString(userJoinDto);
+
+        RestAssured
+                .given().log().all()
+                .body(userJoinRequestBody)
+                .contentType(JSON)
+                .when()
+                .post("/users")
+                .then().log().all();
+
         UserLoginDto userLoginDto = new UserLoginDto("andy", "wrong");
         String requestBody = om.writeValueAsString(userLoginDto);
 
@@ -109,6 +136,17 @@ class LoginIntegrationTest extends TestcontainersContext {
     @Test
     @DisplayName("JWT 로그인 성공: Access(Valid) + Refresh(Valid)")
     void jwt_login_case_1() throws Exception {
+        UserDto userJoinDto = new UserDto("andy", "12345", "01012345678", CUSTOMER);
+        String userJoinRequestBody = om.writeValueAsString(userJoinDto);
+
+        RestAssured
+                .given().log().all()
+                .body(userJoinRequestBody)
+                .contentType(JSON)
+                .when()
+                .post("/users")
+                .then().log().all();
+
         UserLoginDto userLoginDto = new UserLoginDto("andy", "12345");
         String requestBody = om.writeValueAsString(userLoginDto);
 
@@ -139,6 +177,17 @@ class LoginIntegrationTest extends TestcontainersContext {
     @Test
     @DisplayName("JWT 로그인 성공: Access(Valid) + Refresh(Invalid)")
     void jwt_login_case_2() throws Exception {
+        UserDto userJoinDto = new UserDto("andy", "12345", "01012345678", CUSTOMER);
+        String userJoinRequestBody = om.writeValueAsString(userJoinDto);
+
+        RestAssured
+                .given().log().all()
+                .body(userJoinRequestBody)
+                .contentType(JSON)
+                .when()
+                .post("/users")
+                .then().log().all();
+
         UserLoginDto userLoginDto = new UserLoginDto("andy", "12345");
         String requestBody = om.writeValueAsString(userLoginDto);
 
@@ -165,6 +214,17 @@ class LoginIntegrationTest extends TestcontainersContext {
     @Test
     @DisplayName("JWT 로그인 실패: Access(Invalid) + Refresh(Valid)")
     void jwt_login_case_3() throws Exception {
+        UserDto userJoinDto = new UserDto("andy", "12345", "01012345678", CUSTOMER);
+        String userJoinRequestBody = om.writeValueAsString(userJoinDto);
+
+        RestAssured
+                .given().log().all()
+                .body(userJoinRequestBody)
+                .contentType(JSON)
+                .when()
+                .post("/users")
+                .then().log().all();
+
         UserLoginDto userLoginDto = new UserLoginDto("andy", "12345");
         String requestBody = om.writeValueAsString(userLoginDto);
 
@@ -192,6 +252,17 @@ class LoginIntegrationTest extends TestcontainersContext {
     @Test
     @DisplayName("JWT 로그인 실패: Access(Invalid) + Refresh(Invalid)")
     void jwt_login_case_4() throws Exception {
+        UserDto userJoinDto = new UserDto("andy", "12345", "01012345678", CUSTOMER);
+        String userJoinRequestBody = om.writeValueAsString(userJoinDto);
+
+        RestAssured
+                .given().log().all()
+                .body(userJoinRequestBody)
+                .contentType(JSON)
+                .when()
+                .post("/users")
+                .then().log().all();
+
         UserLoginDto userLoginDto = new UserLoginDto("andy", "12345");
         String requestBody = om.writeValueAsString(userLoginDto);
 
