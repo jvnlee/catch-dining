@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.restaurant.service;
 
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantCreateResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.event.RestaurantCreatedEvent;
 import com.jvnlee.catchdining.domain.restaurant.event.RestaurantDeletedEvent;
@@ -43,6 +44,9 @@ class RestaurantServiceTest {
         Address address = new Address("서울특별시", "", "강남구", "아무대로", "123");
         RestaurantDto restaurantDto =
                 new RestaurantDto("식당", address, "0212345678", "식당 상세정보", 일식, 스시, 오마카세);
+        Restaurant restaurant = new Restaurant(restaurantDto);
+
+        when(repository.save(any(Restaurant.class))).thenReturn(restaurant);
 
         service.register(restaurantDto);
 

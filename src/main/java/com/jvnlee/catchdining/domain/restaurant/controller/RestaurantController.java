@@ -1,6 +1,7 @@
 package com.jvnlee.catchdining.domain.restaurant.controller;
 
 import com.jvnlee.catchdining.common.web.Response;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantCreateResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
@@ -25,9 +26,9 @@ public class RestaurantController {
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_OWNER')")
-    public Response<Void> register(@RequestBody RestaurantDto restaurantDto) {
-        restaurantService.register(restaurantDto);
-        return new Response<>("식당 등록 성공");
+    public Response<RestaurantCreateResponseDto> register(@RequestBody RestaurantDto restaurantDto) {
+        RestaurantCreateResponseDto data = restaurantService.register(restaurantDto);
+        return new Response<>("식당 등록 성공", data);
     }
 
     @GetMapping

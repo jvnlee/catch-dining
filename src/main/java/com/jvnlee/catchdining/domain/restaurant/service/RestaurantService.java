@@ -1,6 +1,7 @@
 package com.jvnlee.catchdining.domain.restaurant.service;
 
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantCreateResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.event.RestaurantCreatedEvent;
 import com.jvnlee.catchdining.domain.restaurant.event.RestaurantDeletedEvent;
@@ -25,11 +26,12 @@ public class RestaurantService {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    public void register(RestaurantDto restaurantDto) {
+    public RestaurantCreateResponseDto register(RestaurantDto restaurantDto) {
         validateName(restaurantDto.getName());
         Restaurant restaurant = new Restaurant(restaurantDto);
-        restaurantRepository.save(restaurant);
+        Restaurant saved = restaurantRepository.save(restaurant);
         eventPublisher.publishEvent(new RestaurantCreatedEvent(restaurant));
+        return new RestaurantCreateResponseDto(saved.getId());
     }
 
     public void update(Long id, RestaurantDto restaurantUpdateDto) {
