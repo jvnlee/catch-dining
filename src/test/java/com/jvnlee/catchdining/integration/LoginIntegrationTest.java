@@ -3,13 +3,10 @@ package com.jvnlee.catchdining.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.domain.user.dto.UserLoginDto;
-import com.jvnlee.catchdining.domain.user.repository.UserRepository;
-import com.jvnlee.catchdining.domain.user.service.UserService;
 import com.jvnlee.catchdining.util.IntegrationTest;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,12 +30,6 @@ class LoginIntegrationTest extends TestcontainersContext {
 
     @Autowired
     ObjectMapper om;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    UserService userService;
 
     @BeforeEach
     void beforeEach() {

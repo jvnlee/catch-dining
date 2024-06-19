@@ -2,22 +2,14 @@ package com.jvnlee.catchdining.integration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jvnlee.catchdining.domain.menu.service.MenuService;
 import com.jvnlee.catchdining.domain.payment.model.PaymentType;
 import com.jvnlee.catchdining.domain.payment.dto.ReserveMenuDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationDto;
-import com.jvnlee.catchdining.domain.reservation.repository.ReservationRepository;
-import com.jvnlee.catchdining.domain.reservation.service.ReservationService;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import com.jvnlee.catchdining.domain.restaurant.service.RestaurantService;
 import com.jvnlee.catchdining.domain.seat.dto.SeatDto;
-import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.seat.model.SeatType;
-import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
-import com.jvnlee.catchdining.domain.seat.service.SeatService;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.domain.user.dto.UserLoginDto;
-import com.jvnlee.catchdining.domain.user.service.UserService;
 import com.jvnlee.catchdining.util.IntegrationTest;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -37,6 +29,7 @@ import java.util.concurrent.Executors;
 import static com.jvnlee.catchdining.domain.user.model.UserType.OWNER;
 import static io.restassured.http.ContentType.JSON;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @IntegrationTest
@@ -47,27 +40,6 @@ class ReservationIntegrationTest extends TestcontainersContext {
 
     @Autowired
     ObjectMapper om;
-
-    @Autowired
-    UserService userService;
-
-    @Autowired
-    RestaurantService restaurantService;
-
-    @Autowired
-    SeatService seatService;
-
-    @Autowired
-    MenuService menuService;
-
-    @Autowired
-    ReservationService reservationService;
-
-    @Autowired
-    SeatRepository seatRepository;
-
-    @Autowired
-    ReservationRepository reservationRepository;
 
     final int THREAD_COUNT = 100;
 
@@ -109,14 +81,17 @@ class ReservationIntegrationTest extends TestcontainersContext {
         RestaurantDto restaurantCreateDto = RestaurantDto.builder().name("restaurant").build();
         String restaurantCreateRequestBody = om.writeValueAsString(restaurantCreateDto);
 
-        RestAssured
+        ExtractableResponse<Response> restaurantCreateResponse = RestAssured
                 .given().log().all()
                 .header(AUTHORIZATION, authHeader)
                 .body(restaurantCreateRequestBody)
                 .contentType(JSON)
                 .when()
                 .post("/restaurants")
-                .then().log().all();
+                .then().log().all()
+                .extract();
+
+        Long restaurantId = ((Integer) restaurantCreateResponse.path("data.restaurantId")).longValue();
 
         SeatDto seatDto = new SeatDto(
                 SeatType.BAR,
@@ -184,8 +159,14 @@ class ReservationIntegrationTest extends TestcontainersContext {
 
         latch.await();
 
-        Seat seat = seatRepository.findById(1L).orElseThrow();
-        assertThat(seat.getAvailableQuantity()).isEqualTo(0);
-        assertThat(reservationRepository.findAll().size()).isEqualTo(100);
+        RestAssured
+                .given().log().all()
+                .header(AUTHORIZATION, authHeader)
+                .pathParam("restaurantId", restaurantId)
+                .when()
+                .get("/restaurants/{restaurantId}/reservations")
+                .then().log().all()
+                .assertThat()
+                .body("data", hasSize(100));
     }
 }

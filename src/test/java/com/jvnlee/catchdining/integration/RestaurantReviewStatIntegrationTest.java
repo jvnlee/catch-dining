@@ -2,12 +2,9 @@ package com.jvnlee.catchdining.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
-import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantReviewStatRepository;
 import com.jvnlee.catchdining.domain.review.dto.ReviewCreateRequestDto;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.domain.user.dto.UserLoginDto;
-import com.jvnlee.catchdining.domain.user.repository.UserRepository;
 import com.jvnlee.catchdining.util.IntegrationTest;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -36,15 +33,6 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
 
     @Autowired
     ObjectMapper om;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    RestaurantRepository restaurantRepository;
-
-    @Autowired
-    RestaurantReviewStatRepository restaurantReviewStatRepository;
 
     @Autowired
     ThreadPoolTaskExecutor threadPoolTaskExecutor;
@@ -96,7 +84,8 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .contentType(JSON)
                 .when()
                 .post("/restaurants")
-                .then().log().all().extract();
+                .then().log().all()
+                .extract();
 
         Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
 
@@ -128,7 +117,8 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .contentType(JSON)
                 .when()
                 .post("/restaurants")
-                .then().log().all().extract();
+                .then().log().all()
+                .extract();
 
         Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
 
@@ -177,7 +167,8 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .contentType(JSON)
                 .when()
                 .post("/restaurants")
-                .then().log().all().extract();
+                .then().log().all()
+                .extract();
 
         Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
 
@@ -226,7 +217,8 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .contentType(JSON)
                 .when()
                 .post("/restaurants")
-                .then().log().all().extract();
+                .then().log().all()
+                .extract();
 
         Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
 
