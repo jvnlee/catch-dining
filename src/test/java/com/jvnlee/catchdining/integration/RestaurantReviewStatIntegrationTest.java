@@ -14,10 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.concurrent.TimeUnit;
 
 import static com.jvnlee.catchdining.domain.user.model.UserType.CUSTOMER;
 import static io.restassured.http.ContentType.JSON;
@@ -33,9 +30,6 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
 
     @Autowired
     ObjectMapper om;
-
-    @Autowired
-    ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     String authHeader;
 
@@ -89,8 +83,6 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
 
         Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
 
-        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
-
         // READ-DB에서 조회하여 RestaurantReviewStat 생성 확인
         RestAssured
                 .given().log().all()
@@ -125,8 +117,6 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
         ReviewCreateRequestDto reviewCreateDto = new ReviewCreateRequestDto(restaurantId, 4.0, 4.5, 5.0, "Love this place!");
         String reviewCreateRequestBody = om.writeValueAsString(reviewCreateDto);
 
-        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
-
         // WRITE-DB에 Review 생성
         RestAssured
                 .given().log().all()
@@ -137,8 +127,6 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .when()
                 .post("/restaurants/{restaurantId}/reviews")
                 .then().log().all();
-
-        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
 
         // READ-DB에서 조회하여 RestaurantReviewStat 업데이트 반영 확인
         RestAssured
@@ -172,8 +160,6 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
 
         Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
 
-        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
-
         String updatedRestaurantName = "update_propagation_test_2";
         RestaurantDto restaurantUpdateDto = RestaurantDto.builder().name(updatedRestaurantName).build();
         String restaurantUpdateRequestBody = om.writeValueAsString(restaurantUpdateDto);
@@ -188,8 +174,6 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .when()
                 .put("/restaurants/{restaurantId}")
                 .then().log().all();
-
-        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
 
         // READ-DB에서 조회하여 RestaurantReviewStat 업데이트 반영 확인
         RestAssured
@@ -222,8 +206,6 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
 
         Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
 
-        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
-
         // WRITE-DB에 Restaurant 삭제
         RestAssured
                 .given().log().all()
@@ -232,8 +214,6 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .when()
                 .delete("/restaurants/{restaurantId}")
                 .then().log().all();
-
-        threadPoolTaskExecutor.getThreadPoolExecutor().awaitTermination(1000, TimeUnit.MILLISECONDS);
 
         // READ-DB에서 조회하여 RestaurantReviewStat 삭제 반영 확인
         RestAssured
