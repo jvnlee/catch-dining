@@ -201,7 +201,7 @@ public class RestaurantReviewStatServiceTest {
     void view_fail() {
         Long restaurantId = 1L;
 
-        when(repository.findById(restaurantId)).thenThrow(RestaurantNotFoundException.class);
+        when(repository.findById(restaurantId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.view(restaurantId))
                 .isInstanceOf(RestaurantNotFoundException.class);
