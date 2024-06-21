@@ -7,7 +7,6 @@ import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
-import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.model.RestaurantReviewStat;
 import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantReviewStatRepository;
@@ -31,8 +30,8 @@ public class RestaurantReviewStatService {
 
     @AggregatedData
     @Transactional(propagation = REQUIRES_NEW)
-    public void register(Restaurant restaurant) {
-        restaurantReviewStatRepository.save(RestaurantReviewStat.from(restaurant));
+    public void register(Long id, RestaurantDto restaurantDto) {
+        restaurantReviewStatRepository.save(new RestaurantReviewStat(id, restaurantDto));
     }
 
     @AggregatedData

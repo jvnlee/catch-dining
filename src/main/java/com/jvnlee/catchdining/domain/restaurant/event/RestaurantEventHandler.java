@@ -15,7 +15,7 @@ public class RestaurantEventHandler {
     @Async
     @TransactionalEventListener
     public void handleCreated(RestaurantCreatedEvent event) {
-        restaurantReviewStatService.register(event.getRestaurant());
+        restaurantReviewStatService.register(event.getRestaurantId(), event.getRestaurantDto());
     }
 
     @Async

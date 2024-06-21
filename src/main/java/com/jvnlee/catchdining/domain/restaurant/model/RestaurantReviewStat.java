@@ -2,7 +2,6 @@ package com.jvnlee.catchdining.domain.restaurant.model;
 
 import com.jvnlee.catchdining.domain.BaseEntity;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,12 +14,10 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Version;
 
-import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @NoArgsConstructor(access = PROTECTED)
-@AllArgsConstructor(access = PRIVATE)
 @Getter
 @Table(name = "restaurant_review_stat")
 public class RestaurantReviewStat extends BaseEntity {
@@ -61,20 +58,15 @@ public class RestaurantReviewStat extends BaseEntity {
     @Version
     private Integer version;
 
-    public static RestaurantReviewStat from(Restaurant r) {
-        return new RestaurantReviewStat(
-                r.getId(),
-                r.getName(),
-                r.getAddress(),
-                r.getPhoneNumber(),
-                r.getDescription(),
-                0.0,
-                0,
-                r.getCountryType(),
-                r.getFoodType(),
-                r.getServingType(),
-                null
-        );
+    public RestaurantReviewStat(Long id, RestaurantDto r) {
+        this.id = id;
+        this.name = r.getName();
+        this.address = r.getAddress();
+        this.phoneNumber = r.getPhoneNumber();
+        this.description = r.getDescription();
+        this.countryType = r.getCountryType();
+        this.foodType = r.getFoodType();
+        this.servingType = r.getServingType();
     }
 
     public void updateReviewData(double tasteRating, double moodRating, double serviceRating) {

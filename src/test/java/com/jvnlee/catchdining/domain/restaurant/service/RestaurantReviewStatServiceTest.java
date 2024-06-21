@@ -1,12 +1,12 @@
 package com.jvnlee.catchdining.domain.restaurant.service;
 
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Address;
-import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.model.RestaurantReviewStat;
 import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantReviewStatRepository;
@@ -83,7 +83,7 @@ public class RestaurantReviewStatServiceTest {
     @Test
     @DisplayName("식당 등록 성공")
     void register() {
-        service.register(mock(Restaurant.class));
+        service.register(1L, mock(RestaurantDto.class));
         verify(repository).save(any(RestaurantReviewStat.class));
     }
 
@@ -183,10 +183,9 @@ public class RestaurantReviewStatServiceTest {
     @DisplayName("식당 정보 조회 성공")
     void view_success() {
         Long restaurantId = 1L;
-        RestaurantReviewStat restaurant = RestaurantReviewStat.from(
-                Restaurant.builder()
-                        .name("식당")
-                        .build()
+        RestaurantReviewStat restaurant = new RestaurantReviewStat(
+                restaurantId,
+                RestaurantDto.builder().name("restaurant").build()
         );
 
         when(repository.findById(restaurantId)).thenReturn(Optional.of(restaurant));

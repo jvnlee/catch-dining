@@ -1,6 +1,6 @@
 package com.jvnlee.catchdining.domain.restaurant.event;
 
-import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,6 +8,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class RestaurantCreatedEvent {
 
-    private Restaurant restaurant;
+    private Long restaurantId;
+
+    private RestaurantDto restaurantDto;
 
 }
