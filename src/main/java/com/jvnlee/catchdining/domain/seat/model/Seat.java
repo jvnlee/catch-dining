@@ -1,7 +1,7 @@
 package com.jvnlee.catchdining.domain.seat.model;
 
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
-import com.jvnlee.catchdining.entity.BaseEntity;
+import com.jvnlee.catchdining.domain.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,6 +21,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Builder
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor
+@Table(name = "seat")
 public class Seat extends BaseEntity {
 
     @Id
@@ -33,18 +34,24 @@ public class Seat extends BaseEntity {
     private Restaurant restaurant;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "seat_type")
     private SeatType seatType;
 
+    @Column(name = "available_date")
     private LocalDate availableDate;
 
+    @Column(name = "available_time")
     private LocalTime availableTime;
 
+    @Column(name = "min_head_count")
     private int minHeadCount;
 
+    @Column(name = "max_head_count")
     private int maxHeadCount;
 
     private int quantity;
 
+    @Column(name = "available_quantity")
     private int availableQuantity;
 
     public void occupy() {

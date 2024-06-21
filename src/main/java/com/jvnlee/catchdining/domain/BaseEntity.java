@@ -1,4 +1,4 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.domain;
 
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,10 +16,11 @@ import java.time.LocalDateTime;
 public class BaseEntity {
 
     @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdDate;
+    @Column(name = "created_date", updatable = false)
+    protected LocalDateTime createdDate;
 
     @LastModifiedDate
-    private LocalDateTime lastModifiedDate;
+    @Column(name = "last_modified_date")
+    protected LocalDateTime lastModifiedDate;
 
 }

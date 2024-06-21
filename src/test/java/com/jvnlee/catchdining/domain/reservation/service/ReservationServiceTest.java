@@ -71,7 +71,7 @@ class ReservationServiceTest {
     void create_success() {
         ReservationDto reservationDto = new ReservationDto(
                 1L,
-                List.of(new ReserveMenuDto(1L, 8000, 1)),
+                List.of(new ReserveMenuDto("Sushi", 8000, 1)),
                 CREDIT_CARD,
                 2
         );
@@ -95,7 +95,7 @@ class ReservationServiceTest {
     void create_fail() {
         ReservationDto reservationDto = new ReservationDto(
                 1L,
-                List.of(new ReserveMenuDto(1L, 8000, 1)),
+                List.of(new ReserveMenuDto("Sushi", 8000, 1)),
                 CREDIT_CARD,
                 2
         );

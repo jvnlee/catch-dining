@@ -1,8 +1,8 @@
-package com.jvnlee.catchdining.domain.menu.domain;
+package com.jvnlee.catchdining.domain.menu.model;
 
 import com.jvnlee.catchdining.domain.menu.dto.MenuDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
-import com.jvnlee.catchdining.entity.BaseEntity;
+import com.jvnlee.catchdining.domain.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,6 +15,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
+@Table(name = "menu")
 public class Menu extends BaseEntity {
 
     @Id

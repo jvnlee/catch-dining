@@ -1,19 +1,16 @@
 package com.jvnlee.catchdining.domain.restaurant.service;
 
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantCreateResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
+import com.jvnlee.catchdining.domain.restaurant.event.RestaurantCreatedEvent;
+import com.jvnlee.catchdining.domain.restaurant.event.RestaurantDeletedEvent;
+import com.jvnlee.catchdining.domain.restaurant.event.RestaurantUpdatedEvent;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
-import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,54 +23,28 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
 
-    public void register(RestaurantDto restaurantDto) {
+    private final ApplicationEventPublisher eventPublisher;
+
+    public RestaurantCreateResponseDto register(RestaurantDto restaurantDto) {
         validateName(restaurantDto.getName());
         Restaurant restaurant = new Restaurant(restaurantDto);
-        restaurantRepository.save(restaurant);
+        Restaurant saved = restaurantRepository.save(restaurant);
+        eventPublisher.publishEvent(new RestaurantCreatedEvent(restaurant.getId(), restaurantDto));
+        return new RestaurantCreateResponseDto(saved.getId());
     }
 
-    @Transactional(readOnly = true)
-    public Page<RestaurantSearchResponseDto> search(RestaurantSearchRequestDto restaurantSearchRequestDto) {
-        String keyword = restaurantSearchRequestDto.getKeyword();
-        SortBy sortBy = restaurantSearchRequestDto.getSortBy();
-        Pageable pageable = restaurantSearchRequestDto.getPageable();
-
-        Page<RestaurantSearchResultDto> page;
-
-        if (sortBy.equals(SortBy.NONE)) {
-            page = restaurantRepository.findPageByKeyword(keyword, pageable);
-        } else if (sortBy.equals(SortBy.RATING)) {
-//                page = restaurantRepository.findPageByKeywordOrderByRating(keyword, pageable);
-            page = restaurantRepository.findPageByKeywordOrderByRatingWithSubQuery(keyword, pageable);
-        } else {
-            page = restaurantRepository.findPageByKeywordOrderByReviewCount(keyword, pageable);
-        }
-
-        return page.map(RestaurantSearchResponseDto::new);
-    }
-
-    @Transactional(readOnly = true)
-    public RestaurantViewDto view(Long id) {
+    public void update(Long id, RestaurantDto restaurantUpdateDto) {
+        validateName(id, restaurantUpdateDto.getName());
         Restaurant restaurant = restaurantRepository
                 .findById(id)
                 .orElseThrow(RestaurantNotFoundException::new);
-        return new RestaurantViewDto(restaurant);
-    }
-
-    public void update(Long id, RestaurantDto restaurantDto) {
-        validateName(id, restaurantDto.getName());
-        Restaurant restaurant = restaurantRepository
-                .findById(id)
-                .orElseThrow(RestaurantNotFoundException::new);
-        restaurant.update(restaurantDto);
+        restaurant.update(restaurantUpdateDto);
+        eventPublisher.publishEvent(new RestaurantUpdatedEvent(id, restaurantUpdateDto));
     }
 
     public void delete(Long id) {
-        try {
-            restaurantRepository.deleteById(id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new RestaurantNotFoundException();
-        }
+        restaurantRepository.deleteById(id);
+        eventPublisher.publishEvent(new RestaurantDeletedEvent(id));
     }
 
     private void validateName(String name) {

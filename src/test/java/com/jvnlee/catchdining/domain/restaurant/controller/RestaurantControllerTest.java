@@ -8,6 +8,7 @@ import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Address;
 import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
+import com.jvnlee.catchdining.domain.restaurant.service.RestaurantReviewStatService;
 import com.jvnlee.catchdining.domain.restaurant.service.RestaurantService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ActiveProfiles("test")
+@ActiveProfiles("controller-test")
 @WebMvcTest(
         controllers = {RestaurantController.class},
         excludeAutoConfiguration = SecurityAutoConfiguration.class
@@ -52,7 +53,10 @@ class RestaurantControllerTest {
     ObjectMapper om;
 
     @MockBean
-    RestaurantService service;
+    RestaurantService restaurantService;
+
+    @MockBean
+    RestaurantReviewStatService restaurantReviewStatService;
 
     @Test
     @DisplayName("식당 등록 성공")
@@ -70,7 +74,7 @@ class RestaurantControllerTest {
                         .content(requestBody)
         );
 
-        verify(service).register(restaurantDto);
+        verify(restaurantService).register(restaurantDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 등록 성공"));
@@ -85,7 +89,7 @@ class RestaurantControllerTest {
 
         String requestBody = om.writeValueAsString(restaurantDto);
 
-        doThrow(new DuplicateKeyException("이미 존재하는 상호명입니다.")).when(service).register(any());
+        doThrow(new DuplicateKeyException("이미 존재하는 상호명입니다.")).when(restaurantService).register(any());
 
         ResultActions resultActions = mockMvc.perform(
                 post("/restaurants")
@@ -94,7 +98,7 @@ class RestaurantControllerTest {
                         .content(requestBody)
         );
 
-        verify(service).register(restaurantDto);
+        verify(restaurantService).register(restaurantDto);
         resultActions
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("이미 존재하는 상호명입니다."));
@@ -119,7 +123,7 @@ class RestaurantControllerTest {
         PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
 
         RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.NONE, pageRequest);
-        when(service.search(restaurantSearchRequestDto)).thenReturn(page);
+        when(restaurantReviewStatService.search(restaurantSearchRequestDto)).thenReturn(page);
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
@@ -128,7 +132,7 @@ class RestaurantControllerTest {
                         .param("size", pageRequest.getPageSize() + "")
         );
 
-        verify(service).search(restaurantSearchRequestDto);
+        verify(restaurantReviewStatService).search(restaurantSearchRequestDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 검색 결과"))
@@ -136,10 +140,10 @@ class RestaurantControllerTest {
     }
 
     @Test
-    @DisplayName("식당 검색 성공: sort 옵션 rating")
-    void search_success_sort_by_rating() throws Exception {
+    @DisplayName("식당 검색 성공: sort 옵션 AVG_RATING")
+    void search_success_sort_by_avg_rating() throws Exception {
         String name = "식당";
-        String sortBy = "rating";
+        String sortBy = "AVG_RATING";
         PageRequest pageRequest = PageRequest.of(0, 3);
 
         Address address1 = new Address("서울특별시", "", "강남구", "아무대로", "123");
@@ -154,8 +158,8 @@ class RestaurantControllerTest {
 
         PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
 
-        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.RATING, pageRequest);
-        when(service.search(restaurantSearchRequestDto)).thenReturn(page);
+        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.AVG_RATING, pageRequest);
+        when(restaurantReviewStatService.search(restaurantSearchRequestDto)).thenReturn(page);
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
@@ -165,21 +169,21 @@ class RestaurantControllerTest {
                         .param("size", pageRequest.getPageSize() + "")
         );
 
-        verify(service).search(restaurantSearchRequestDto);
+        verify(restaurantReviewStatService).search(restaurantSearchRequestDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 검색 결과"))
                 .andExpect(jsonPath("$.data").isNotEmpty())
-                .andExpect(jsonPath("$.data.content[0].rating").value(5.0))
-                .andExpect(jsonPath("$.data.content[1].rating").value(4.0))
-                .andExpect(jsonPath("$.data.content[2].rating").value(3.0));
+                .andExpect(jsonPath("$.data.content[0].avgRating").value(5.0))
+                .andExpect(jsonPath("$.data.content[1].avgRating").value(4.0))
+                .andExpect(jsonPath("$.data.content[2].avgRating").value(3.0));
     }
 
     @Test
-    @DisplayName("식당 검색 성공: sort 옵션 reviewCount")
+    @DisplayName("식당 검색 성공: sort 옵션 REVIEW_COUNT")
     void search_success_sort_by_review_count() throws Exception {
         String name = "식당";
-        String sortBy = "reviewCount";
+        String sortBy = "REVIEW_COUNT";
         PageRequest pageRequest = PageRequest.of(0, 3);
 
         Address address1 = new Address("서울특별시", "", "강남구", "아무대로", "123");
@@ -194,8 +198,8 @@ class RestaurantControllerTest {
 
         PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
 
-        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.REVIEWCOUNT, pageRequest);
-        when(service.search(restaurantSearchRequestDto)).thenReturn(page);
+        RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.REVIEW_COUNT, pageRequest);
+        when(restaurantReviewStatService.search(restaurantSearchRequestDto)).thenReturn(page);
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
@@ -205,7 +209,7 @@ class RestaurantControllerTest {
                         .param("size", pageRequest.getPageSize() + "")
         );
 
-        verify(service).search(restaurantSearchRequestDto);
+        verify(restaurantReviewStatService).search(restaurantSearchRequestDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 검색 결과"))
@@ -222,7 +226,7 @@ class RestaurantControllerTest {
         PageRequest pageRequest = PageRequest.of(0, 3);
 
         RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.NONE, pageRequest);
-        when(service.search(restaurantSearchRequestDto)).thenReturn(Page.empty());
+        when(restaurantReviewStatService.search(restaurantSearchRequestDto)).thenReturn(Page.empty());
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
@@ -231,7 +235,7 @@ class RestaurantControllerTest {
                         .param("size", pageRequest.getPageSize() + "")
         );
 
-        verify(service).search(restaurantSearchRequestDto);
+        verify(restaurantReviewStatService).search(restaurantSearchRequestDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 검색 결과"))
@@ -239,37 +243,17 @@ class RestaurantControllerTest {
     }
 
     @Test
-    @DisplayName("식당 검색 실패: 유효하지 않은 sort 옵션")
-    void search_fail_invalid_sort_by_option() throws Exception {
-        String name = "식당";
-        String sortBy = "invalidOption";
-        PageRequest pageRequest = PageRequest.of(0, 3);
-
-        ResultActions resultActions = mockMvc.perform(
-                get("/restaurants")
-                        .param("keyword", name)
-                        .param("sortBy", sortBy)
-                        .param("page", pageRequest.getPageNumber() + "")
-                        .param("size", pageRequest.getPageSize() + "")
-        );
-
-        resultActions.andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("유효하지 않은 정렬 파라미터입니다."))
-                .andExpect(jsonPath("$.data").isEmpty());
-    }
-
-    @Test
     @DisplayName("식당 정보 조회 성공")
     void view_success() throws Exception {
         String restaurantId = "1";
 
-        when(service.view(Long.valueOf(restaurantId))).thenReturn(new RestaurantViewDto());
+        when(restaurantReviewStatService.view(Long.valueOf(restaurantId))).thenReturn(new RestaurantViewDto());
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants/{restaurantId}", restaurantId)
         );
 
-        verify(service).view(Long.valueOf(restaurantId));
+        verify(restaurantReviewStatService).view(Long.valueOf(restaurantId));
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 정보 조회 결과"))
@@ -281,13 +265,13 @@ class RestaurantControllerTest {
     void view_fail() throws Exception {
         String restaurantId = "1";
 
-        doThrow(new RestaurantNotFoundException()).when(service).view(Long.valueOf(restaurantId));
+        doThrow(new RestaurantNotFoundException()).when(restaurantReviewStatService).view(Long.valueOf(restaurantId));
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants/{restaurantId}", restaurantId)
         );
 
-        verify(service).view(Long.valueOf(restaurantId));
+        verify(restaurantReviewStatService).view(Long.valueOf(restaurantId));
         resultActions
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("식당 정보가 존재하지 않습니다."))
@@ -311,7 +295,7 @@ class RestaurantControllerTest {
                         .content(requestBody)
         );
 
-        verify(service).update(Long.valueOf(restaurantId), restaurantDto);
+        verify(restaurantService).update(Long.valueOf(restaurantId), restaurantDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 정보 업데이트 성공"));
@@ -327,7 +311,7 @@ class RestaurantControllerTest {
 
         String requestBody = om.writeValueAsString(restaurantDto);
 
-        doThrow(new DuplicateKeyException("이미 존재하는 상호명입니다.")).when(service).update(Long.valueOf(restaurantId), restaurantDto);
+        doThrow(new DuplicateKeyException("이미 존재하는 상호명입니다.")).when(restaurantService).update(Long.valueOf(restaurantId), restaurantDto);
 
         ResultActions resultActions = mockMvc.perform(
                 put("/restaurants/{restaurantId}", restaurantId)
@@ -336,7 +320,7 @@ class RestaurantControllerTest {
                         .content(requestBody)
         );
 
-        verify(service).update(Long.valueOf(restaurantId), restaurantDto);
+        verify(restaurantService).update(Long.valueOf(restaurantId), restaurantDto);
         resultActions
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("이미 존재하는 상호명입니다."));
@@ -351,7 +335,7 @@ class RestaurantControllerTest {
                 delete("/restaurants/{restaurantId}", restaurantId)
         );
 
-        verify(service).delete(Long.valueOf(restaurantId));
+        verify(restaurantService).delete(Long.valueOf(restaurantId));
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 삭제 성공"));
@@ -362,13 +346,13 @@ class RestaurantControllerTest {
     void delete_fail() throws Exception {
         String restaurantId = "1";
 
-        doThrow(new RestaurantNotFoundException()).when(service).delete(Long.valueOf(restaurantId));
+        doThrow(new RestaurantNotFoundException()).when(restaurantService).delete(Long.valueOf(restaurantId));
 
         ResultActions resultActions = mockMvc.perform(
                 delete("/restaurants/{restaurantId}", restaurantId)
         );
 
-        verify(service).delete(Long.valueOf(restaurantId));
+        verify(restaurantService).delete(Long.valueOf(restaurantId));
         resultActions
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("식당 정보가 존재하지 않습니다."));

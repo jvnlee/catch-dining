@@ -10,7 +10,7 @@ public interface RestaurantSearchResultDto {
 
     Address getAddress();
 
-    double getRating();
+    double getAvgRating();
 
     int getReviewCount();
 

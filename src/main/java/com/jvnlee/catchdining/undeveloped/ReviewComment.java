@@ -1,5 +1,6 @@
-package com.jvnlee.catchdining.entity;
+package com.jvnlee.catchdining.undeveloped;
 
+import com.jvnlee.catchdining.domain.BaseEntity;
 import com.jvnlee.catchdining.domain.review.model.Review;
 import com.jvnlee.catchdining.domain.user.model.User;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
+@Table(name = "review_comment")
 public class ReviewComment extends BaseEntity {
 
     @Id

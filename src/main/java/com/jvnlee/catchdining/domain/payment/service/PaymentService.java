@@ -2,14 +2,14 @@ package com.jvnlee.catchdining.domain.payment.service;
 
 import com.jvnlee.catchdining.common.exception.PaymentFailureException;
 import com.jvnlee.catchdining.common.exception.PaymentNotFoundException;
-import com.jvnlee.catchdining.domain.menu.domain.Menu;
+import com.jvnlee.catchdining.domain.menu.model.Menu;
 import com.jvnlee.catchdining.domain.menu.repository.MenuRepository;
 import com.jvnlee.catchdining.domain.payment.model.Payment;
 import com.jvnlee.catchdining.domain.payment.model.PaymentType;
 import com.jvnlee.catchdining.domain.payment.dto.PaymentDto;
 import com.jvnlee.catchdining.domain.payment.dto.ReserveMenuDto;
 import com.jvnlee.catchdining.domain.payment.repository.PaymentRepository;
-import com.jvnlee.catchdining.entity.ReserveMenu;
+import com.jvnlee.catchdining.undeveloped.ReserveMenu;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +25,6 @@ import static com.jvnlee.catchdining.domain.payment.model.PaymentStatus.*;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
-
-    private final MenuRepository menuRepository;
 
     private final FakePaymentModule fakePaymentModule;
 
@@ -46,14 +44,13 @@ public class PaymentService {
             throw new PaymentFailureException();
         }
 
-        List<ReserveMenu> reserveMenuList = new ArrayList<>();
+        Payment payment = new Payment(tid, total, paymentType, COMPLETE);
+
+        List<ReserveMenu> reserveMenuList = payment.getReserveMenus();
         for (ReserveMenuDto reserveMenuDto : reserveMenuDtoList) {
-            Menu menu = menuRepository.findById(reserveMenuDto.getMenuId()).orElseThrow();
-            ReserveMenu reserveMenu = new ReserveMenu(menu, reserveMenuDto.getReservePrice(), reserveMenuDto.getQuantity());
+            ReserveMenu reserveMenu = new ReserveMenu(payment, reserveMenuDto.getMenuName(), reserveMenuDto.getReservePrice(), reserveMenuDto.getQuantity());
             reserveMenuList.add(reserveMenu);
         }
-
-        Payment payment = new Payment(tid, reserveMenuList, total, paymentType, COMPLETE);
 
         return paymentRepository.save(payment);
     }

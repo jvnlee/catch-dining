@@ -1,26 +1,25 @@
 package com.jvnlee.catchdining.domain.review.service;
 
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
-import com.jvnlee.catchdining.domain.reservation.model.Reservation;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import com.jvnlee.catchdining.domain.review.dto.ReviewCreateRequestDto;
+import com.jvnlee.catchdining.domain.review.event.ReviewCreatedEvent;
 import com.jvnlee.catchdining.domain.review.model.Review;
 import com.jvnlee.catchdining.domain.review.repository.ReviewRepository;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -39,6 +38,9 @@ class ReviewServiceTest {
 
     @Mock
     UserService userService;
+
+    @Mock
+    ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     ReviewService reviewService;
@@ -63,6 +65,7 @@ class ReviewServiceTest {
         reviewService.create(reviewCreateRequestDto);
 
         verify(reviewRepository).save(any(Review.class));
+        verify(eventPublisher).publishEvent(any(ReviewCreatedEvent.class));
     }
 
     @Test

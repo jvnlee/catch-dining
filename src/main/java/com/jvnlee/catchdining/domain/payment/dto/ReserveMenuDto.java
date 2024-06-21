@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReserveMenuDto {
 
-    private Long menuId;
+    private String menuName;
 
     private int reservePrice;
 

@@ -16,7 +16,9 @@ public class RestaurantViewDto {
 
     private String description;
 
-    private double rating;
+    private double avgRating;
+
+    private int reviewCount;
 
     private CountryType countryType;
 
@@ -24,12 +26,13 @@ public class RestaurantViewDto {
 
     private ServingType servingType;
 
-    public RestaurantViewDto(Restaurant restaurant) {
+    public RestaurantViewDto(RestaurantReviewStat restaurant) {
         this.name = restaurant.getName();
         this.address = restaurant.getAddress();
         this.phoneNumber = restaurant.getPhoneNumber();
         this.description = restaurant.getDescription();
-        this.rating = restaurant.getRating();
+        this.avgRating = restaurant.getAvgRating();
+        this.reviewCount = restaurant.getReviewCount();
         this.countryType = restaurant.getCountryType();
         this.foodType = restaurant.getFoodType();
         this.servingType = restaurant.getServingType();

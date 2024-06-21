@@ -1,6 +1,6 @@
 package com.jvnlee.catchdining.domain.menu.repository;
 
-import com.jvnlee.catchdining.domain.menu.domain.Menu;
+import com.jvnlee.catchdining.domain.menu.model.Menu;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

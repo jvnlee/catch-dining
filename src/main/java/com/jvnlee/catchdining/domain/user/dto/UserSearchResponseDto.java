@@ -1,8 +1,8 @@
 package com.jvnlee.catchdining.domain.user.dto;
 
-import com.jvnlee.catchdining.domain.user.model.User;
-import com.jvnlee.catchdining.entity.Favorite;
+import com.jvnlee.catchdining.undeveloped.Favorite;
 import com.jvnlee.catchdining.domain.review.model.Review;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,7 +10,8 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class UserSearchDto {
+@AllArgsConstructor
+public class UserSearchResponseDto {
 
     private String username;
 
@@ -18,10 +19,8 @@ public class UserSearchDto {
 
     private List<Review> reviews;
 
-    public UserSearchDto(User user) {
-        this.username = user.getUsername();
-        this.favorites = user.getFavorites();
-        this.reviews = user.getReviews();
+    public UserSearchResponseDto(UserSearchResultDto u) {
+        this(u.getUsername(), u.getFavorites(), u.getReviews());
     }
 
 }

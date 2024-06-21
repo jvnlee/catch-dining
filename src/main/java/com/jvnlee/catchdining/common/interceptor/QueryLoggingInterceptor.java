@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
-@Profile("dev")
+@Profile({"dev", "test"})
 @Component
 @RequiredArgsConstructor
 public class QueryLoggingInterceptor implements HandlerInterceptor {
@@ -52,5 +52,7 @@ public class QueryLoggingInterceptor implements HandlerInterceptor {
                 executionCount
             );
         }
+
+        queryInspector.resetExecutionCount();
     }
 }

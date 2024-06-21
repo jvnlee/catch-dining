@@ -1,20 +1,22 @@
 package com.jvnlee.catchdining.common.config;
 
-import com.jvnlee.catchdining.common.web.SortByConverter;
+import com.jvnlee.catchdining.common.interceptor.DataSourceRouterCleanerInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.format.FormatterRegistry;
+import org.springframework.context.annotation.Profile;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+@Profile("!controller-test")
 @Configuration
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private final SortByConverter sortByConverter;
+    private final DataSourceRouterCleanerInterceptor dataSourceRouterCleanerInterceptor;
 
     @Override
-    public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(sortByConverter);
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(dataSourceRouterCleanerInterceptor);
     }
 
 }

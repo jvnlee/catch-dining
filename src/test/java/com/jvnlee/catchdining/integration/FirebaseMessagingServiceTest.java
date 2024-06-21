@@ -3,18 +3,14 @@ package com.jvnlee.catchdining.integration;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
-import com.jvnlee.catchdining.TestContextInitializer;
 import com.jvnlee.catchdining.common.exception.MessageSendingFailureException;
 import com.jvnlee.catchdining.domain.notification.service.FirebaseMessagingService;
 import com.jvnlee.catchdining.util.IntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,7 +18,7 @@ import static org.mockito.Mockito.*;
 
 @IntegrationTest
 @EnableRetry
-public class FirebaseMessagingServiceTest {
+public class FirebaseMessagingServiceTest extends TestcontainersContext {
 
     @MockBean
     FirebaseMessaging firebaseMessaging;

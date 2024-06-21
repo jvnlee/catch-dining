@@ -1,6 +1,6 @@
 package com.jvnlee.catchdining.domain.menu.dto;
 
-import com.jvnlee.catchdining.domain.menu.domain.Menu;
+import com.jvnlee.catchdining.domain.menu.model.Menu;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

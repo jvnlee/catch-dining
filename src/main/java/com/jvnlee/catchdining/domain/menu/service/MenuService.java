@@ -2,7 +2,7 @@ package com.jvnlee.catchdining.domain.menu.service;
 
 import com.jvnlee.catchdining.common.exception.MenuNotFoundException;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
-import com.jvnlee.catchdining.domain.menu.domain.Menu;
+import com.jvnlee.catchdining.domain.menu.model.Menu;
 import com.jvnlee.catchdining.domain.menu.dto.MenuDto;
 import com.jvnlee.catchdining.domain.menu.dto.MenuViewDto;
 import com.jvnlee.catchdining.domain.menu.repository.MenuRepository;
