@@ -35,21 +35,31 @@ public class ReviewService {
 
     public void create(ReviewCreateRequestDto reviewCreateRequestDto) {
         User user = userService.getCurrentUser();
+        Long restaurantId = reviewCreateRequestDto.getRestaurantId();
         Restaurant restaurant = restaurantRepository
-                .findById(reviewCreateRequestDto.getRestaurantId())
+                .findById(restaurantId)
                 .orElseThrow(RestaurantNotFoundException::new);
+
+        double tasteRating = reviewCreateRequestDto.getTasteRating();
+        double moodRating = reviewCreateRequestDto.getMoodRating();
+        double serviceRating = reviewCreateRequestDto.getServiceRating();
 
         Review review = new Review(
                 user,
                 restaurant,
-                reviewCreateRequestDto.getTasteRating(),
-                reviewCreateRequestDto.getMoodRating(),
-                reviewCreateRequestDto.getServiceRating(),
+                tasteRating,
+                moodRating,
+                serviceRating,
                 reviewCreateRequestDto.getContent()
         );
 
         reviewRepository.save(review);
-        ReviewCreatedEvent reviewCreatedEvent = new ReviewCreatedEvent(restaurant.getId(), review);
+        ReviewCreatedEvent reviewCreatedEvent = new ReviewCreatedEvent(
+                restaurantId,
+                tasteRating,
+                moodRating,
+                serviceRating
+        );
         eventPublisher.publishEvent(reviewCreatedEvent);
     }
 
