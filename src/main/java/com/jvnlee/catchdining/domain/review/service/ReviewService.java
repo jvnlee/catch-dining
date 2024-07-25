@@ -12,7 +12,7 @@ import com.jvnlee.catchdining.domain.review.repository.ReviewRepository;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +31,7 @@ public class ReviewService {
 
     private final UserService userService;
 
-    private final ApplicationEventPublisher eventPublisher;
+    private final RabbitTemplate rabbitTemplate;
 
     public void create(ReviewCreateRequestDto reviewCreateRequestDto) {
         User user = userService.getCurrentUser();
@@ -54,13 +54,15 @@ public class ReviewService {
         );
 
         reviewRepository.save(review);
+
         ReviewCreatedEvent reviewCreatedEvent = new ReviewCreatedEvent(
                 restaurantId,
                 tasteRating,
                 moodRating,
                 serviceRating
         );
-        eventPublisher.publishEvent(reviewCreatedEvent);
+
+        rabbitTemplate.convertAndSend("reviewEventQueue", reviewCreatedEvent);
     }
 
     public List<ReviewViewByUserResponseDto> viewByUser(Long userId) {
