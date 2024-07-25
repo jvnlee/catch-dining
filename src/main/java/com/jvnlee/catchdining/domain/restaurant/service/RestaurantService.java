@@ -9,7 +9,7 @@ import com.jvnlee.catchdining.domain.restaurant.event.RestaurantUpdatedEvent;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,13 +23,13 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
 
-    private final ApplicationEventPublisher eventPublisher;
+    private final RabbitTemplate rabbitTemplate;
 
     public RestaurantCreateResponseDto register(RestaurantDto restaurantDto) {
         validateName(restaurantDto.getName());
         Restaurant restaurant = new Restaurant(restaurantDto);
         Restaurant saved = restaurantRepository.save(restaurant);
-        eventPublisher.publishEvent(new RestaurantCreatedEvent(restaurant.getId(), restaurantDto));
+        rabbitTemplate.convertAndSend("restaurantEventQueue", new RestaurantCreatedEvent(restaurant.getId(), restaurantDto));
         return new RestaurantCreateResponseDto(saved.getId());
     }
 
@@ -39,12 +39,12 @@ public class RestaurantService {
                 .findById(id)
                 .orElseThrow(RestaurantNotFoundException::new);
         restaurant.update(restaurantUpdateDto);
-        eventPublisher.publishEvent(new RestaurantUpdatedEvent(id, restaurantUpdateDto));
+        rabbitTemplate.convertAndSend("restaurantEventQueue", new RestaurantUpdatedEvent(id, restaurantUpdateDto));
     }
 
     public void delete(Long id) {
         restaurantRepository.deleteById(id);
-        eventPublisher.publishEvent(new RestaurantDeletedEvent(id));
+        rabbitTemplate.convertAndSend("restaurantEventQueue", new RestaurantDeletedEvent(id));
     }
 
     private void validateName(String name) {
