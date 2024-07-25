@@ -67,6 +67,15 @@ services:
     networks:
       - catch-dining-net
 
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.13.6
+    ports:
+      - "5672:5672"
+    restart: always
+    networks:
+      - catch-dining-net
+
 networks:
   catch-dining-net:
     driver: bridge
