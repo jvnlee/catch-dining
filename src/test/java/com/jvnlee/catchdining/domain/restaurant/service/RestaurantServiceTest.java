@@ -1,6 +1,5 @@
 package com.jvnlee.catchdining.domain.restaurant.service;
 
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantCreateResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.event.RestaurantCreatedEvent;
 import com.jvnlee.catchdining.domain.restaurant.event.RestaurantDeletedEvent;
@@ -14,7 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DuplicateKeyException;
 
 import java.util.Optional;
@@ -33,7 +32,7 @@ class RestaurantServiceTest {
     RestaurantRepository repository;
 
     @Mock
-    ApplicationEventPublisher eventPublisher;
+    RabbitTemplate rabbitTemplate;
 
     @InjectMocks
     RestaurantService service;
@@ -51,7 +50,7 @@ class RestaurantServiceTest {
         service.register(restaurantDto);
 
         verify(repository).save(any(Restaurant.class));
-        verify(eventPublisher).publishEvent(any(RestaurantCreatedEvent.class));
+        verify(rabbitTemplate).convertAndSend(anyString(), any(RestaurantCreatedEvent.class));
     }
 
     @Test
@@ -82,7 +81,7 @@ class RestaurantServiceTest {
         service.update(restaurantId, restaurantDto);
 
         verify(restaurant).update(restaurantDto);
-        verify(eventPublisher).publishEvent(any(RestaurantUpdatedEvent.class));
+        verify(rabbitTemplate).convertAndSend(anyString(), any(RestaurantUpdatedEvent.class));
     }
 
     @Test
@@ -110,7 +109,7 @@ class RestaurantServiceTest {
         service.delete(restaurantId);
 
         verify(repository).deleteById(restaurantId);
-        verify(eventPublisher).publishEvent(any(RestaurantDeletedEvent.class));
+        verify(rabbitTemplate).convertAndSend(anyString(), any(RestaurantDeletedEvent.class));
     }
 
 }
