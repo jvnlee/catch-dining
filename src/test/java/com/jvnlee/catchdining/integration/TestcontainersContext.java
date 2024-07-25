@@ -5,6 +5,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.RabbitMQContainer;
 
 public class TestcontainersContext {
 
@@ -19,6 +20,10 @@ public class TestcontainersContext {
     private static final GenericContainer<?> REDIS;
     private static final int REDIS_PORT = 6379;
 
+    private static final String RABBITMQ_IMAGE = "rabbitmq:3.13.6";
+    private static final RabbitMQContainer RABBITMQ;
+    private static final int RABBITMQ_PORT = 5672;
+
     static {
         WRITE_DB = new MySQLContainer<>(MYSQL_IMAGE)
                 .withDatabaseName(DATABASE_NAME)
@@ -28,10 +33,13 @@ public class TestcontainersContext {
                 .withInitScript(READ_DB_INIT_SCRIPT_NAME);
         REDIS = new GenericContainer<>(REDIS_IMAGE)
                 .withExposedPorts(REDIS_PORT);
+        RABBITMQ = new RabbitMQContainer(RABBITMQ_IMAGE)
+                .withExposedPorts(RABBITMQ_PORT);
 
         WRITE_DB.start();
         READ_DB.start();
         REDIS.start();
+        RABBITMQ.start();
     }
 
     @DynamicPropertySource
@@ -48,6 +56,11 @@ public class TestcontainersContext {
 
         registry.add("spring.redis.host", REDIS::getHost);
         registry.add("spring.redis.port", () -> REDIS.getMappedPort(REDIS_PORT).toString());
+
+        registry.add("spring.rabbitmq.host", RABBITMQ::getHost);
+        registry.add("spring.rabbitmq.port", () -> RABBITMQ.getMappedPort(RABBITMQ_PORT).toString());
+        registry.add("spring.rabbitmq.username", RABBITMQ::getAdminUsername);
+        registry.add("spring.rabbitmq.password", RABBITMQ::getAdminPassword);
     }
 
 }
