@@ -10,7 +10,7 @@ import static com.jvnlee.catchdining.common.config.RabbitMQConfig.REVIEW_EVENT_Q
 
 @Component
 @RequiredArgsConstructor
-public class ReviewCreatedEventHandler {
+public class ReviewEventHandler {
 
     private final RestaurantReviewStatService restaurantReviewStatService;
 
