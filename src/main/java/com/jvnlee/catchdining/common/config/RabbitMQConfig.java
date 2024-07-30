@@ -24,6 +24,10 @@ public class RabbitMQConfig {
     @Value("${spring.rabbitmq.password}")
     private String password;
 
+    public static final String REVIEW_EVENT_QUEUE = "REVIEW_EVENT_QUEUE";
+
+    public static final String RESTAURANT_EVENT_QUEUE = "RESTAURANT_EVENT_QUEUE";
+
     @Bean
     public ConnectionFactory connectionFactory() {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory(host, port);
@@ -46,12 +50,12 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue reviewEventQueue() {
-        return new Queue("reviewEventQueue");
+        return new Queue(REVIEW_EVENT_QUEUE);
     }
 
     @Bean
     public Queue restaurantEventQueue() {
-        return new Queue("restaurantEventQueue");
+        return new Queue(RESTAURANT_EVENT_QUEUE);
     }
 
 }

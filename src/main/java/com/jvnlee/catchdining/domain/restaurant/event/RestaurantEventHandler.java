@@ -7,9 +7,10 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import static com.jvnlee.catchdining.common.config.RabbitMQConfig.RESTAURANT_EVENT_QUEUE;
 @Component
 @RequiredArgsConstructor
-@RabbitListener(queues = "restaurantEventQueue")
+@RabbitListener(queues = RESTAURANT_EVENT_QUEUE)
 public class RestaurantEventHandler {
 
     private final RestaurantReviewStatService restaurantReviewStatService;

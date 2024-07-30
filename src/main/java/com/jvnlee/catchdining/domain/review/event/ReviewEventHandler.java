@@ -6,6 +6,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import static com.jvnlee.catchdining.common.config.RabbitMQConfig.REVIEW_EVENT_QUEUE;
+
 @Component
 @RequiredArgsConstructor
 public class ReviewCreatedEventHandler {
@@ -13,8 +15,8 @@ public class ReviewCreatedEventHandler {
     private final RestaurantReviewStatService restaurantReviewStatService;
 
     @Async
-    @RabbitListener(queues = "reviewEventQueue")
-    public void handle(ReviewCreatedEvent event) {
+    @RabbitListener(queues = REVIEW_EVENT_QUEUE)
+    public void handleCreated(ReviewCreatedEvent event) {
         restaurantReviewStatService.updateReviewData(
                 event.getRestaurantId(),
                 event.getTasteRating(),
