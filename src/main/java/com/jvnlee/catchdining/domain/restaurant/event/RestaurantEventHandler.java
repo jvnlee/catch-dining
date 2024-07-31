@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.restaurant.event;
 
+import com.jvnlee.catchdining.common.annotation.RabbitManualAck;
 import com.jvnlee.catchdining.domain.restaurant.service.RestaurantReviewStatService;
 import com.rabbitmq.client.Channel;
 import lombok.RequiredArgsConstructor;
@@ -26,44 +27,20 @@ public class RestaurantEventHandler {
     @Async
     @RabbitHandler
     public void handleCreated(RestaurantCreatedEvent event, Channel channel, @Header(DELIVERY_TAG) long tag) throws IOException {
-        try {
-            restaurantReviewStatService.register(event.getRestaurantId(), event.getRestaurantDto());
-
-            channel.basicAck(tag, false);
-            log.info("이벤트 처리 완료: {}", event);
-        } catch (IOException e) {
-            channel.basicNack(tag, false, true);
-            log.error("이벤트 처리 실패: {}", event);
-        }
+        restaurantReviewStatService.register(event.getRestaurantId(), event.getRestaurantDto());
     }
 
     @Async
     @RabbitHandler
+    @RabbitManualAck
     public void handleUpdated(RestaurantUpdatedEvent event, Channel channel, @Header(DELIVERY_TAG) long tag) throws IOException {
-        try {
-            restaurantReviewStatService.update(event.getRestaurantId(), event.getRestaurantDto());
-
-            channel.basicAck(tag, false);
-            log.info("이벤트 처리 완료: {}", event);
-        } catch (IOException e) {
-            channel.basicNack(tag, false, true);
-            log.error("이벤트 처리 실패: {}", event);
-        }
-
+        restaurantReviewStatService.update(event.getRestaurantId(), event.getRestaurantDto());
     }
 
     @Async
     @RabbitHandler
     public void handleDeleted(RestaurantDeletedEvent event, Channel channel, @Header(DELIVERY_TAG) long tag) throws IOException {
-        try {
-            restaurantReviewStatService.delete(event.getRestaurantId());
-
-            channel.basicAck(tag, false);
-            log.info("이벤트 처리 완료: {}", event);
-        } catch (IOException e) {
-            channel.basicNack(tag, false, true);
-            log.error("이벤트 처리 실패: {}", event);
-        }
+        restaurantReviewStatService.delete(event.getRestaurantId());
     }
 
 }
