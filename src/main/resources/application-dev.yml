@@ -14,6 +14,15 @@ spring:
     host: redis
     port: 6379
 
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        acknowledge-mode: manual
+
 logging:
   level:
     org:

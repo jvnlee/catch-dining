@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.review.service;
 
+import com.jvnlee.catchdining.common.config.RabbitMQConfig;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
@@ -12,12 +13,13 @@ import com.jvnlee.catchdining.domain.review.repository.ReviewRepository;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.jvnlee.catchdining.common.config.RabbitMQConfig.REVIEW_EVENT_QUEUE;
 import static java.util.stream.Collectors.*;
 
 @Service
@@ -31,7 +33,7 @@ public class ReviewService {
 
     private final UserService userService;
 
-    private final ApplicationEventPublisher eventPublisher;
+    private final RabbitTemplate rabbitTemplate;
 
     public void create(ReviewCreateRequestDto reviewCreateRequestDto) {
         User user = userService.getCurrentUser();
@@ -54,13 +56,15 @@ public class ReviewService {
         );
 
         reviewRepository.save(review);
+
         ReviewCreatedEvent reviewCreatedEvent = new ReviewCreatedEvent(
                 restaurantId,
                 tasteRating,
                 moodRating,
                 serviceRating
         );
-        eventPublisher.publishEvent(reviewCreatedEvent);
+
+        rabbitTemplate.convertAndSend(REVIEW_EVENT_QUEUE, reviewCreatedEvent);
     }
 
     public List<ReviewViewByUserResponseDto> viewByUser(Long userId) {

@@ -83,6 +83,8 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
 
         Long restaurantId = ((Integer) response.path("data.restaurantId")).longValue();
 
+        Thread.sleep(1000);
+
         // READ-DB에서 조회하여 RestaurantReviewStat 생성 확인
         RestAssured
                 .given().log().all()
@@ -127,6 +129,8 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .when()
                 .post("/restaurants/{restaurantId}/reviews")
                 .then().log().all();
+
+        Thread.sleep(1000);
 
         // READ-DB에서 조회하여 RestaurantReviewStat 업데이트 반영 확인
         RestAssured
@@ -175,6 +179,8 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .put("/restaurants/{restaurantId}")
                 .then().log().all();
 
+        Thread.sleep(1000);
+
         // READ-DB에서 조회하여 RestaurantReviewStat 업데이트 반영 확인
         RestAssured
                 .given().log().all()
@@ -214,6 +220,8 @@ public class RestaurantReviewStatIntegrationTest extends TestcontainersContext {
                 .when()
                 .delete("/restaurants/{restaurantId}")
                 .then().log().all();
+
+        Thread.sleep(1000);
 
         // READ-DB에서 조회하여 RestaurantReviewStat 삭제 반영 확인
         RestAssured

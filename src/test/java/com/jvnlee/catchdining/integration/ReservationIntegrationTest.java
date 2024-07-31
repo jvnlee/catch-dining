@@ -104,7 +104,7 @@ class ReservationIntegrationTest extends TestcontainersContext {
 
         RestAssured
                 .given().log().all()
-                .pathParam("restaurantId", 1L)
+                .pathParam("restaurantId", restaurantId)
                 .header(AUTHORIZATION, authHeader)
                 .body(seatAddRequestBody)
                 .contentType(JSON)

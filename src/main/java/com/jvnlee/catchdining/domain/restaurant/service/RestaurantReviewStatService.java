@@ -20,16 +20,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.OptimisticLockException;
 
-import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
-
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class RestaurantReviewStatService {
 
     private final RestaurantReviewStatRepository restaurantReviewStatRepository;
 
     @AggregatedData
-    @Transactional(propagation = REQUIRES_NEW)
     public void register(Long id, RestaurantDto restaurantDto) {
         restaurantReviewStatRepository.save(new RestaurantReviewStat(id, restaurantDto));
     }
@@ -69,7 +67,6 @@ public class RestaurantReviewStatService {
             maxAttempts = 10
     )
     @AggregatedData
-    @Transactional(propagation = REQUIRES_NEW)
     public void updateReviewData(Long restaurantId, double tasteRating, double moodRating, double serviceRating) {
         RestaurantReviewStat restaurantReviewStat = restaurantReviewStatRepository
                 .findById(restaurantId)
@@ -79,7 +76,6 @@ public class RestaurantReviewStatService {
     }
 
     @AggregatedData
-    @Transactional(propagation = REQUIRES_NEW)
     public void update(Long restaurantId, RestaurantDto restaurantDto) {
         RestaurantReviewStat restaurantReviewStat = restaurantReviewStatRepository
                 .findById(restaurantId)
@@ -89,7 +85,6 @@ public class RestaurantReviewStatService {
     }
 
     @AggregatedData
-    @Transactional(propagation = REQUIRES_NEW)
     public void delete(Long restaurantId) {
         restaurantReviewStatRepository.deleteById(restaurantId);
     }
