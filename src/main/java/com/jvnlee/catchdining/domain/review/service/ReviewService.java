@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.review.service;
 
+import com.jvnlee.catchdining.common.config.RabbitMQConfig;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.jvnlee.catchdining.common.config.RabbitMQConfig.REVIEW_EVENT_QUEUE;
 import static java.util.stream.Collectors.*;
 
 @Service
@@ -62,7 +64,7 @@ public class ReviewService {
                 serviceRating
         );
 
-        rabbitTemplate.convertAndSend("reviewEventQueue", reviewCreatedEvent);
+        rabbitTemplate.convertAndSend(REVIEW_EVENT_QUEUE, reviewCreatedEvent);
     }
 
     public List<ReviewViewByUserResponseDto> viewByUser(Long userId) {

@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.restaurant.service;
 
+import com.jvnlee.catchdining.common.config.RabbitMQConfig;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantCreateResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
@@ -16,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+import static com.jvnlee.catchdining.common.config.RabbitMQConfig.RESTAURANT_EVENT_QUEUE;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -29,7 +32,7 @@ public class RestaurantService {
         validateName(restaurantDto.getName());
         Restaurant restaurant = new Restaurant(restaurantDto);
         Restaurant saved = restaurantRepository.save(restaurant);
-        rabbitTemplate.convertAndSend("restaurantEventQueue", new RestaurantCreatedEvent(restaurant.getId(), restaurantDto));
+        rabbitTemplate.convertAndSend(RESTAURANT_EVENT_QUEUE, new RestaurantCreatedEvent(restaurant.getId(), restaurantDto));
         return new RestaurantCreateResponseDto(saved.getId());
     }
 
@@ -39,12 +42,12 @@ public class RestaurantService {
                 .findById(id)
                 .orElseThrow(RestaurantNotFoundException::new);
         restaurant.update(restaurantUpdateDto);
-        rabbitTemplate.convertAndSend("restaurantEventQueue", new RestaurantUpdatedEvent(id, restaurantUpdateDto));
+        rabbitTemplate.convertAndSend(RESTAURANT_EVENT_QUEUE, new RestaurantUpdatedEvent(id, restaurantUpdateDto));
     }
 
     public void delete(Long id) {
         restaurantRepository.deleteById(id);
-        rabbitTemplate.convertAndSend("restaurantEventQueue", new RestaurantDeletedEvent(id));
+        rabbitTemplate.convertAndSend(RESTAURANT_EVENT_QUEUE, new RestaurantDeletedEvent(id));
     }
 
     private void validateName(String name) {
