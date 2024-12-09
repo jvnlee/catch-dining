@@ -1,10 +1,12 @@
 package com.jvnlee.catchdining.domain.reservation.controller;
 
 import com.jvnlee.catchdining.common.web.Response;
-import com.jvnlee.catchdining.domain.reservation.dto.ReservationDto;
+import com.jvnlee.catchdining.domain.reservation.dto.ReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationRestaurantViewDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationStatusDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationUserViewDto;
+import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationRequestDto;
+import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationResponseDto;
 import com.jvnlee.catchdining.domain.reservation.model.ReservationStatus;
 import com.jvnlee.catchdining.domain.reservation.service.ReservationService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,12 @@ import java.util.List;
 public class ReservationController {
 
     private final ReservationService reservationService;
+
+    @PostMapping("/reservations/tmp")
+    public Response<TmpReservationResponseDto> createTmp(@RequestBody TmpReservationRequestDto tmpReservationRequestDto) {
+        String tmpReservationKey = reservationService.createTmp(tmpReservationRequestDto);
+        return new Response<>("임시 예약 성공", new TmpReservationResponseDto(tmpReservationKey));
+    }
 
     @PostMapping("/reservations")
     public Response<Void> create(@RequestBody ReservationDto reservationDto) {
