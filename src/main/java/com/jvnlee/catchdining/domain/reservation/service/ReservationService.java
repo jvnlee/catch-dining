@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.reservation.service;
 
+import com.jvnlee.catchdining.common.exception.InvalidRedisKeyException;
 import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
 import com.jvnlee.catchdining.common.exception.ReservationNotFoundException;
 import com.jvnlee.catchdining.common.exception.SeatNotFoundException;
@@ -10,6 +11,7 @@ import com.jvnlee.catchdining.domain.payment.service.PaymentService;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationRestaurantViewDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationStatusDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationUserViewDto;
+import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.model.Reservation;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationDto;
 import com.jvnlee.catchdining.domain.reservation.model.ReservationStatus;
@@ -19,6 +21,7 @@ import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +29,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 import static com.jvnlee.catchdining.domain.reservation.model.ReservationStatus.*;
 import static com.jvnlee.catchdining.domain.notification.model.DiningPeriod.*;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.*;
 
 @Service
@@ -46,16 +51,62 @@ public class ReservationService {
 
     private final NotificationRequestService notificationRequestService;
 
-    @Transactional(timeout = 500)
-    public void create(ReservationDto reservationDto) {
-        // 예약 가능 여부 확인
-        Seat seat = seatRepository
-                .findWithLockById(reservationDto.getSeatId())
+    private final RedisTemplate<String, String> redisTemplate;
+
+    private final String TMP_SEAT_AVAIL_QTY_PREFIX = "tmp:seat:avail_qty:";
+
+    private final String TMP_RSV_SEAT_ID_PREFIX = "tmp:rsv:seat_id:";
+
+    public String createTmp(TmpReservationRequestDto tmpReservationRequestDto) {
+        Long seatId = tmpReservationRequestDto.getSeatId();
+        String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
+
+        Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(SeatNotFoundException::new);
 
-        if (seat.getAvailableQuantity() > 0) {
-            seat.occupy();
-        } else {
+        redisTemplate.opsForValue().setIfAbsent(
+                tmpSeatAvailQtyKey,
+                String.valueOf(seat.getAvailableQuantity()),
+                1_800_000L,
+                MILLISECONDS
+        );
+
+        Long result = redisTemplate.opsForValue().decrement(tmpSeatAvailQtyKey, 1);
+
+        if (result == null || result < 0) {
+            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey, 1);
+            throw new NotEnoughSeatException();
+        }
+
+        String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + UUID.randomUUID();
+
+        redisTemplate.opsForValue().set(
+                tmpRsvSeatIdKey,
+                String.valueOf(seatId),
+                300000L,
+                MILLISECONDS
+        );
+
+        return tmpRsvSeatIdKey;
+    }
+
+    public void create(ReservationRequestDto reservationRequestDto) {
+        String tmpRsvSeatIdKey = reservationRequestDto.getTmpReservationKey();
+
+        String seatIdStr = redisTemplate.opsForValue().get(tmpRsvSeatIdKey);
+
+        if (seatIdStr == null) {
+            throw new InvalidRedisKeyException();
+        }
+
+        Long seatId = Long.parseLong(seatIdStr);
+
+        redisTemplate.delete(tmpRsvSeatIdKey);
+
+        Seat seat = seatRepository.findWithLockById(seatId)
+                .orElseThrow(SeatNotFoundException::new);
+
+        if (seat.getAvailableQuantity() == 0) {
             throw new NotEnoughSeatException();
         }
 
