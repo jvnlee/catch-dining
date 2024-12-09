@@ -13,7 +13,7 @@ import com.jvnlee.catchdining.domain.reservation.dto.ReservationStatusDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationUserViewDto;
 import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.model.Reservation;
-import com.jvnlee.catchdining.domain.reservation.dto.ReservationDto;
+import com.jvnlee.catchdining.domain.reservation.dto.ReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.model.ReservationStatus;
 import com.jvnlee.catchdining.domain.reservation.repository.ReservationRepository;
 import com.jvnlee.catchdining.domain.seat.model.Seat;
@@ -113,21 +113,19 @@ public class ReservationService {
         // Payment 시도
         Payment payment = paymentService.create(
                 new PaymentDto(
-                        reservationDto.getReserveMenus(),
-                        reservationDto.getPaymentType()
+                        reservationRequestDto.getReserveMenus(),
+                        reservationRequestDto.getPaymentType()
                 )
         );
 
-        // 예약 주체인 사용자
         User user = userService.getCurrentUser();
 
-        // Reservation 객체 생성 및 영속화
         Reservation reservation = new Reservation(
                 user,
                 seat.getRestaurant(),
                 LocalDateTime.of(seat.getAvailableDate(), seat.getAvailableTime()),
                 seat,
-                reservationDto.getHeadCount(),
+                reservationRequestDto.getHeadCount(),
                 payment,
                 RESERVED
         );

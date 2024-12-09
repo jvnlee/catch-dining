@@ -28,8 +28,8 @@ public class ReservationController {
     }
 
     @PostMapping("/reservations")
-    public Response<Void> create(@RequestBody ReservationDto reservationDto) {
-        reservationService.create(reservationDto);
+    public Response<Void> create(@RequestBody ReservationRequestDto reservationRequestDto) {
+        reservationService.create(reservationRequestDto);
         return new Response<>("예약 성공");
     }
 

@@ -11,9 +11,9 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReservationDto {
+public class ReservationRequestDto {
 
-    private Long seatId;
+    private String tmpReservationKey;
 
     private List<ReserveMenuDto> reserveMenus;
 
