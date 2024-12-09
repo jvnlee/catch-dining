@@ -3,7 +3,6 @@ package com.jvnlee.catchdining.common.advice;
 import com.jvnlee.catchdining.common.exception.*;
 import com.jvnlee.catchdining.common.web.Response;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -65,6 +64,12 @@ public class ControllerAdvice {
     @ResponseStatus(BAD_REQUEST)
     public Response<Void> handleDuplicateNotificationRequest() {
         return new Response<>("이미 동일한 빈 자리 알림 신청 내역이 있습니다.");
+    }
+
+    @ExceptionHandler(InvalidRedisKeyException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public Response<Void> handleInvalidTmpReservationKey() {
+        return new Response<>("유효하지 않은 Redis Key 입니다.");
     }
 
 }
