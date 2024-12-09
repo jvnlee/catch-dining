@@ -110,7 +110,8 @@ public class ReservationService {
             throw new NotEnoughSeatException();
         }
 
-        // Payment 시도
+        seat.decrementAvailableQuantity();
+
         Payment payment = paymentService.create(
                 new PaymentDto(
                         reservationRequestDto.getReserveMenus(),
@@ -165,7 +166,7 @@ public class ReservationService {
         Seat seat = reservation.getSeat();
 
         // 예약되어 있던 좌석의 잔여 수량 원복
-        seat.release();
+        seat.incrementAvailableQuantity();
 
         // 결제 취소
         paymentService.cancel(reservation.getPayment().getId());

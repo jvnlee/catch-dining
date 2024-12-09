@@ -54,11 +54,11 @@ public class Seat extends BaseEntity {
     @Column(name = "available_quantity")
     private int availableQuantity;
 
-    public void occupy() {
+    public void decrementAvailableQuantity() {
         this.availableQuantity--;
     }
 
-    public void release() {
+    public void incrementAvailableQuantity() {
         this.availableQuantity++;
     }
 
