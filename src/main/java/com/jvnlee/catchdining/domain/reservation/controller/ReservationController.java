@@ -5,6 +5,7 @@ import com.jvnlee.catchdining.domain.reservation.dto.ReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationRestaurantViewDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationStatusDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationUserViewDto;
+import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationCancelRequestDto;
 import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationResponseDto;
 import com.jvnlee.catchdining.domain.reservation.model.ReservationStatus;
@@ -53,6 +54,12 @@ public class ReservationController {
     public Response<Void> updateStatus(@PathVariable Long reservationId, @RequestBody ReservationStatusDto reservationStatusDto) {
         reservationService.updateStatus(reservationId, reservationStatusDto);
         return new Response<>("예약 상태 처리 완료");
+    }
+
+    @DeleteMapping("/reservations/tmp")
+    public Response<Void> cancelTmp(@RequestBody TmpReservationCancelRequestDto tmpReservationCancelRequestDto) {
+        reservationService.cancelTmp(tmpReservationCancelRequestDto);
+        return new Response<>("임시 예약 취소 완료");
     }
 
     @PutMapping("/users/{userId}/reservations/{reservationId}")
