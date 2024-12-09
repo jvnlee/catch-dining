@@ -11,6 +11,7 @@ import com.jvnlee.catchdining.domain.payment.service.PaymentService;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationRestaurantViewDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationStatusDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationUserViewDto;
+import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationCancelRequestDto;
 import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.model.Reservation;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationRequestDto;
@@ -159,6 +160,21 @@ public class ReservationService {
     public void updateStatus(Long reservationId, ReservationStatusDto reservationStatusDto) {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(ReservationNotFoundException::new);
         reservation.updateStatus(reservationStatusDto.getStatus());
+    }
+
+    public void cancelTmp(TmpReservationCancelRequestDto tmpReservationCancelRequestDto) {
+        String tmpRsvSeatIdKey = tmpReservationCancelRequestDto.getTmpReservationKey();
+
+        String seatIdStr = redisTemplate.opsForValue().get(tmpRsvSeatIdKey);
+
+        if (seatIdStr == null) {
+            throw new InvalidRedisKeyException();
+        }
+
+        Long seatId = Long.parseLong(seatIdStr);
+
+        redisTemplate.opsForValue().increment(TMP_SEAT_AVAIL_QTY_PREFIX + seatId, 1);
+        redisTemplate.delete(tmpRsvSeatIdKey);
     }
 
     public void cancel(Long reservationId) {
