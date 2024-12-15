@@ -22,6 +22,9 @@ import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
 import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RTopic;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +34,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 
 import static com.jvnlee.catchdining.domain.reservation.model.ReservationStatus.*;
 import static com.jvnlee.catchdining.domain.notification.model.DiningPeriod.*;
@@ -54,11 +58,15 @@ public class ReservationService {
 
     private final RedisTemplate<String, String> redisTemplate;
 
+    private final RedissonClient redissonClient;
+
     private final String TMP_SEAT_AVAIL_QTY_PREFIX = "tmp:seat:avail_qty:";
 
     private final String TMP_RSV_SEAT_ID_PREFIX = "tmp:rsv:seat_id:";
 
     private final String LOCK_SEAT_PREFIX = "lock:seat:";
+
+    private final String SEAT_AVAIL_QTY_INIT_MSG = "CACHE_INITIALIZED";
 
     public String createTmp(TmpReservationRequestDto tmpReservationRequestDto) {
         Long seatId = tmpReservationRequestDto.getSeatId();
@@ -67,33 +75,45 @@ public class ReservationService {
         if (Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
             String lockKey = LOCK_SEAT_PREFIX + seatId;
 
-            Boolean lockAcquired = redisTemplate
-                    .opsForValue()
-                    .setIfAbsent(lockKey, "LOCKED", 1000L, MILLISECONDS);
+            RLock lock = redissonClient.getLock(lockKey);
+            RTopic topic = redissonClient.getTopic("seatAvailQtyTopic:" + seatId);
 
-            if (lockAcquired != null && lockAcquired) {
-                try {
-                    Seat seat = seatRepository.findById(seatId)
-                            .orElseThrow(SeatNotFoundException::new);
-
-                    redisTemplate.opsForValue().setIfAbsent(
-                            tmpSeatAvailQtyKey,
-                            String.valueOf(seat.getAvailableQuantity()),
-                            1_800_000L,
-                            MILLISECONDS
-                    );
-                } finally {
-                    redisTemplate.delete(lockKey);
-                }
-            } else {
-                while (Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
+            try {
+                if (lock.tryLock(5000, -1, MILLISECONDS)) {
                     try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new RuntimeException("Seat 잔여 수량 초기화 대기 도중 쓰레드 인터럽션 발생");
+                        if (Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
+                            Seat seat = seatRepository.findById(seatId)
+                                    .orElseThrow(SeatNotFoundException::new);
+
+                            redisTemplate.opsForValue().set(
+                                    tmpSeatAvailQtyKey,
+                                    String.valueOf(seat.getAvailableQuantity()),
+                                    1_800_000L,
+                                    MILLISECONDS
+                            );
+
+                            topic.publish(SEAT_AVAIL_QTY_INIT_MSG);
+                        }
+                    } finally {
+                        if (lock.isHeldByCurrentThread()) {
+                            lock.unlock();
+                        }
+                    }
+                } else {
+                    CountDownLatch latch = new CountDownLatch(1);
+                    topic.addListener(String.class, (channel, msg) -> {
+                        if (SEAT_AVAIL_QTY_INIT_MSG.equals(msg)) {
+                            latch.countDown();
+                        }
+                    });
+
+                    boolean cacheInitialized = latch.await(5000, MILLISECONDS);
+                    if (!cacheInitialized || Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
+                        throw new RuntimeException("자리 잔여 수량 Redis 캐시 초기화 대기 중 타임아웃 발생");
                     }
                 }
+            } catch (InterruptedException e) {
+                throw new RuntimeException("자리 잔여 수량 Redis 캐시 초기화 대기 중 쓰레드 인터럽션 발생");
             }
         }
 
