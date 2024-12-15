@@ -13,6 +13,7 @@ import com.jvnlee.catchdining.domain.reservation.dto.ReservationStatusDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationUserViewDto;
 import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationCancelRequestDto;
 import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationRequestDto;
+import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationResponseDto;
 import com.jvnlee.catchdining.domain.reservation.model.Reservation;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.model.ReservationStatus;
@@ -68,7 +69,7 @@ public class ReservationService {
 
     private final String SEAT_AVAIL_QTY_INIT_MSG = "CACHE_INITIALIZED";
 
-    public String createTmp(TmpReservationRequestDto tmpReservationRequestDto) {
+    public TmpReservationResponseDto createTmp(TmpReservationRequestDto tmpReservationRequestDto) {
         Long seatId = tmpReservationRequestDto.getSeatId();
         String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
 
@@ -133,7 +134,7 @@ public class ReservationService {
                 MILLISECONDS
         );
 
-        return tmpRsvSeatIdKey;
+        return new TmpReservationResponseDto(tmpRsvSeatIdKey);
     }
 
     public void create(ReservationRequestDto reservationRequestDto) {

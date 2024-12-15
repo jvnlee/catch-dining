@@ -24,8 +24,8 @@ public class ReservationController {
 
     @PostMapping("/reservations/tmp")
     public Response<TmpReservationResponseDto> createTmp(@RequestBody TmpReservationRequestDto tmpReservationRequestDto) {
-        String tmpReservationKey = reservationService.createTmp(tmpReservationRequestDto);
-        return new Response<>("임시 예약 성공", new TmpReservationResponseDto(tmpReservationKey));
+        TmpReservationResponseDto data = reservationService.createTmp(tmpReservationRequestDto);
+        return new Response<>("임시 예약 성공", data);
     }
 
     @PostMapping("/reservations")
