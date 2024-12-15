@@ -58,19 +58,44 @@ public class ReservationService {
 
     private final String TMP_RSV_SEAT_ID_PREFIX = "tmp:rsv:seat_id:";
 
+    private final String LOCK_SEAT_PREFIX = "lock:seat:";
+
     public String createTmp(TmpReservationRequestDto tmpReservationRequestDto) {
         Long seatId = tmpReservationRequestDto.getSeatId();
         String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
 
-        Seat seat = seatRepository.findById(seatId)
-                .orElseThrow(SeatNotFoundException::new);
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
+            String lockKey = LOCK_SEAT_PREFIX + seatId;
 
-        redisTemplate.opsForValue().setIfAbsent(
-                tmpSeatAvailQtyKey,
-                String.valueOf(seat.getAvailableQuantity()),
-                1_800_000L,
-                MILLISECONDS
-        );
+            Boolean lockAcquired = redisTemplate
+                    .opsForValue()
+                    .setIfAbsent(lockKey, "LOCKED", 1000L, MILLISECONDS);
+
+            if (lockAcquired != null && lockAcquired) {
+                try {
+                    Seat seat = seatRepository.findById(seatId)
+                            .orElseThrow(SeatNotFoundException::new);
+
+                    redisTemplate.opsForValue().setIfAbsent(
+                            tmpSeatAvailQtyKey,
+                            String.valueOf(seat.getAvailableQuantity()),
+                            1_800_000L,
+                            MILLISECONDS
+                    );
+                } finally {
+                    redisTemplate.delete(lockKey);
+                }
+            } else {
+                while (Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Seat 잔여 수량 초기화 대기 도중 쓰레드 인터럽션 발생");
+                    }
+                }
+            }
+        }
 
         Long result = redisTemplate.opsForValue().decrement(tmpSeatAvailQtyKey, 1);
 
