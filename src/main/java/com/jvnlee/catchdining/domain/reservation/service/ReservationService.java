@@ -206,6 +206,7 @@ public class ReservationService {
         return Long.parseLong(seatIdStr);
     }
 
+    @Transactional(readOnly = true)
     public List<ReservationUserViewDto> viewByUser(Long userId, ReservationStatus status) {
         List<ReservationUserViewDto> reservationList = reservationRepository.findAllByUserIdAndStatus(userId, status)
                 .stream()
@@ -217,6 +218,7 @@ public class ReservationService {
         return reservationList;
     }
 
+    @Transactional(readOnly = true)
     public List<ReservationRestaurantViewDto> viewByRestaurant(Long restaurantId, ReservationStatus status) {
         List<ReservationRestaurantViewDto> reservationList = reservationRepository.findAllByRestaurantIdAndStatus(restaurantId, status)
                 .stream()
