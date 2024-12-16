@@ -21,10 +21,8 @@ import com.jvnlee.catchdining.domain.reservation.model.ReservationStatus;
 import com.jvnlee.catchdining.domain.reservation.repository.ReservationRepository;
 import com.jvnlee.catchdining.domain.seat.model.Seat;
 import com.jvnlee.catchdining.domain.seat.repository.SeatRepository;
-import com.jvnlee.catchdining.domain.user.model.User;
 import com.jvnlee.catchdining.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.redisson.api.RLock;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -208,26 +206,18 @@ public class ReservationService {
 
     @Transactional(readOnly = true)
     public List<ReservationUserViewDto> viewByUser(Long userId, ReservationStatus status) {
-        List<ReservationUserViewDto> reservationList = reservationRepository.findAllByUserIdAndStatus(userId, status)
+        return reservationRepository.findAllByUserIdAndStatus(userId, status)
                 .stream()
                 .map(ReservationUserViewDto::new)
                 .collect(toList());
-
-        if (reservationList.isEmpty()) throw new ReservationNotFoundException();
-
-        return reservationList;
     }
 
     @Transactional(readOnly = true)
     public List<ReservationRestaurantViewDto> viewByRestaurant(Long restaurantId, ReservationStatus status) {
-        List<ReservationRestaurantViewDto> reservationList = reservationRepository.findAllByRestaurantIdAndStatus(restaurantId, status)
+        return reservationRepository.findAllByRestaurantIdAndStatus(restaurantId, status)
                 .stream()
                 .map(ReservationRestaurantViewDto::new)
                 .collect(toList());
-
-        if (reservationList.isEmpty()) throw new ReservationNotFoundException();
-
-        return reservationList;
     }
 
     public void updateStatus(Long reservationId, ReservationStatusDto reservationStatusDto) {
