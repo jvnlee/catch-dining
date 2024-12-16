@@ -72,4 +72,10 @@ public class ControllerAdvice {
         return new Response<>("유효하지 않은 Redis Key 입니다.");
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(INTERNAL_SERVER_ERROR)
+    public Response<Void> handleRuntimeException(RuntimeException e) {
+        return new Response<>("요청 처리 도중 문제가 발생했습니다.");
+    }
+
 }
