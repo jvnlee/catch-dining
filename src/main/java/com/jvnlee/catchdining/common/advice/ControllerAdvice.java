@@ -25,13 +25,13 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(BAD_REQUEST)
+    @ResponseStatus(NOT_FOUND)
     public Response<Void> handleUserNotFound() {
         return new Response<>("존재하지 않는 사용자입니다.");
     }
 
     @ExceptionHandler(RestaurantNotFoundException.class)
-    @ResponseStatus(BAD_REQUEST)
+    @ResponseStatus(NOT_FOUND)
     public Response<Void> handleRestaurantNotFound() {
         return new Response<>("식당 정보가 존재하지 않습니다.");
     }
@@ -43,7 +43,7 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler(NotEnoughSeatException.class)
-    @ResponseStatus(BAD_REQUEST)
+    @ResponseStatus(OK)
     public Response<Void> handleNotEnoughSeat() {
         return new Response<>("잔여 좌석이 존재하지 않습니다.");
     }
@@ -69,12 +69,12 @@ public class ControllerAdvice {
     @ExceptionHandler(InvalidRedisKeyException.class)
     @ResponseStatus(BAD_REQUEST)
     public Response<Void> handleInvalidTmpReservationKey() {
-        return new Response<>("유효하지 않은 Redis Key 입니다.");
+        return new Response<>("유효하지 않은 임시 예약 키입니다.");
     }
 
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(INTERNAL_SERVER_ERROR)
-    public Response<Void> handleRuntimeException(RuntimeException e) {
+    public Response<Void> handleRuntimeException() {
         return new Response<>("요청 처리 도중 문제가 발생했습니다.");
     }
 
