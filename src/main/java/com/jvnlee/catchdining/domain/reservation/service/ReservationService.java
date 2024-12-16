@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.reservation.service;
 
+import com.jvnlee.catchdining.common.exception.CacheInitializationException;
 import com.jvnlee.catchdining.common.exception.InvalidRedisKeyException;
 import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
 import com.jvnlee.catchdining.common.exception.ReservationNotFoundException;
@@ -104,7 +105,7 @@ public class ReservationService {
                 waitForCacheInitialization(topic, tmpSeatAvailQtyKey);
             }
         } catch (InterruptedException e) {
-            throw new RuntimeException("자리 잔여 수량 Redis 캐시 초기화 대기 중 쓰레드 인터럽션 발생");
+            throw new CacheInitializationException("자리 잔여 수량 Redis 캐시 초기화 대기 중 쓰레드 인터럽션 발생");
         }
     }
 
@@ -134,7 +135,7 @@ public class ReservationService {
         boolean cacheInitialized = latch.await(5000, MILLISECONDS);
 
         if (!cacheInitialized || Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
-            throw new RuntimeException("자리 잔여 수량 Redis 캐시 초기화 대기 중 타임아웃 발생");
+            throw new CacheInitializationException("자리 잔여 수량 Redis 캐시 초기화 대기 중 타임아웃 발생");
         }
     }
 
