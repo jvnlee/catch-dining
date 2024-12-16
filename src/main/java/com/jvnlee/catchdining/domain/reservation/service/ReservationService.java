@@ -226,18 +226,9 @@ public class ReservationService {
     }
 
     public void cancelTmp(TmpReservationCancelRequestDto tmpReservationCancelRequestDto) {
-        String tmpRsvSeatIdKey = tmpReservationCancelRequestDto.getTmpReservationKey();
-
-        String seatIdStr = redisTemplate.opsForValue().get(tmpRsvSeatIdKey);
-
-        if (seatIdStr == null) {
-            throw new InvalidRedisKeyException();
-        }
-
-        Long seatId = Long.parseLong(seatIdStr);
+        Long seatId = validateTmpRsvKey(tmpReservationCancelRequestDto.getTmpRsvSeatIdKey());
 
         redisTemplate.opsForValue().increment(TMP_SEAT_AVAIL_QTY_PREFIX + seatId, 1);
-        redisTemplate.delete(tmpRsvSeatIdKey);
     }
 
     public void cancel(Long reservationId) {

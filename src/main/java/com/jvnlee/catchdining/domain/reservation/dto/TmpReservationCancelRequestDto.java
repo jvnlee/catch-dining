@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TmpReservationCancelRequestDto {
 
-    private String tmpReservationKey;
+    private String tmpRsvSeatIdKey;
 
 }
