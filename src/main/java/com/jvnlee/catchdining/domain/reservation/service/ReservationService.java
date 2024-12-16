@@ -163,17 +163,7 @@ public class ReservationService {
     }
 
     public void create(ReservationRequestDto reservationRequestDto) {
-        String tmpRsvSeatIdKey = reservationRequestDto.getTmpReservationKey();
-
-        String seatIdStr = redisTemplate.opsForValue().get(tmpRsvSeatIdKey);
-
-        if (seatIdStr == null) {
-            throw new InvalidRedisKeyException();
-        }
-
-        Long seatId = Long.parseLong(seatIdStr);
-
-        redisTemplate.delete(tmpRsvSeatIdKey);
+        Long seatId = validateTmpRsvKey(reservationRequestDto.getTmpRsvSeatIdKey());
 
         Seat seat = seatRepository.findWithLockById(seatId)
                 .orElseThrow(SeatNotFoundException::new);
@@ -191,10 +181,8 @@ public class ReservationService {
                 )
         );
 
-        User user = userService.getCurrentUser();
-
         Reservation reservation = new Reservation(
-                user,
+                userService.getCurrentUser(),
                 seat.getRestaurant(),
                 LocalDateTime.of(seat.getAvailableDate(), seat.getAvailableTime()),
                 seat,
@@ -204,6 +192,18 @@ public class ReservationService {
         );
 
         reservationRepository.save(reservation);
+    }
+
+    private Long validateTmpRsvKey(String tmpRsvSeatIdKey) {
+        String seatIdStr = redisTemplate.opsForValue().get(tmpRsvSeatIdKey);
+
+        if (seatIdStr == null) {
+            throw new InvalidRedisKeyException();
+        }
+
+        redisTemplate.delete(tmpRsvSeatIdKey);
+
+        return Long.parseLong(seatIdStr);
     }
 
     public List<ReservationUserViewDto> viewByUser(Long userId, ReservationStatus status) {

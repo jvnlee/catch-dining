@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ReservationRequestDto {
 
-    private String tmpReservationKey;
+    private String tmpRsvSeatIdKey;
 
     private List<ReserveMenuDto> reserveMenus;
 
