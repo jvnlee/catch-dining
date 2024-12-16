@@ -89,17 +89,18 @@ public class ReservationService {
         String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
         String lockKey = LOCK_SEAT_PREFIX + seatId;
 
-        RLock lock = redissonClient.getLock(lockKey);
+        Boolean lockAcquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 5000L, MILLISECONDS);
+
         RTopic topic = redissonClient.getTopic("seatAvailQtyTopic:" + seatId);
 
         try {
-            if (lock.tryLock(5000, -1, MILLISECONDS)) {
+            if (Boolean.TRUE.equals(lockAcquired)) {
                 try {
-                    initialize(seatId, tmpSeatAvailQtyKey, topic);
-                } finally {
-                    if (lock.isHeldByCurrentThread()) {
-                        lock.unlock();
+                    if (Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
+                        initialize(seatId, tmpSeatAvailQtyKey, topic);
                     }
+                } finally {
+                    redisTemplate.delete(lockKey);
                 }
             } else {
                 waitForCacheInitialization(topic, tmpSeatAvailQtyKey);
