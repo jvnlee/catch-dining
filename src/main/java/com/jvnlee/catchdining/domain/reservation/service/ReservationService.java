@@ -1,5 +1,6 @@
 package com.jvnlee.catchdining.domain.reservation.service;
 
+import com.jvnlee.catchdining.common.config.RabbitMQConfig;
 import com.jvnlee.catchdining.common.exception.CacheInitializationException;
 import com.jvnlee.catchdining.common.exception.InvalidRedisKeyException;
 import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
@@ -7,7 +8,6 @@ import com.jvnlee.catchdining.common.exception.ReservationNotCancellableExceptio
 import com.jvnlee.catchdining.common.exception.ReservationNotFoundException;
 import com.jvnlee.catchdining.common.exception.SeatAvailQtyRollbackException;
 import com.jvnlee.catchdining.common.exception.SeatNotFoundException;
-import com.jvnlee.catchdining.domain.notification.service.NotificationRequestService;
 import com.jvnlee.catchdining.domain.payment.model.Payment;
 import com.jvnlee.catchdining.domain.payment.dto.PaymentDto;
 import com.jvnlee.catchdining.domain.payment.service.PaymentService;
@@ -17,6 +17,7 @@ import com.jvnlee.catchdining.domain.reservation.dto.ReservationUserViewDto;
 import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationCancelRequestDto;
 import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationResponseDto;
+import com.jvnlee.catchdining.domain.reservation.event.ReservationCancelledEvent;
 import com.jvnlee.catchdining.domain.reservation.model.Reservation;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.model.ReservationStatus;
@@ -27,6 +28,7 @@ import com.jvnlee.catchdining.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,19 +58,19 @@ public class ReservationService {
 
     private final PaymentService paymentService;
 
-    private final NotificationRequestService notificationRequestService;
-
     private final RedisTemplate<String, String> redisTemplate;
 
     private final RedissonClient redissonClient;
 
-    private final String TMP_SEAT_AVAIL_QTY_PREFIX = "tmp:seat:avail_qty:";
+    private final RabbitTemplate rabbitTemplate;
 
-    private final String TMP_RSV_SEAT_ID_PREFIX = "tmp:rsv:seat_id:";
+    private static final String TMP_SEAT_AVAIL_QTY_PREFIX = "tmp:seat:avail_qty:";
 
-    private final String LOCK_SEAT_PREFIX = "lock:seat:";
+    private static final String TMP_RSV_SEAT_ID_PREFIX = "tmp:rsv:seat_id:";
 
-    private final String SEAT_AVAIL_QTY_INIT_MSG = "CACHE_INITIALIZED";
+    private static final String LOCK_SEAT_PREFIX = "lock:seat:";
+
+    private static final String SEAT_AVAIL_QTY_INIT_MSG = "CACHE_INITIALIZED";
 
     public TmpReservationResponseDto createTmp(TmpReservationRequestDto tmpReservationRequestDto) {
         Long seatId = tmpReservationRequestDto.getSeatId();
@@ -270,9 +272,15 @@ public class ReservationService {
         int maxHeadCount = seat.getMaxHeadCount();
 
         if (seat.getAvailableTime().isBefore(LocalTime.of(16, 1))) {
-            notificationRequestService.notify(restaurantId, availableDate, LUNCH, minHeadCount, maxHeadCount);
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.RESERVATION_EVENT_QUEUE,
+                    new ReservationCancelledEvent(restaurantId, availableDate, LUNCH, minHeadCount, maxHeadCount)
+            );
         } else {
-            notificationRequestService.notify(restaurantId, availableDate, DINNER, minHeadCount, maxHeadCount);
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.RESERVATION_EVENT_QUEUE,
+                    new ReservationCancelledEvent(restaurantId, availableDate, DINNER, minHeadCount, maxHeadCount)
+            );
         }
 
         reservation.updateStatus(CANCELED);

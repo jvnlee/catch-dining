@@ -59,7 +59,6 @@ public class NotificationRequestService {
         }
     }
 
-    @Async
     public void notify(Long restaurantId, LocalDate date, DiningPeriod diningPeriod, int minHeadCount, int maxHeadCount) {
         List<NotificationRequest> notificationRequests = notificationRequestRepository
                 .findAllByCond(
