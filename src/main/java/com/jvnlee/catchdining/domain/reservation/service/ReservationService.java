@@ -254,10 +254,14 @@ public class ReservationService {
 
         seat.incrementAvailableQuantity();
 
-        // 결제 취소
+        String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
+            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey, 1);
+        }
+
         paymentService.cancel(reservation.getPayment().getId());
 
-        // 취소된 예약 좌석의 조건에 맞는 빈자리 알림 신청이 존재한다면 알림 발송 (비동기)
         Long restaurantId = seat.getRestaurant().getId();
         LocalDate availableDate = seat.getAvailableDate();
         int minHeadCount = seat.getMinHeadCount();
