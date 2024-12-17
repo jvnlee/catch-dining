@@ -243,6 +243,15 @@ public class ReservationService {
             throw new ReservationNotCancellableException();
         }
 
+        Long seatId = reservation.getSeat().getId();
+
+        Seat seat = seatRepository.findWithLockById(seatId)
+                .orElseThrow(SeatNotFoundException::new);
+
+        if (seat.getAvailableQuantity() == seat.getQuantity()) {
+            throw new SeatAvailQtyRollbackException();
+        }
+
         seat.incrementAvailableQuantity();
 
         // 결제 취소
