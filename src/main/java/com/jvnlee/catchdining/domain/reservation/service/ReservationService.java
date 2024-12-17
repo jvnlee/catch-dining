@@ -222,6 +222,7 @@ public class ReservationService {
 
     public void updateStatus(Long reservationId, ReservationStatusDto reservationStatusDto) {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(ReservationNotFoundException::new);
+
         reservation.updateStatus(reservationStatusDto.getStatus());
     }
 
@@ -233,9 +234,15 @@ public class ReservationService {
 
     public void cancel(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(ReservationNotFoundException::new);
-        Seat seat = reservation.getSeat();
 
-        // 예약되어 있던 좌석의 잔여 수량 원복
+        boolean isSameUser = reservation.getUser().getId().equals(userService.getCurrentUser().getId());
+        boolean isReservedStatus = reservation.getReservationStatus().equals(RESERVED);
+        boolean isReservedDateToday = reservation.getTime().toLocalDate().equals(LocalDate.now());
+
+        if (!isSameUser || !isReservedStatus || isReservedDateToday) {
+            throw new ReservationNotCancellableException();
+        }
+
         seat.incrementAvailableQuantity();
 
         // 결제 취소
