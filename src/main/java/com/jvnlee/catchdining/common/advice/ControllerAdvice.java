@@ -72,6 +72,12 @@ public class ControllerAdvice {
         return new Response<>("유효하지 않은 임시 예약 키입니다.");
     }
 
+    @ExceptionHandler(ReservationNotCancellableException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public Response<Void> handleReservationNotCancellable() {
+        return new Response<>("취소가 불가능한 예약건입니다.");
+    }
+
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(INTERNAL_SERVER_ERROR)
     public Response<Void> handleRuntimeException() {
