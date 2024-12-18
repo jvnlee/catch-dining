@@ -170,11 +170,7 @@ public class ReservationService {
         Seat seat = seatRepository.findWithLockById(seatId)
                 .orElseThrow(SeatNotFoundException::new);
 
-        if (seat.getAvailableQuantity() == 0) {
-            throw new NotEnoughSeatException();
-        }
-
-        seat.decrementAvailableQuantity();
+        decrementSeatAvailQty(seat);
 
         Payment payment = paymentService.create(
                 new PaymentDto(
@@ -208,6 +204,14 @@ public class ReservationService {
         return Long.parseLong(seatIdStr);
     }
 
+    private static void decrementSeatAvailQty(Seat seat) {
+        if (seat.getAvailableQuantity() == 0) {
+            throw new NotEnoughSeatException();
+        }
+
+        seat.decrementAvailableQuantity();
+    }
+
     @Transactional(readOnly = true)
     public List<ReservationUserViewDto> viewByUser(Long userId, ReservationStatus status) {
         return reservationRepository.findAllByUserIdAndStatus(userId, status)
@@ -237,8 +241,25 @@ public class ReservationService {
     }
 
     public void cancel(Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(ReservationNotFoundException::new);
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(ReservationNotFoundException::new);
+        reservation.updateStatus(CANCELED);
 
+        validateCancelCondition(reservation);
+
+        Long seatId = reservation.getSeat().getId();
+        Seat seat = seatRepository.findWithLockById(seatId)
+                .orElseThrow(SeatNotFoundException::new);
+
+        incrementSeatAvailQty(seat);
+        incrementSeatAvailQtyCache(TMP_SEAT_AVAIL_QTY_PREFIX + seatId);
+
+        paymentService.cancel(reservation.getPayment().getId());
+
+        publishReservationCancelledEvent(seat);
+    }
+
+    private void validateCancelCondition(Reservation reservation) {
         boolean isSameUser = reservation.getUser().getId().equals(userService.getCurrentUser().getId());
         boolean isReservedStatus = reservation.getReservationStatus().equals(RESERVED);
         boolean isReservedDateToday = reservation.getTime().toLocalDate().equals(LocalDate.now());
@@ -246,26 +267,23 @@ public class ReservationService {
         if (!isSameUser || !isReservedStatus || isReservedDateToday) {
             throw new ReservationNotCancellableException();
         }
+    }
 
-        Long seatId = reservation.getSeat().getId();
-
-        Seat seat = seatRepository.findWithLockById(seatId)
-                .orElseThrow(SeatNotFoundException::new);
-
+    private static void incrementSeatAvailQty(Seat seat) {
         if (seat.getAvailableQuantity() == seat.getQuantity()) {
             throw new SeatAvailQtyRollbackException();
         }
 
         seat.incrementAvailableQuantity();
+    }
 
-        String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
-
+    private void incrementSeatAvailQtyCache(String tmpSeatAvailQtyKey) {
         if (Boolean.TRUE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
             redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey, 1);
         }
+    }
 
-        paymentService.cancel(reservation.getPayment().getId());
-
+    private void publishReservationCancelledEvent(Seat seat) {
         Long restaurantId = seat.getRestaurant().getId();
         LocalDate availableDate = seat.getAvailableDate();
         int minHeadCount = seat.getMinHeadCount();
@@ -282,8 +300,6 @@ public class ReservationService {
                     new ReservationCancelledEvent(restaurantId, availableDate, DINNER, minHeadCount, maxHeadCount)
             );
         }
-
-        reservation.updateStatus(CANCELED);
     }
 
 }
