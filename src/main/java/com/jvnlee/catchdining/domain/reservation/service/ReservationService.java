@@ -14,7 +14,6 @@ import com.jvnlee.catchdining.domain.payment.service.PaymentService;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationRestaurantViewDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationStatusDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationUserViewDto;
-import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationCancelRequestDto;
 import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationResponseDto;
 import com.jvnlee.catchdining.domain.reservation.event.ReservationCancelledEvent;
@@ -82,9 +81,9 @@ public class ReservationService {
 
         decrementSeatAvailQtyCache(tmpSeatAvailQtyKey);
 
-        String tmpRsvSeatIdKey = generateTmpReservationKey(seatId);
+        String tmpRsvId = generateTmpReservationKey(seatId);
 
-        return new TmpReservationResponseDto(tmpRsvSeatIdKey);
+        return new TmpReservationResponseDto(tmpRsvId);
     }
 
     private void initializeSeatAvailQtyCache(Long seatId) {
@@ -152,7 +151,8 @@ public class ReservationService {
     }
 
     private String generateTmpReservationKey(Long seatId) {
-        String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + UUID.randomUUID();
+        String tmpRsvId = UUID.randomUUID().toString();
+        String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + tmpRsvId;
 
         redisTemplate.opsForValue().set(
                 tmpRsvSeatIdKey,
@@ -161,11 +161,11 @@ public class ReservationService {
                 MILLISECONDS
         );
 
-        return tmpRsvSeatIdKey;
+        return tmpRsvId;
     }
 
     public void create(ReservationRequestDto reservationRequestDto) {
-        Long seatId = validateTmpRsvKey(reservationRequestDto.getTmpRsvSeatIdKey());
+        Long seatId = validateTmpRsvKey(reservationRequestDto.getTmpRsvId());
 
         Seat seat = seatRepository.findWithLockById(seatId)
                 .orElseThrow(SeatNotFoundException::new);
@@ -192,7 +192,8 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
-    private Long validateTmpRsvKey(String tmpRsvSeatIdKey) {
+    private Long validateTmpRsvKey(String tmpRsvId) {
+        String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + tmpRsvId;
         String seatIdStr = redisTemplate.opsForValue().get(tmpRsvSeatIdKey);
 
         if (seatIdStr == null) {
@@ -234,8 +235,8 @@ public class ReservationService {
         reservation.updateStatus(reservationStatusDto.getStatus());
     }
 
-    public void cancelTmp(TmpReservationCancelRequestDto tmpReservationCancelRequestDto) {
-        Long seatId = validateTmpRsvKey(tmpReservationCancelRequestDto.getTmpRsvSeatIdKey());
+    public void cancelTmp(String tmpRsvId) {
+        Long seatId = validateTmpRsvKey(tmpRsvId);
 
         redisTemplate.opsForValue().increment(TMP_SEAT_AVAIL_QTY_PREFIX + seatId, 1);
     }
