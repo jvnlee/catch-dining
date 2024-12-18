@@ -205,7 +205,7 @@ public class ReservationService {
         return Long.parseLong(seatIdStr);
     }
 
-    private static void decrementSeatAvailQty(Seat seat) {
+    private void decrementSeatAvailQty(Seat seat) {
         if (seat.getAvailableQuantity() == 0) {
             throw new NotEnoughSeatException();
         }
