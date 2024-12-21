@@ -91,7 +91,7 @@ class LoginIntegrationTest extends TestcontainersContext {
                 .post("/login")
                 .then().log().all()
                 .assertThat()
-                .statusCode(BAD_REQUEST.value())
+                .statusCode(NOT_FOUND.value())
                 .body("message", equalTo("존재하지 않는 사용자입니다."));
     }
 
