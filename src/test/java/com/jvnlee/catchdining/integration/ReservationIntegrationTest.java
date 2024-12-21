@@ -4,7 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvnlee.catchdining.domain.payment.model.PaymentType;
 import com.jvnlee.catchdining.domain.payment.dto.ReserveMenuDto;
-import com.jvnlee.catchdining.domain.reservation.dto.ReservationDto;
+import com.jvnlee.catchdining.domain.reservation.dto.ReservationRequestDto;
+import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.seat.dto.SeatDto;
 import com.jvnlee.catchdining.domain.seat.model.SeatType;
@@ -28,7 +29,6 @@ import java.util.concurrent.Executors;
 
 import static com.jvnlee.catchdining.domain.user.model.UserType.OWNER;
 import static io.restassured.http.ContentType.JSON;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -49,7 +49,7 @@ class ReservationIntegrationTest extends TestcontainersContext {
     }
 
     @Test
-    @DisplayName("100개의 예약 요청으로 동시성 테스트")
+    @DisplayName("10개 수량의 좌석에 대한 100개의 예약 요청 동시성 테스트")
     void create() throws Exception {
         for (int i = 1; i <= THREAD_COUNT; i++) {
             UserDto userJoinDto = new UserDto("user" + i, "12345", String.valueOf(i), OWNER);
@@ -76,14 +76,14 @@ class ReservationIntegrationTest extends TestcontainersContext {
                 .then().log().all()
                 .extract();
 
-        String authHeader = response.header(AUTHORIZATION);
+        String user1AuthHeader = response.header(AUTHORIZATION);
 
         RestaurantDto restaurantCreateDto = RestaurantDto.builder().name("restaurant").build();
         String restaurantCreateRequestBody = om.writeValueAsString(restaurantCreateDto);
 
         ExtractableResponse<Response> restaurantCreateResponse = RestAssured
                 .given().log().all()
-                .header(AUTHORIZATION, authHeader)
+                .header(AUTHORIZATION, user1AuthHeader)
                 .body(restaurantCreateRequestBody)
                 .contentType(JSON)
                 .when()
@@ -98,14 +98,14 @@ class ReservationIntegrationTest extends TestcontainersContext {
                 List.of(LocalTime.of(13, 0, 0)),
                 1,
                 2,
-                100
+                10
         );
         String seatAddRequestBody = om.writeValueAsString(seatDto);
 
         RestAssured
                 .given().log().all()
                 .pathParam("restaurantId", restaurantId)
-                .header(AUTHORIZATION, authHeader)
+                .header(AUTHORIZATION, user1AuthHeader)
                 .body(seatAddRequestBody)
                 .contentType(JSON)
                 .when()
@@ -114,14 +114,6 @@ class ReservationIntegrationTest extends TestcontainersContext {
 
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
         CountDownLatch latch = new CountDownLatch(THREAD_COUNT);
-
-        ReservationDto reservationDto = new ReservationDto(
-                1L,
-                List.of(new ReserveMenuDto("Sushi", 8000, 1)),
-                PaymentType.CREDIT_CARD,
-                2
-        );
-        String reservationCreateRequestBody = om.writeValueAsString(reservationDto);
 
         for (int i = 1; i <= THREAD_COUNT; i++) {
             String username = "user" + i;
@@ -139,11 +131,40 @@ class ReservationIntegrationTest extends TestcontainersContext {
                             .then().log().all()
                             .extract();
 
-                    String authorizationHeader = loginResponse.header(AUTHORIZATION);
+                    String authHeader = loginResponse.header(AUTHORIZATION);
+
+                    TmpReservationRequestDto tmpReservationRequestDto = new TmpReservationRequestDto(1L);
+                    String tmpReservationRequestRequestBody = om.writeValueAsString(tmpReservationRequestDto);
+
+                    ExtractableResponse<Response> tmpReservationResponse = RestAssured
+                            .given().log().all()
+                            .header(AUTHORIZATION, authHeader)
+                            .body(tmpReservationRequestRequestBody)
+                            .contentType(JSON)
+                            .when()
+                            .post("/reservations/tmp")
+                            .then().log().all()
+                            .extract();
+
+                    Object tmpRsvIdData = tmpReservationResponse.path("data.tmpRsvId");
+
+                    if (tmpRsvIdData == null) {
+                        return;
+                    }
+
+                    String tmpRsvId = tmpRsvIdData.toString();
+
+                    ReservationRequestDto reservationRequestDto = new ReservationRequestDto(
+                            tmpRsvId,
+                            List.of(new ReserveMenuDto("Sushi", 8000, 1)),
+                            PaymentType.CREDIT_CARD,
+                            2
+                    );
+                    String reservationCreateRequestBody = om.writeValueAsString(reservationRequestDto);
 
                     RestAssured
                             .given().log().all()
-                            .header(AUTHORIZATION, authorizationHeader)
+                            .header(AUTHORIZATION, authHeader)
                             .body(reservationCreateRequestBody)
                             .contentType(JSON)
                             .when()
@@ -161,12 +182,12 @@ class ReservationIntegrationTest extends TestcontainersContext {
 
         RestAssured
                 .given().log().all()
-                .header(AUTHORIZATION, authHeader)
+                .header(AUTHORIZATION, user1AuthHeader)
                 .pathParam("restaurantId", restaurantId)
                 .when()
                 .get("/restaurants/{restaurantId}/reservations")
                 .then().log().all()
                 .assertThat()
-                .body("data", hasSize(100));
+                .body("data", hasSize(10));
     }
 }
