@@ -246,9 +246,12 @@ public class ReservationService {
     public void cancel(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(ReservationNotFoundException::new);
-        reservation.updateStatus(CANCELED);
 
         validateCancelCondition(reservation);
+
+        reservation.updateStatus(CANCELED);
+
+        paymentService.cancel(reservation.getPayment().getId());
 
         Long seatId = reservation.getSeat().getId();
         Seat seat = seatRepository.findWithLockById(seatId)
@@ -256,8 +259,6 @@ public class ReservationService {
 
         incrementSeatAvailQty(seat);
         incrementSeatAvailQtyCache(TMP_SEAT_AVAIL_QTY_PREFIX + seatId);
-
-        paymentService.cancel(reservation.getPayment().getId());
 
         publishReservationCancelledEvent(seat);
     }
