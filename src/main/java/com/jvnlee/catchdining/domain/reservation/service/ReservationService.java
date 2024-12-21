@@ -83,7 +83,7 @@ public class ReservationService {
 
         decrementSeatAvailQtyCache(tmpSeatAvailQtyKey);
 
-        String tmpRsvId = generateTmpReservationKey(seatId);
+        String tmpRsvId = storeTmpReservation(seatId);
 
         return new TmpReservationResponseDto(tmpRsvId);
     }
@@ -152,7 +152,7 @@ public class ReservationService {
         }
     }
 
-    private String generateTmpReservationKey(Long seatId) {
+    private String storeTmpReservation(Long seatId) {
         String tmpRsvId = UUID.randomUUID().toString();
         String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + tmpRsvId;
 
