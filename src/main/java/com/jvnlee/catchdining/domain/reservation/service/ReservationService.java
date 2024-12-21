@@ -63,13 +63,15 @@ public class ReservationService {
 
     private final RabbitTemplate rabbitTemplate;
 
-    private static final String TMP_SEAT_AVAIL_QTY_PREFIX = "tmp:seat:avail_qty:";
+    public static final String TMP_SEAT_AVAIL_QTY_PREFIX = "tmp:seat:avail_qty:";
 
-    private static final String TMP_RSV_SEAT_ID_PREFIX = "tmp:rsv:seat_id:";
+    public static final String TMP_RSV_SEAT_ID_PREFIX = "tmp:rsv:seat_id:";
 
-    private static final String LOCK_SEAT_PREFIX = "lock:seat:";
+    public static final String LOCK_SEAT_PREFIX = "lock:seat:";
 
-    private static final String SEAT_AVAIL_QTY_INIT_MSG = "CACHE_INITIALIZED";
+    public static final String CACHE_SEAT_AVAIL_QTY_PREFIX = "cache:seat:avail_qty:";
+
+    public static final String SEAT_AVAIL_QTY_INIT_MSG = "CACHE_INITIALIZED";
 
     public TmpReservationResponseDto createTmp(TmpReservationRequestDto tmpReservationRequestDto) {
         Long seatId = tmpReservationRequestDto.getSeatId();
@@ -92,7 +94,7 @@ public class ReservationService {
 
         Boolean lockAcquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 5000L, MILLISECONDS);
 
-        RTopic topic = redissonClient.getTopic("seatAvailQtyTopic:" + seatId);
+        RTopic topic = redissonClient.getTopic(CACHE_SEAT_AVAIL_QTY_PREFIX + seatId);
 
         try {
             if (Boolean.TRUE.equals(lockAcquired)) {
