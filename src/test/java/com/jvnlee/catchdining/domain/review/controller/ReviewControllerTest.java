@@ -92,7 +92,7 @@ class ReviewControllerTest {
 
         verify(service).create(any());
         resultActions
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("식당 정보가 존재하지 않습니다."));
     }
 

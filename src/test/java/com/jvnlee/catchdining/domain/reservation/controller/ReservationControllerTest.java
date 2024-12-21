@@ -1,13 +1,16 @@
 package com.jvnlee.catchdining.domain.reservation.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jvnlee.catchdining.common.exception.CacheInitializationException;
+import com.jvnlee.catchdining.common.exception.InvalidRedisKeyException;
 import com.jvnlee.catchdining.common.exception.NotEnoughSeatException;
-import com.jvnlee.catchdining.common.exception.ReservationNotFoundException;
 import com.jvnlee.catchdining.domain.payment.dto.ReserveMenuDto;
-import com.jvnlee.catchdining.domain.reservation.dto.ReservationDto;
+import com.jvnlee.catchdining.domain.reservation.dto.ReservationRequestDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationRestaurantViewDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationStatusDto;
 import com.jvnlee.catchdining.domain.reservation.dto.ReservationUserViewDto;
+import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationRequestDto;
+import com.jvnlee.catchdining.domain.reservation.dto.TmpReservationResponseDto;
 import com.jvnlee.catchdining.domain.reservation.model.ReservationStatus;
 import com.jvnlee.catchdining.domain.reservation.service.ReservationService;
 import org.junit.jupiter.api.DisplayName;
@@ -51,16 +54,77 @@ class ReservationControllerTest {
     ReservationService service;
 
     @Test
+    @DisplayName("임시 예약 성공")
+    void create_tmp_success() throws Exception {
+        TmpReservationRequestDto tmpReservationRequestDto = new TmpReservationRequestDto(1L);
+        String requestBody = om.writeValueAsString(tmpReservationRequestDto);
+
+        when(service.createTmp(any(TmpReservationRequestDto.class))).thenReturn(new TmpReservationResponseDto("1234"));
+
+        ResultActions resultActions = mockMvc.perform(
+                post("/reservations/tmp")
+                        .contentType(APPLICATION_JSON)
+                        .content(requestBody)
+        );
+
+        verify(service).createTmp(any(TmpReservationRequestDto.class));
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("임시 예약 성공"))
+                .andExpect(jsonPath("$.data.tmpRsvId").value("1234"));
+    }
+
+    @Test
+    @DisplayName("임시 예약 실패: 자리 부족")
+    void create_tmp_fail_not_enough_seat() throws Exception {
+        TmpReservationRequestDto tmpReservationRequestDto = new TmpReservationRequestDto(1L);
+        String requestBody = om.writeValueAsString(tmpReservationRequestDto);
+
+        when(service.createTmp(any(TmpReservationRequestDto.class))).thenThrow(NotEnoughSeatException.class);
+
+        ResultActions resultActions = mockMvc.perform(
+                post("/reservations/tmp")
+                        .contentType(APPLICATION_JSON)
+                        .content(requestBody)
+        );
+
+        verify(service).createTmp(any(TmpReservationRequestDto.class));
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("잔여 좌석이 존재하지 않습니다."));
+    }
+
+    @Test
+    @DisplayName("임시 예약 실패: 캐시 초기화 과정에서 실패")
+    void create_tmp_fail_cache_init() throws Exception {
+        TmpReservationRequestDto tmpReservationRequestDto = new TmpReservationRequestDto(1L);
+        String requestBody = om.writeValueAsString(tmpReservationRequestDto);
+
+        when(service.createTmp(any(TmpReservationRequestDto.class)))
+                .thenThrow(CacheInitializationException.class);
+
+        ResultActions resultActions = mockMvc.perform(
+                post("/reservations/tmp")
+                        .contentType(APPLICATION_JSON)
+                        .content(requestBody)
+        );
+
+        verify(service).createTmp(any(TmpReservationRequestDto.class));
+        resultActions
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("요청 처리 도중 문제가 발생했습니다."));
+    }
+
+    @Test
     @DisplayName("예약 성공")
     void create_success() throws Exception {
-        ReservationDto reservationDto = new ReservationDto(
-                1L,
+        ReservationRequestDto reservationRequestDto = new ReservationRequestDto(
+                "1234",
                 List.of(new ReserveMenuDto("Sushi", 8000, 1)),
                 CREDIT_CARD,
                 2
         );
-
-        String requestBody = om.writeValueAsString(reservationDto);
+        String requestBody = om.writeValueAsString(reservationRequestDto);
 
         ResultActions resultActions = mockMvc.perform(
                 post("/reservations")
@@ -68,25 +132,24 @@ class ReservationControllerTest {
                         .content(requestBody)
         );
 
-        verify(service).create(reservationDto);
+        verify(service).create(reservationRequestDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("예약 성공"));
     }
 
     @Test
-    @DisplayName("예약 실패: 자리 부족")
-    void create_fail() throws Exception {
-        ReservationDto reservationDto = new ReservationDto(
-                1L,
+    @DisplayName("예약 실패: 유효하지 않은 임시 예약 키")
+    void create_fail_invalid_tmp_rsv_seat_id_key() throws Exception {
+        ReservationRequestDto reservationRequestDto = new ReservationRequestDto(
+                "1234",
                 List.of(new ReserveMenuDto("Sushi", 8000, 1)),
                 CREDIT_CARD,
                 2
         );
+        String requestBody = om.writeValueAsString(reservationRequestDto);
 
-        String requestBody = om.writeValueAsString(reservationDto);
-
-        doThrow(new NotEnoughSeatException()).when(service).create(reservationDto);
+        doThrow(new InvalidRedisKeyException()).when(service).create(reservationRequestDto);
 
         ResultActions resultActions = mockMvc.perform(
                 post("/reservations")
@@ -96,15 +159,38 @@ class ReservationControllerTest {
 
         resultActions
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("유효하지 않은 임시 예약 키입니다."));
+    }
+
+    @Test
+    @DisplayName("예약 실패: 자리 부족")
+    void create_fail_not_enough_seat() throws Exception {
+        ReservationRequestDto reservationRequestDto = new ReservationRequestDto(
+                "1234",
+                List.of(new ReserveMenuDto("Sushi", 8000, 1)),
+                CREDIT_CARD,
+                2
+        );
+        String requestBody = om.writeValueAsString(reservationRequestDto);
+
+        doThrow(new NotEnoughSeatException()).when(service).create(reservationRequestDto);
+
+        ResultActions resultActions = mockMvc.perform(
+                post("/reservations")
+                        .contentType(APPLICATION_JSON)
+                        .content(requestBody)
+        );
+
+        resultActions
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("잔여 좌석이 존재하지 않습니다."));
     }
 
     @Test
-    @DisplayName("유저가 자신의 예약 내역 조회 성공")
+    @DisplayName("사용자 기준 예약 내역 조회 성공")
     void viewByUser_success() throws Exception {
         Long userId = 1L;
         ReservationStatus status = RESERVED;
-
         List<ReservationUserViewDto> reservationList = List.of(
                 new ReservationUserViewDto(
                         "restaurant",
@@ -129,32 +215,10 @@ class ReservationControllerTest {
     }
 
     @Test
-    @DisplayName("유저가 자신의 예약 내역 조회 실패")
-    void viewByUser_fail() throws Exception {
-        Long userId = 1L;
-        ReservationStatus status = RESERVED;
-
-        when(service.viewByUser(userId, status)).thenThrow(ReservationNotFoundException.class);
-
-        ResultActions resultActions = mockMvc.perform(
-                get("/users/{userId}/reservations", userId)
-                        .param("status", String.valueOf(status))
-        );
-
-        verify(service).viewByUser(userId, status);
-
-        resultActions
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("예약 내역이 존재하지 않습니다."))
-                .andExpect(jsonPath("$.data").isEmpty());
-    }
-
-    @Test
-    @DisplayName("식당에 예약된 내역 조회 성공")
+    @DisplayName("식당 기준 예약 내역 조회 성공")
     void viewByRestaurant_success() throws Exception {
         Long restaurantId = 1L;
         ReservationStatus status = RESERVED;
-
         List<ReservationRestaurantViewDto> reservationList = List.of(
                 new ReservationRestaurantViewDto(
                         "user",
@@ -179,28 +243,7 @@ class ReservationControllerTest {
     }
 
     @Test
-    @DisplayName("식당에 예약된 내역 조회 실패")
-    void viewByRestaurant_fail() throws Exception {
-        Long restaurantId = 1L;
-        ReservationStatus status = RESERVED;
-
-        when(service.viewByRestaurant(restaurantId, status)).thenThrow(ReservationNotFoundException.class);
-
-        ResultActions resultActions = mockMvc.perform(
-                get("/restaurants/{restaurantId}/reservations", restaurantId)
-                        .param("status", String.valueOf(status))
-        );
-
-        verify(service).viewByRestaurant(restaurantId, status);
-
-        resultActions
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("예약 내역이 존재하지 않습니다."))
-                .andExpect(jsonPath("$.data").isEmpty());
-    }
-
-    @Test
-    @DisplayName("예약 상태 업데이트 성공")
+    @DisplayName("식당에서 특정 예약 내역의 예약 상태 업데이트 성공")
     void updateStatus() throws Exception {
         Long restaurantId = 1L;
         Long reservationId = 1L;

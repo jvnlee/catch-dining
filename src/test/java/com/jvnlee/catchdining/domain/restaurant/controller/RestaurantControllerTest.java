@@ -273,7 +273,7 @@ class RestaurantControllerTest {
 
         verify(restaurantReviewStatService).view(Long.valueOf(restaurantId));
         resultActions
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("식당 정보가 존재하지 않습니다."))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
@@ -354,7 +354,7 @@ class RestaurantControllerTest {
 
         verify(restaurantService).delete(Long.valueOf(restaurantId));
         resultActions
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("식당 정보가 존재하지 않습니다."));
     }
 
