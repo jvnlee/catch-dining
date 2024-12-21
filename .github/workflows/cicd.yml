@@ -40,47 +40,47 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
-      - name: Build app image and push to DockerHub
-        run: |
-          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/catch-dining-app .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/catch-dining-app
-
-      - name: Transfer docker-compose.prod.yml to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_PEM }}
-          source: "docker-compose.prod.yml"
-          target: "~/"
-
-      - name: Transfer init-write-db.sql to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_PEM }}
-          source: "init-write-db.sql"
-          target: "~/"
-
-      - name: Transfer init-read-db.sql to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_PEM }}
-          source: "init-read-db.sql"
-          target: "~/"
-
-      - name: Execute Docker Compose
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_PEM }}
-          script: |
-            DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
-            DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }} \
-            docker-compose -f docker-compose.prod.yml up -d --build
-            docker image prune -f
+#      - name: Build app image and push to DockerHub
+#        run: |
+#          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+#          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/catch-dining-app .
+#          docker push ${{ secrets.DOCKERHUB_USERNAME }}/catch-dining-app
+#
+#      - name: Transfer docker-compose.prod.yml to EC2
+#        uses: appleboy/scp-action@master
+#        with:
+#          host: ${{ secrets.EC2_HOST }}
+#          username: ec2-user
+#          key: ${{ secrets.EC2_PEM }}
+#          source: "docker-compose.prod.yml"
+#          target: "~/"
+#
+#      - name: Transfer init-write-db.sql to EC2
+#        uses: appleboy/scp-action@master
+#        with:
+#          host: ${{ secrets.EC2_HOST }}
+#          username: ec2-user
+#          key: ${{ secrets.EC2_PEM }}
+#          source: "init-write-db.sql"
+#          target: "~/"
+#
+#      - name: Transfer init-read-db.sql to EC2
+#        uses: appleboy/scp-action@master
+#        with:
+#          host: ${{ secrets.EC2_HOST }}
+#          username: ec2-user
+#          key: ${{ secrets.EC2_PEM }}
+#          source: "init-read-db.sql"
+#          target: "~/"
+#
+#      - name: Execute Docker Compose
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ secrets.EC2_HOST }}
+#          username: ec2-user
+#          key: ${{ secrets.EC2_PEM }}
+#          script: |
+#            DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
+#            DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }} \
+#            docker-compose -f docker-compose.prod.yml up -d --build
+#            docker image prune -f
