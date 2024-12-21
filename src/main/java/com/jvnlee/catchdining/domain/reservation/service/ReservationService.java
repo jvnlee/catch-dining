@@ -136,7 +136,7 @@ public class ReservationService {
             }
         });
 
-        boolean cacheInitialized = latch.await(5000, MILLISECONDS);
+        boolean cacheInitialized = latch.await(5000L, MILLISECONDS);
 
         if (!cacheInitialized || Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
             throw new CacheInitializationException("자리 잔여 수량 Redis 캐시 초기화 대기 중 타임아웃 발생");
@@ -144,10 +144,10 @@ public class ReservationService {
     }
 
     private void decrementSeatAvailQtyCache(String tmpSeatAvailQtyKey) {
-        Long result = redisTemplate.opsForValue().decrement(tmpSeatAvailQtyKey, 1);
+        Long result = redisTemplate.opsForValue().decrement(tmpSeatAvailQtyKey, 1L);
 
         if (result == null || result < 0) {
-            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey, 1);
+            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey, 1L);
             throw new NotEnoughSeatException();
         }
     }
@@ -159,7 +159,7 @@ public class ReservationService {
         redisTemplate.opsForValue().set(
                 tmpRsvSeatIdKey,
                 String.valueOf(seatId),
-                300000L,
+                300_000L,
                 MILLISECONDS
         );
 
@@ -240,7 +240,7 @@ public class ReservationService {
     public void cancelTmp(String tmpRsvId) {
         Long seatId = validateTmpRsvKey(tmpRsvId);
 
-        redisTemplate.opsForValue().increment(TMP_SEAT_AVAIL_QTY_PREFIX + seatId, 1);
+        redisTemplate.opsForValue().increment(TMP_SEAT_AVAIL_QTY_PREFIX + seatId, 1L);
     }
 
     public void cancel(Long reservationId) {
@@ -282,7 +282,7 @@ public class ReservationService {
 
     private void incrementSeatAvailQtyCache(String tmpSeatAvailQtyKey) {
         if (Boolean.TRUE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
-            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey, 1);
+            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey, 1L);
         }
     }
 
