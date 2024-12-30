@@ -39,12 +39,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
-import static com.jvnlee.catchdining.common.constant.RedisConstants.LOCK_SEAT_PREFIX;
-import static com.jvnlee.catchdining.common.constant.RedisConstants.LOCK_VALUE;
-import static com.jvnlee.catchdining.common.constant.RedisConstants.SEAT_AVAIL_QTY_INIT_MSG;
-import static com.jvnlee.catchdining.common.constant.RedisConstants.SEAT_AVAIL_QTY_PREFIX;
-import static com.jvnlee.catchdining.common.constant.RedisConstants.TMP_RSV_SEAT_ID_PREFIX;
-import static com.jvnlee.catchdining.common.constant.RedisConstants.TOPIC_SEAT_AVAIL_QTY_PREFIX;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.*;
+import static com.jvnlee.catchdining.common.constant.TimeoutConstants.*;
 import static com.jvnlee.catchdining.domain.reservation.model.ReservationStatus.*;
 import static com.jvnlee.catchdining.domain.notification.model.DiningPeriod.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -88,7 +84,12 @@ public class ReservationService {
         String tmpSeatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
         String lockKey = LOCK_SEAT_PREFIX + seatId;
 
-        Boolean lockAcquired = redisTemplate.opsForValue().setIfAbsent(lockKey, LOCK_VALUE, 5000L, MILLISECONDS);
+        Boolean lockAcquired = redisTemplate.opsForValue().setIfAbsent(
+                lockKey,
+                LOCK_VALUE,
+                CACHE_INIT_LOCK_TIMEOUT,
+                MILLISECONDS
+        );
 
         RTopic topic = redissonClient.getTopic(TOPIC_SEAT_AVAIL_QTY_PREFIX + seatId);
 
@@ -116,7 +117,7 @@ public class ReservationService {
         redisTemplate.opsForValue().set(
                 tmpSeatAvailQtyKey,
                 String.valueOf(seat.getAvailableQuantity()),
-                300_000L,
+                SEAT_AVAIL_QTY_CACHE_TIMEOUT,
                 MILLISECONDS
         );
 
@@ -132,7 +133,7 @@ public class ReservationService {
             }
         });
 
-        boolean cacheInitialized = latch.await(5000L, MILLISECONDS);
+        boolean cacheInitialized = latch.await(SEAT_AVAIL_QTY_CACHE_WAIT_TIMEOUT, MILLISECONDS);
 
         if (!cacheInitialized || Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
             throw new CacheInitializationException("자리 잔여 수량 Redis 캐시 초기화 대기 중 타임아웃 발생");
@@ -154,13 +155,13 @@ public class ReservationService {
         redisTemplate.opsForValue().set(
                 TMP_RSV_SEAT_ID_PREFIX + seatId + ":" + tmpRsvId,
                 String.valueOf(seatId),
-                300_000L,
+                TMP_RSV_TIMEOUT,
                 MILLISECONDS
         );
 
         redisTemplate.expire(
                 SEAT_AVAIL_QTY_PREFIX + seatId,
-                300_000L,
+                SEAT_AVAIL_QTY_CACHE_TIMEOUT,
                 MILLISECONDS
         );
 
