@@ -86,7 +86,7 @@ class ReservationServiceTest {
     @DisplayName("임시 예약 성공: 자리 잔여 수량 캐시 히트")
     void create_tmp_success_cache_hit() {
         Long seatId = 1L;
-        String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
+        String tmpSeatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
         TmpReservationRequestDto requestDto = new TmpReservationRequestDto(seatId);
 
         when(redisTemplate.hasKey(tmpSeatAvailQtyKey)).thenReturn(true);
@@ -106,7 +106,7 @@ class ReservationServiceTest {
     @DisplayName("임시 예약 성공: 자리 잔여 수량 캐시 미스")
     void create_tmp_success_cache_miss() {
         Long seatId = 1L;
-        String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
+        String tmpSeatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
         String lockKey = LOCK_SEAT_PREFIX + seatId;
         String lockValue = "locked";
         long lockTimeout = 5000L;
@@ -118,7 +118,7 @@ class ReservationServiceTest {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
         when(valueOperations.setIfAbsent(lockKey, lockValue, lockTimeout, TimeUnit.MILLISECONDS)).thenReturn(true);
-        when(redissonClient.getTopic(CACHE_SEAT_AVAIL_QTY_PREFIX + seatId)).thenReturn(rTopic);
+        when(redissonClient.getTopic(TOPIC_SEAT_AVAIL_QTY_PREFIX + seatId)).thenReturn(rTopic);
         when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
         when(valueOperations.decrement(tmpSeatAvailQtyKey, 1L)).thenReturn(9L);
 
@@ -306,7 +306,7 @@ class ReservationServiceTest {
 
         verify(valueOperations).get(tmpRsvSeatIdKey);
         verify(redisTemplate).delete(tmpRsvSeatIdKey);
-        verify(valueOperations).increment(TMP_SEAT_AVAIL_QTY_PREFIX + seatId, 1L);
+        verify(valueOperations).increment(SEAT_AVAIL_QTY_PREFIX + seatId, 1L);
     }
 
     @Test
@@ -344,7 +344,7 @@ class ReservationServiceTest {
         verify(paymentService).cancel(paymentId);
         verify(seatRepository).findWithLockById(seatId);
         verify(seat).incrementAvailableQuantity();
-        verify(redisTemplate).hasKey(TMP_SEAT_AVAIL_QTY_PREFIX + seatId);
+        verify(redisTemplate).hasKey(SEAT_AVAIL_QTY_PREFIX + seatId);
         verify(rabbitTemplate).convertAndSend(anyString(), any(ReservationCancelledEvent.class));
     }
 

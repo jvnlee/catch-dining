@@ -22,8 +22,8 @@ public class TmpRsvKeyExpirationListener extends KeyExpirationEventMessageListen
         String expiredKey = message.toString();
 
         if (expiredKey.startsWith(ReservationService.TMP_RSV_SEAT_ID_PREFIX)) {
-            String seatId = expiredKey.split(":")[3];
-            String tmpSeatAvailQtyKey = ReservationService.TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
+            String seatId = expiredKey.split(":")[2];
+            String tmpSeatAvailQtyKey = ReservationService.SEAT_AVAIL_QTY_PREFIX + seatId;
 
             if (Boolean.TRUE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
                 redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey);

@@ -63,19 +63,19 @@ public class ReservationService {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public static final String TMP_SEAT_AVAIL_QTY_PREFIX = "tmp:seat:avail_qty:";
+    public static final String SEAT_AVAIL_QTY_PREFIX = "seat:avail_qty:";
 
-    public static final String TMP_RSV_SEAT_ID_PREFIX = "tmp:rsv:seat_id:";
+    public static final String TMP_RSV_SEAT_ID_PREFIX = "tmp_rsv:seat_id:";
 
     public static final String LOCK_SEAT_PREFIX = "lock:seat:";
 
-    public static final String CACHE_SEAT_AVAIL_QTY_PREFIX = "cache:seat:avail_qty:";
+    public static final String TOPIC_SEAT_AVAIL_QTY_PREFIX = "topic:seat:avail_qty:";
 
     public static final String SEAT_AVAIL_QTY_INIT_MSG = "CACHE_INITIALIZED";
 
     public TmpReservationResponseDto createTmp(TmpReservationRequestDto tmpReservationRequestDto) {
         Long seatId = tmpReservationRequestDto.getSeatId();
-        String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
+        String tmpSeatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
             initializeSeatAvailQtyCache(seatId);
@@ -89,12 +89,12 @@ public class ReservationService {
     }
 
     private void initializeSeatAvailQtyCache(Long seatId) {
-        String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
+        String tmpSeatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
         String lockKey = LOCK_SEAT_PREFIX + seatId;
 
         Boolean lockAcquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 5000L, MILLISECONDS);
 
-        RTopic topic = redissonClient.getTopic(CACHE_SEAT_AVAIL_QTY_PREFIX + seatId);
+        RTopic topic = redissonClient.getTopic(TOPIC_SEAT_AVAIL_QTY_PREFIX + seatId);
 
         try {
             if (Boolean.TRUE.equals(lockAcquired)) {
@@ -163,7 +163,7 @@ public class ReservationService {
         );
 
         redisTemplate.expire(
-                TMP_SEAT_AVAIL_QTY_PREFIX + seatId,
+                SEAT_AVAIL_QTY_PREFIX + seatId,
                 300_000L,
                 MILLISECONDS
         );
@@ -245,7 +245,7 @@ public class ReservationService {
     public void cancelTmp(String tmpRsvId) {
         Long seatId = validateTmpRsvKey(tmpRsvId);
 
-        redisTemplate.opsForValue().increment(TMP_SEAT_AVAIL_QTY_PREFIX + seatId, 1L);
+        redisTemplate.opsForValue().increment(SEAT_AVAIL_QTY_PREFIX + seatId, 1L);
     }
 
     public void cancel(Long reservationId) {
@@ -263,7 +263,7 @@ public class ReservationService {
                 .orElseThrow(SeatNotFoundException::new);
 
         incrementSeatAvailQty(seat);
-        incrementSeatAvailQtyCache(TMP_SEAT_AVAIL_QTY_PREFIX + seatId);
+        incrementSeatAvailQtyCache(SEAT_AVAIL_QTY_PREFIX + seatId);
 
         publishReservationCancelledEvent(seat);
     }
