@@ -39,6 +39,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
+import static com.jvnlee.catchdining.common.constant.RedisConstants.LOCK_SEAT_PREFIX;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.LOCK_VALUE;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.SEAT_AVAIL_QTY_INIT_MSG;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.SEAT_AVAIL_QTY_PREFIX;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.TMP_RSV_SEAT_ID_PREFIX;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.TOPIC_SEAT_AVAIL_QTY_PREFIX;
 import static com.jvnlee.catchdining.domain.reservation.model.ReservationStatus.*;
 import static com.jvnlee.catchdining.domain.notification.model.DiningPeriod.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -63,16 +69,6 @@ public class ReservationService {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public static final String SEAT_AVAIL_QTY_PREFIX = "seat:avail_qty:";
-
-    public static final String TMP_RSV_SEAT_ID_PREFIX = "tmp_rsv:seat_id:";
-
-    public static final String LOCK_SEAT_PREFIX = "lock:seat:";
-
-    public static final String TOPIC_SEAT_AVAIL_QTY_PREFIX = "topic:seat:avail_qty:";
-
-    public static final String SEAT_AVAIL_QTY_INIT_MSG = "CACHE_INITIALIZED";
-
     public TmpReservationResponseDto createTmp(TmpReservationRequestDto tmpReservationRequestDto) {
         Long seatId = tmpReservationRequestDto.getSeatId();
         String tmpSeatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
@@ -92,7 +88,7 @@ public class ReservationService {
         String tmpSeatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
         String lockKey = LOCK_SEAT_PREFIX + seatId;
 
-        Boolean lockAcquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 5000L, MILLISECONDS);
+        Boolean lockAcquired = redisTemplate.opsForValue().setIfAbsent(lockKey, LOCK_VALUE, 5000L, MILLISECONDS);
 
         RTopic topic = redissonClient.getTopic(TOPIC_SEAT_AVAIL_QTY_PREFIX + seatId);
 
@@ -144,10 +140,10 @@ public class ReservationService {
     }
 
     private void decrementSeatAvailQtyCache(String tmpSeatAvailQtyKey) {
-        Long result = redisTemplate.opsForValue().decrement(tmpSeatAvailQtyKey, 1L);
+        Long result = redisTemplate.opsForValue().decrement(tmpSeatAvailQtyKey);
 
         if (result == null || result < 0) {
-            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey, 1L);
+            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey);
             throw new NotEnoughSeatException();
         }
     }
@@ -245,7 +241,7 @@ public class ReservationService {
     public void cancelTmp(String tmpRsvId) {
         Long seatId = validateTmpRsvKey(tmpRsvId);
 
-        redisTemplate.opsForValue().increment(SEAT_AVAIL_QTY_PREFIX + seatId, 1L);
+        redisTemplate.opsForValue().increment(SEAT_AVAIL_QTY_PREFIX + seatId);
     }
 
     public void cancel(Long reservationId) {
@@ -288,7 +284,7 @@ public class ReservationService {
 
     private void incrementSeatAvailQtyCache(String tmpSeatAvailQtyKey) {
         if (Boolean.TRUE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
-            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey, 1L);
+            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey);
         }
     }
 

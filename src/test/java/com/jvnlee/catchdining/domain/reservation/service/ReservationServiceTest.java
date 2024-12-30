@@ -43,6 +43,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static com.jvnlee.catchdining.common.constant.RedisConstants.LOCK_SEAT_PREFIX;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.SEAT_AVAIL_QTY_PREFIX;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.TMP_RSV_SEAT_ID_PREFIX;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.TOPIC_SEAT_AVAIL_QTY_PREFIX;
 import static com.jvnlee.catchdining.domain.payment.model.PaymentType.*;
 import static com.jvnlee.catchdining.domain.reservation.model.ReservationStatus.*;
 import static com.jvnlee.catchdining.domain.reservation.service.ReservationService.*;
