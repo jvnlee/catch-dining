@@ -153,7 +153,7 @@ public class ReservationService {
         String tmpRsvId = UUID.randomUUID().toString();
 
         redisTemplate.opsForValue().set(
-                TMP_RSV_SEAT_ID_PREFIX + seatId + ":" + tmpRsvId,
+                TMP_RSV_SEAT_ID_PREFIX + seatId + REDIS_KEY_DELIMITER + tmpRsvId,
                 String.valueOf(seatId),
                 TMP_RSV_TIMEOUT,
                 MILLISECONDS

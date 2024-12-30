@@ -6,6 +6,7 @@ import org.springframework.data.redis.listener.KeyExpirationEventMessageListener
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Component;
 
+import static com.jvnlee.catchdining.common.constant.RedisConstants.REDIS_KEY_DELIMITER;
 import static com.jvnlee.catchdining.common.constant.RedisConstants.SEAT_AVAIL_QTY_PREFIX;
 import static com.jvnlee.catchdining.common.constant.RedisConstants.TMP_RSV_SEAT_ID_PREFIX;
 
@@ -24,7 +25,7 @@ public class TmpRsvKeyExpirationListener extends KeyExpirationEventMessageListen
         String expiredKey = message.toString();
 
         if (expiredKey.startsWith(TMP_RSV_SEAT_ID_PREFIX)) {
-            String seatId = expiredKey.split(":")[2];
+            String seatId = expiredKey.split(REDIS_KEY_DELIMITER)[2];
             String tmpSeatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
 
             if (Boolean.TRUE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
