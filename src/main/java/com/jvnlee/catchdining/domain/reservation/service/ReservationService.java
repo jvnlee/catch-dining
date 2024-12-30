@@ -120,7 +120,7 @@ public class ReservationService {
         redisTemplate.opsForValue().set(
                 tmpSeatAvailQtyKey,
                 String.valueOf(seat.getAvailableQuantity()),
-                1_800_000L,
+                300_000L,
                 MILLISECONDS
         );
 
@@ -158,6 +158,12 @@ public class ReservationService {
         redisTemplate.opsForValue().set(
                 TMP_RSV_SEAT_ID_PREFIX + seatId + ":" + tmpRsvId,
                 String.valueOf(seatId),
+                300_000L,
+                MILLISECONDS
+        );
+
+        redisTemplate.expire(
+                TMP_SEAT_AVAIL_QTY_PREFIX + seatId,
                 300_000L,
                 MILLISECONDS
         );
