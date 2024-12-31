@@ -150,10 +150,10 @@ public class ReservationService {
     }
 
     private String storeTmpReservation(Long seatId) {
-        String tmpRsvId = UUID.randomUUID().toString();
+        String tmpRsvId = seatId + REDIS_KEY_DELIMITER + UUID.randomUUID();
 
         redisTemplate.opsForValue().set(
-                TMP_RSV_SEAT_ID_PREFIX + seatId + REDIS_KEY_DELIMITER + tmpRsvId,
+                TMP_RSV_SEAT_ID_PREFIX + tmpRsvId,
                 String.valueOf(seatId),
                 TMP_RSV_TIMEOUT,
                 MILLISECONDS
@@ -198,15 +198,16 @@ public class ReservationService {
 
     private Long validateTmpRsvKey(String tmpRsvId) {
         String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + tmpRsvId;
-        String seatIdStr = redisTemplate.opsForValue().get(tmpRsvSeatIdKey);
 
-        if (seatIdStr == null) {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(tmpRsvSeatIdKey))) {
             throw new InvalidRedisKeyException();
         }
 
         redisTemplate.delete(tmpRsvSeatIdKey);
 
-        return Long.parseLong(seatIdStr);
+        String seatId = tmpRsvId.split(REDIS_KEY_DELIMITER)[0];
+
+        return Long.parseLong(seatId);
     }
 
     private void decrementSeatAvailQty(Seat seat) {
