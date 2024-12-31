@@ -67,13 +67,13 @@ public class ReservationService {
 
     public TmpReservationResponseDto createTmp(TmpReservationRequestDto tmpReservationRequestDto) {
         Long seatId = tmpReservationRequestDto.getSeatId();
-        String tmpSeatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
+        String seatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
 
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(seatAvailQtyKey))) {
             initializeSeatAvailQtyCache(seatId);
         }
 
-        decrementSeatAvailQtyCache(tmpSeatAvailQtyKey);
+        decrementSeatAvailQtyCache(seatAvailQtyKey);
 
         String tmpRsvId = storeTmpReservation(seatId);
 
@@ -81,7 +81,7 @@ public class ReservationService {
     }
 
     private void initializeSeatAvailQtyCache(Long seatId) {
-        String tmpSeatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
+        String seatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
         String lockKey = LOCK_SEAT_PREFIX + seatId;
 
         Boolean lockAcquired = redisTemplate.opsForValue().setIfAbsent(
@@ -96,26 +96,26 @@ public class ReservationService {
         try {
             if (Boolean.TRUE.equals(lockAcquired)) {
                 try {
-                    if (Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
-                        initialize(seatId, tmpSeatAvailQtyKey, topic);
+                    if (Boolean.FALSE.equals(redisTemplate.hasKey(seatAvailQtyKey))) {
+                        initialize(seatId, seatAvailQtyKey, topic);
                     }
                 } finally {
                     redisTemplate.delete(lockKey);
                 }
             } else {
-                waitForCacheInitialization(topic, tmpSeatAvailQtyKey);
+                waitForCacheInitialization(topic, seatAvailQtyKey);
             }
         } catch (InterruptedException e) {
             throw new CacheInitializationException("자리 잔여 수량 Redis 캐시 초기화 대기 중 쓰레드 인터럽션 발생");
         }
     }
 
-    private void initialize(Long seatId, String tmpSeatAvailQtyKey, RTopic topic) {
+    private void initialize(Long seatId, String seatAvailQtyKey, RTopic topic) {
         Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(SeatNotFoundException::new);
 
         redisTemplate.opsForValue().set(
-                tmpSeatAvailQtyKey,
+                seatAvailQtyKey,
                 String.valueOf(seat.getAvailableQuantity()),
                 SEAT_AVAIL_QTY_CACHE_TIMEOUT,
                 MILLISECONDS
@@ -124,7 +124,7 @@ public class ReservationService {
         topic.publish(SEAT_AVAIL_QTY_INIT_MSG);
     }
 
-    private void waitForCacheInitialization(RTopic topic, String tmpSeatAvailQtyKey) throws InterruptedException {
+    private void waitForCacheInitialization(RTopic topic, String seatAvailQtyKey) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
         topic.addListener(String.class, (channel, msg) -> {
@@ -135,16 +135,16 @@ public class ReservationService {
 
         boolean cacheInitialized = latch.await(SEAT_AVAIL_QTY_CACHE_WAIT_TIMEOUT, MILLISECONDS);
 
-        if (!cacheInitialized || Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
+        if (!cacheInitialized || Boolean.FALSE.equals(redisTemplate.hasKey(seatAvailQtyKey))) {
             throw new CacheInitializationException("자리 잔여 수량 Redis 캐시 초기화 대기 중 타임아웃 발생");
         }
     }
 
-    private void decrementSeatAvailQtyCache(String tmpSeatAvailQtyKey) {
-        Long result = redisTemplate.opsForValue().decrement(tmpSeatAvailQtyKey);
+    private void decrementSeatAvailQtyCache(String seatAvailQtyKey) {
+        Long result = redisTemplate.opsForValue().decrement(seatAvailQtyKey);
 
         if (result == null || result < 0) {
-            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey);
+            redisTemplate.opsForValue().increment(seatAvailQtyKey);
             throw new NotEnoughSeatException();
         }
     }
@@ -284,9 +284,9 @@ public class ReservationService {
         seat.incrementAvailableQuantity();
     }
 
-    private void incrementSeatAvailQtyCache(String tmpSeatAvailQtyKey) {
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
-            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey);
+    private void incrementSeatAvailQtyCache(String seatAvailQtyKey) {
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(seatAvailQtyKey))) {
+            redisTemplate.opsForValue().increment(seatAvailQtyKey);
         }
     }
 
