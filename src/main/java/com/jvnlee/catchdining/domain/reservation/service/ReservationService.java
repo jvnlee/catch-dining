@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
+import static com.jvnlee.catchdining.common.constant.RedisConstants.*;
+import static com.jvnlee.catchdining.common.constant.TimeoutConstants.*;
 import static com.jvnlee.catchdining.domain.reservation.model.ReservationStatus.*;
 import static com.jvnlee.catchdining.domain.notification.model.DiningPeriod.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -63,25 +65,15 @@ public class ReservationService {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public static final String TMP_SEAT_AVAIL_QTY_PREFIX = "tmp:seat:avail_qty:";
-
-    public static final String TMP_RSV_SEAT_ID_PREFIX = "tmp:rsv:seat_id:";
-
-    public static final String LOCK_SEAT_PREFIX = "lock:seat:";
-
-    public static final String CACHE_SEAT_AVAIL_QTY_PREFIX = "cache:seat:avail_qty:";
-
-    public static final String SEAT_AVAIL_QTY_INIT_MSG = "CACHE_INITIALIZED";
-
     public TmpReservationResponseDto createTmp(TmpReservationRequestDto tmpReservationRequestDto) {
         Long seatId = tmpReservationRequestDto.getSeatId();
-        String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
+        String seatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
 
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(seatAvailQtyKey))) {
             initializeSeatAvailQtyCache(seatId);
         }
 
-        decrementSeatAvailQtyCache(tmpSeatAvailQtyKey);
+        decrementSeatAvailQtyCache(seatAvailQtyKey);
 
         String tmpRsvId = storeTmpReservation(seatId);
 
@@ -89,45 +81,50 @@ public class ReservationService {
     }
 
     private void initializeSeatAvailQtyCache(Long seatId) {
-        String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
+        String seatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
         String lockKey = LOCK_SEAT_PREFIX + seatId;
 
-        Boolean lockAcquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 5000L, MILLISECONDS);
+        Boolean lockAcquired = redisTemplate.opsForValue().setIfAbsent(
+                lockKey,
+                LOCK_VALUE,
+                CACHE_INIT_LOCK_TIMEOUT,
+                MILLISECONDS
+        );
 
-        RTopic topic = redissonClient.getTopic(CACHE_SEAT_AVAIL_QTY_PREFIX + seatId);
+        RTopic topic = redissonClient.getTopic(TOPIC_SEAT_AVAIL_QTY_PREFIX + seatId);
 
         try {
             if (Boolean.TRUE.equals(lockAcquired)) {
                 try {
-                    if (Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
-                        initialize(seatId, tmpSeatAvailQtyKey, topic);
+                    if (Boolean.FALSE.equals(redisTemplate.hasKey(seatAvailQtyKey))) {
+                        initialize(seatId, seatAvailQtyKey, topic);
                     }
                 } finally {
                     redisTemplate.delete(lockKey);
                 }
             } else {
-                waitForCacheInitialization(topic, tmpSeatAvailQtyKey);
+                waitForCacheInitialization(topic, seatAvailQtyKey);
             }
         } catch (InterruptedException e) {
             throw new CacheInitializationException("자리 잔여 수량 Redis 캐시 초기화 대기 중 쓰레드 인터럽션 발생");
         }
     }
 
-    private void initialize(Long seatId, String tmpSeatAvailQtyKey, RTopic topic) {
+    private void initialize(Long seatId, String seatAvailQtyKey, RTopic topic) {
         Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(SeatNotFoundException::new);
 
         redisTemplate.opsForValue().set(
-                tmpSeatAvailQtyKey,
+                seatAvailQtyKey,
                 String.valueOf(seat.getAvailableQuantity()),
-                1_800_000L,
+                SEAT_AVAIL_QTY_CACHE_TIMEOUT,
                 MILLISECONDS
         );
 
         topic.publish(SEAT_AVAIL_QTY_INIT_MSG);
     }
 
-    private void waitForCacheInitialization(RTopic topic, String tmpSeatAvailQtyKey) throws InterruptedException {
+    private void waitForCacheInitialization(RTopic topic, String seatAvailQtyKey) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
         topic.addListener(String.class, (channel, msg) -> {
@@ -136,30 +133,35 @@ public class ReservationService {
             }
         });
 
-        boolean cacheInitialized = latch.await(5000L, MILLISECONDS);
+        boolean cacheInitialized = latch.await(SEAT_AVAIL_QTY_CACHE_WAIT_TIMEOUT, MILLISECONDS);
 
-        if (!cacheInitialized || Boolean.FALSE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
+        if (!cacheInitialized || Boolean.FALSE.equals(redisTemplate.hasKey(seatAvailQtyKey))) {
             throw new CacheInitializationException("자리 잔여 수량 Redis 캐시 초기화 대기 중 타임아웃 발생");
         }
     }
 
-    private void decrementSeatAvailQtyCache(String tmpSeatAvailQtyKey) {
-        Long result = redisTemplate.opsForValue().decrement(tmpSeatAvailQtyKey, 1L);
+    private void decrementSeatAvailQtyCache(String seatAvailQtyKey) {
+        Long result = redisTemplate.opsForValue().decrement(seatAvailQtyKey);
 
         if (result == null || result < 0) {
-            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey, 1L);
+            redisTemplate.opsForValue().increment(seatAvailQtyKey);
             throw new NotEnoughSeatException();
         }
     }
 
     private String storeTmpReservation(Long seatId) {
-        String tmpRsvId = UUID.randomUUID().toString();
-        String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + tmpRsvId;
+        String tmpRsvId = seatId + REDIS_KEY_DELIMITER + UUID.randomUUID();
 
         redisTemplate.opsForValue().set(
-                tmpRsvSeatIdKey,
+                TMP_RSV_SEAT_ID_PREFIX + tmpRsvId,
                 String.valueOf(seatId),
-                300_000L,
+                TMP_RSV_TIMEOUT,
+                MILLISECONDS
+        );
+
+        redisTemplate.expire(
+                SEAT_AVAIL_QTY_PREFIX + seatId,
+                SEAT_AVAIL_QTY_CACHE_TIMEOUT,
                 MILLISECONDS
         );
 
@@ -196,15 +198,16 @@ public class ReservationService {
 
     private Long validateTmpRsvKey(String tmpRsvId) {
         String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + tmpRsvId;
-        String seatIdStr = redisTemplate.opsForValue().get(tmpRsvSeatIdKey);
 
-        if (seatIdStr == null) {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(tmpRsvSeatIdKey))) {
             throw new InvalidRedisKeyException();
         }
 
         redisTemplate.delete(tmpRsvSeatIdKey);
 
-        return Long.parseLong(seatIdStr);
+        String seatId = tmpRsvId.split(REDIS_KEY_DELIMITER)[0];
+
+        return Long.parseLong(seatId);
     }
 
     private void decrementSeatAvailQty(Seat seat) {
@@ -240,7 +243,7 @@ public class ReservationService {
     public void cancelTmp(String tmpRsvId) {
         Long seatId = validateTmpRsvKey(tmpRsvId);
 
-        redisTemplate.opsForValue().increment(TMP_SEAT_AVAIL_QTY_PREFIX + seatId, 1L);
+        redisTemplate.opsForValue().increment(SEAT_AVAIL_QTY_PREFIX + seatId);
     }
 
     public void cancel(Long reservationId) {
@@ -258,7 +261,7 @@ public class ReservationService {
                 .orElseThrow(SeatNotFoundException::new);
 
         incrementSeatAvailQty(seat);
-        incrementSeatAvailQtyCache(TMP_SEAT_AVAIL_QTY_PREFIX + seatId);
+        incrementSeatAvailQtyCache(SEAT_AVAIL_QTY_PREFIX + seatId);
 
         publishReservationCancelledEvent(seat);
     }
@@ -281,9 +284,9 @@ public class ReservationService {
         seat.incrementAvailableQuantity();
     }
 
-    private void incrementSeatAvailQtyCache(String tmpSeatAvailQtyKey) {
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(tmpSeatAvailQtyKey))) {
-            redisTemplate.opsForValue().increment(tmpSeatAvailQtyKey, 1L);
+    private void incrementSeatAvailQtyCache(String seatAvailQtyKey) {
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(seatAvailQtyKey))) {
+            redisTemplate.opsForValue().increment(seatAvailQtyKey);
         }
     }
 

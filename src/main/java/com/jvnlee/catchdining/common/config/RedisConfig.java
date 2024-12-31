@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -41,6 +42,14 @@ public class RedisConfig {
         config.useSingleServer()
                 .setAddress("redis://" + host + ":" + port);
         return Redisson.create(config);
+    }
+
+    @Bean
+    public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory redisConnectionFactory) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        redisConnectionFactory.getConnection().setConfig("notify-keyspace-events", "Ex");
+        container.setConnectionFactory(redisConnectionFactory);
+        return container;
     }
 
 }

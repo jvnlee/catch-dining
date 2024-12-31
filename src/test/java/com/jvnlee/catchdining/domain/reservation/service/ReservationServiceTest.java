@@ -41,12 +41,18 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
+import static com.jvnlee.catchdining.common.constant.RedisConstants.LOCK_SEAT_PREFIX;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.LOCK_VALUE;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.REDIS_KEY_DELIMITER;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.SEAT_AVAIL_QTY_PREFIX;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.TMP_RSV_SEAT_ID_PREFIX;
+import static com.jvnlee.catchdining.common.constant.RedisConstants.TOPIC_SEAT_AVAIL_QTY_PREFIX;
+import static com.jvnlee.catchdining.common.constant.TimeoutConstants.CACHE_INIT_LOCK_TIMEOUT;
 import static com.jvnlee.catchdining.domain.payment.model.PaymentType.*;
 import static com.jvnlee.catchdining.domain.reservation.model.ReservationStatus.*;
-import static com.jvnlee.catchdining.domain.reservation.service.ReservationService.*;
 import static com.jvnlee.catchdining.domain.user.model.UserType.CUSTOMER;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -86,19 +92,19 @@ class ReservationServiceTest {
     @DisplayName("임시 예약 성공: 자리 잔여 수량 캐시 히트")
     void create_tmp_success_cache_hit() {
         Long seatId = 1L;
-        String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
+        String seatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
         TmpReservationRequestDto requestDto = new TmpReservationRequestDto(seatId);
 
-        when(redisTemplate.hasKey(tmpSeatAvailQtyKey)).thenReturn(true);
+        when(redisTemplate.hasKey(seatAvailQtyKey)).thenReturn(true);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.decrement(tmpSeatAvailQtyKey, 1L)).thenReturn(9L);
+        when(valueOperations.decrement(seatAvailQtyKey)).thenReturn(9L);
 
         TmpReservationResponseDto result = reservationService.createTmp(requestDto);
 
         assertThat(result).isNotNull();
         assertThat(result.getTmpRsvId()).isNotBlank();
-        verify(redisTemplate).hasKey(tmpSeatAvailQtyKey);
-        verify(valueOperations).decrement(tmpSeatAvailQtyKey, 1L);
+        verify(redisTemplate).hasKey(seatAvailQtyKey);
+        verify(valueOperations).decrement(seatAvailQtyKey);
         verify(valueOperations).set(anyString(), anyString(), anyLong(), any());
     }
 
@@ -106,38 +112,36 @@ class ReservationServiceTest {
     @DisplayName("임시 예약 성공: 자리 잔여 수량 캐시 미스")
     void create_tmp_success_cache_miss() {
         Long seatId = 1L;
-        String tmpSeatAvailQtyKey = TMP_SEAT_AVAIL_QTY_PREFIX + seatId;
+        String seatAvailQtyKey = SEAT_AVAIL_QTY_PREFIX + seatId;
         String lockKey = LOCK_SEAT_PREFIX + seatId;
-        String lockValue = "locked";
-        long lockTimeout = 5000L;
         RTopic rTopic = mock(RTopic.class);
         Seat seat = mock(Seat.class);
         TmpReservationRequestDto requestDto = new TmpReservationRequestDto(seatId);
 
-        when(redisTemplate.hasKey(tmpSeatAvailQtyKey)).thenReturn(false);
+        when(redisTemplate.hasKey(seatAvailQtyKey)).thenReturn(false);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
-        when(valueOperations.setIfAbsent(lockKey, lockValue, lockTimeout, TimeUnit.MILLISECONDS)).thenReturn(true);
-        when(redissonClient.getTopic(CACHE_SEAT_AVAIL_QTY_PREFIX + seatId)).thenReturn(rTopic);
+        when(valueOperations.setIfAbsent(lockKey, LOCK_VALUE, CACHE_INIT_LOCK_TIMEOUT, MILLISECONDS)).thenReturn(true);
+        when(redissonClient.getTopic(TOPIC_SEAT_AVAIL_QTY_PREFIX + seatId)).thenReturn(rTopic);
         when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
-        when(valueOperations.decrement(tmpSeatAvailQtyKey, 1L)).thenReturn(9L);
+        when(valueOperations.decrement(seatAvailQtyKey)).thenReturn(9L);
 
         TmpReservationResponseDto result = reservationService.createTmp(requestDto);
 
         assertThat(result).isNotNull();
         assertThat(result.getTmpRsvId()).isNotBlank();
-        verify(redisTemplate, times(2)).hasKey(tmpSeatAvailQtyKey);
-        verify(valueOperations).setIfAbsent(lockKey, lockValue, lockTimeout, TimeUnit.MILLISECONDS);
+        verify(redisTemplate, times(2)).hasKey(seatAvailQtyKey);
+        verify(valueOperations).setIfAbsent(lockKey, LOCK_VALUE, CACHE_INIT_LOCK_TIMEOUT, MILLISECONDS);
         verify(valueOperations, times(2)).set(anyString(), anyString(), anyLong(), any());
         verify(redisTemplate).delete(lockKey);
-        verify(valueOperations).decrement(tmpSeatAvailQtyKey, 1L);
+        verify(valueOperations).decrement(seatAvailQtyKey);
     }
 
     @Test
     @DisplayName("예약 성공")
     void create_success() {
         Long seatId = 1L;
-        String tmpRsvId = "1234";
+        String tmpRsvId = seatId + REDIS_KEY_DELIMITER + "uuid";
         String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + tmpRsvId;
         Seat seat = mock(Seat.class);
         User user = mock(User.class);
@@ -149,8 +153,7 @@ class ReservationServiceTest {
         );
         PaymentDto paymentDto = new PaymentDto(reservationRequestDto.getReserveMenus(), reservationRequestDto.getPaymentType());
 
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get(tmpRsvSeatIdKey)).thenReturn(String.valueOf(seatId));
+        when(redisTemplate.hasKey(tmpRsvSeatIdKey)).thenReturn(true);
         when(seatRepository.findWithLockById(seatId)).thenReturn(Optional.of(seat));
         when(seat.getAvailableQuantity()).thenReturn(10);
         when(userService.getCurrentUser()).thenReturn(user);
@@ -159,7 +162,7 @@ class ReservationServiceTest {
 
         reservationService.create(reservationRequestDto);
 
-        verify(valueOperations).get(tmpRsvSeatIdKey);
+        verify(redisTemplate).hasKey(tmpRsvSeatIdKey);
         verify(redisTemplate).delete(tmpRsvSeatIdKey);
         verify(seatRepository).findWithLockById(seatId);
         verify(seat).decrementAvailableQuantity();
@@ -170,7 +173,8 @@ class ReservationServiceTest {
     @Test
     @DisplayName("예약 실패: 유효하지 않은 임시 예약 키")
     void create_fail_invalid_tmp_rsv_key() {
-        String tmpRsvId = "1234";
+        Long seatId = 1L;
+        String tmpRsvId = seatId + REDIS_KEY_DELIMITER + "uuid";
         String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + tmpRsvId;
         ReservationRequestDto reservationRequestDto = new ReservationRequestDto(
                 tmpRsvId,
@@ -179,19 +183,18 @@ class ReservationServiceTest {
                 2
         );
 
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get(tmpRsvSeatIdKey)).thenReturn(null);
+        when(redisTemplate.hasKey(tmpRsvSeatIdKey)).thenReturn(false);
 
         assertThatThrownBy(() -> reservationService.create(reservationRequestDto))
                 .isInstanceOf(InvalidRedisKeyException.class);
-        verify(valueOperations).get(tmpRsvSeatIdKey);
+        verify(redisTemplate).hasKey(tmpRsvSeatIdKey);
     }
 
     @Test
     @DisplayName("예약 실패: 자리 부족")
     void create_fail_not_enough_seat() {
         Long seatId = 1L;
-        String tmpRsvId = "1234";
+        String tmpRsvId = seatId + REDIS_KEY_DELIMITER + "uuid";
         String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + tmpRsvId;
         Seat seat = mock(Seat.class);
         ReservationRequestDto reservationRequestDto = new ReservationRequestDto(
@@ -201,14 +204,12 @@ class ReservationServiceTest {
                 2
         );
 
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get(tmpRsvSeatIdKey)).thenReturn(String.valueOf(seatId));
+        when(redisTemplate.hasKey(tmpRsvSeatIdKey)).thenReturn(true);
         when(seatRepository.findWithLockById(anyLong())).thenReturn(Optional.of(seat));
         when(seat.getAvailableQuantity()).thenReturn(0);
 
         assertThatThrownBy(() -> reservationService.create(reservationRequestDto))
                 .isInstanceOf(NotEnoughSeatException.class);
-        verify(valueOperations).get(tmpRsvSeatIdKey);
         verify(redisTemplate).delete(tmpRsvSeatIdKey);
         verify(seatRepository).findWithLockById(seatId);
     }
@@ -295,18 +296,18 @@ class ReservationServiceTest {
     @Test
     @DisplayName("임시 예약 취소 성공")
     void cancelTmp_success() {
-        String tmpRsvId = "uuid";
-        String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + tmpRsvId;
         Long seatId = 1L;
+        String tmpRsvId = seatId + REDIS_KEY_DELIMITER + "uuid";
+        String tmpRsvSeatIdKey = TMP_RSV_SEAT_ID_PREFIX + tmpRsvId;
 
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get(tmpRsvSeatIdKey)).thenReturn(String.valueOf(seatId));
+        when(redisTemplate.hasKey(tmpRsvSeatIdKey)).thenReturn(true);
 
         reservationService.cancelTmp(tmpRsvId);
 
-        verify(valueOperations).get(tmpRsvSeatIdKey);
+        verify(redisTemplate).hasKey(tmpRsvSeatIdKey);
         verify(redisTemplate).delete(tmpRsvSeatIdKey);
-        verify(valueOperations).increment(TMP_SEAT_AVAIL_QTY_PREFIX + seatId, 1L);
+        verify(valueOperations).increment(SEAT_AVAIL_QTY_PREFIX + seatId);
     }
 
     @Test
@@ -344,7 +345,7 @@ class ReservationServiceTest {
         verify(paymentService).cancel(paymentId);
         verify(seatRepository).findWithLockById(seatId);
         verify(seat).incrementAvailableQuantity();
-        verify(redisTemplate).hasKey(TMP_SEAT_AVAIL_QTY_PREFIX + seatId);
+        verify(redisTemplate).hasKey(SEAT_AVAIL_QTY_PREFIX + seatId);
         verify(rabbitTemplate).convertAndSend(anyString(), any(ReservationCancelledEvent.class));
     }
 
