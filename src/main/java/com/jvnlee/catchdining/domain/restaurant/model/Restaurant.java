@@ -60,6 +60,9 @@ public class Restaurant extends BaseEntity {
     @Column(name = "serving_type")
     private ServingType servingType;
 
+    @Version
+    private int version;
+
     @Builder.Default
     @OneToMany(mappedBy = "restaurant", cascade = ALL, orphanRemoval = true)
     private List<Seat> seats = new ArrayList<>();
