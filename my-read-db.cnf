@@ -1,0 +1,9 @@
+[mysqld]
+server-id=2
+relay-log=mysql-relay-bin
+log-bin=mysql-bin
+binlog-format=ROW
+read-only=1
+ssl-ca=/pems/ca.pem
+ssl-cert=/pems/client-cert.pem
+ssl-key=/pems/client-key.pem
