@@ -26,7 +26,7 @@ public class RestaurantViewDto {
 
     private ServingType servingType;
 
-    public RestaurantViewDto(RestaurantReviewStat restaurant) {
+    public RestaurantViewDto(Restaurant restaurant) {
         this.name = restaurant.getName();
         this.address = restaurant.getAddress();
         this.phoneNumber = restaurant.getPhoneNumber();
