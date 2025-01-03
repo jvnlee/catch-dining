@@ -1,13 +1,11 @@
 package com.jvnlee.catchdining.domain.restaurant.controller;
 
 import com.jvnlee.catchdining.common.web.Response;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantCreateResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
-import com.jvnlee.catchdining.domain.restaurant.service.RestaurantReviewStatService;
 import com.jvnlee.catchdining.domain.restaurant.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
