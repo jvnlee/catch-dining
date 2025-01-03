@@ -12,6 +12,7 @@ import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class DataSourceConfig {
@@ -62,10 +63,10 @@ public class DataSourceConfig {
 
     @Bean(name = "dataSourceRouter")
     public DataSourceRouter dataSourceRouter() {
-        HashMap<Object, Object> dataSourceMap = new HashMap<>();
-        final DataSource writeDataSource = writeDataSource();
-        dataSourceMap.put(DataSourceType.WRITE_ONLY, writeDataSource);
-        dataSourceMap.put(DataSourceType.READ_ONLY, readDataSource());
+        Map<Object, Object> dataSourceMap = new HashMap<>();
+        DataSource writeDataSource = writeDataSource();
+        dataSourceMap.put(DataSourceType.WRITE_DB, writeDataSource);
+        dataSourceMap.put(DataSourceType.READ_DB, readDataSource());
 
         DataSourceRouter dataSourceRouter = new DataSourceRouter();
         dataSourceRouter.setTargetDataSources(dataSourceMap);

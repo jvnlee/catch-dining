@@ -6,14 +6,14 @@ import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 @Slf4j
 public class DataSourceRouter extends AbstractRoutingDataSource {
 
-    private final ThreadLocal<DataSourceType> currentDataSource = ThreadLocal.withInitial(() -> DataSourceType.WRITE_ONLY);
+    private final ThreadLocal<DataSourceType> currentDataSource = ThreadLocal.withInitial(() -> DataSourceType.WRITE_DB);
 
     public void setReadOnly() {
-        currentDataSource.set(DataSourceType.READ_ONLY);
+        currentDataSource.set(DataSourceType.READ_DB);
     }
 
     public void reset() {
-        currentDataSource.set(DataSourceType.WRITE_ONLY);
+        currentDataSource.set(DataSourceType.WRITE_DB);
     }
 
     @Override
