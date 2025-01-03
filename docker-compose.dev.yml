@@ -26,6 +26,7 @@ services:
       - ./write-db:/var/lib/mysql
       - ./init-write-db.sql:/docker-entrypoint-initdb.d/init-write-db.sql
       - ./my-write-db.cnf:/etc/mysql/my.cnf
+      - ./mysql-pems:/pems
     environment:
       - MYSQL_ROOT_HOST=%
       - MYSQL_ROOT_PASSWORD=1234
@@ -51,6 +52,7 @@ services:
       - ./read-db:/var/lib/mysql
       - ./init-read-db.sql:/docker-entrypoint-initdb.d/init-read-db.sql
       - ./my-read-db.cnf:/etc/mysql/my.cnf
+      - ./mysql-pems:/pems
     environment:
       - MYSQL_ROOT_HOST=%
       - MYSQL_ROOT_PASSWORD=1234
