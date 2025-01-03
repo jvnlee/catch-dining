@@ -1,27 +1,33 @@
 package com.jvnlee.catchdining.common.util;
 
-import lombok.Getter;
 import org.hibernate.resource.jdbc.spi.StatementInspector;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.RequestScope;
 
 @Profile({"dev", "test"})
 @Component
 public class QueryInspector implements StatementInspector {
 
-    private final Long requestStartTime = System.currentTimeMillis();
+    private ThreadLocal<Long> requestStartTime = new ThreadLocal<>();
 
-    private ThreadLocal<Integer> executionCount = ThreadLocal.withInitial(() -> 0);
-
-    public Long getElapsedTime() {
-        return System.currentTimeMillis() - requestStartTime;
-    }
+    private ThreadLocal<Integer> executionCount = new ThreadLocal<>();
 
     @Override
     public String inspect(String sql) {
         incrementExecutionCount();
         return sql;
+    }
+
+    public void initializeRequestStartTime() {
+        requestStartTime.set(System.currentTimeMillis());
+    }
+
+    public Long getElapsedTime() {
+        return System.currentTimeMillis() - requestStartTime.get();
+    }
+
+    public void resetRequestStartTime() {
+        requestStartTime.remove();
     }
 
     private void incrementExecutionCount() {
@@ -34,7 +40,7 @@ public class QueryInspector implements StatementInspector {
     }
 
     public void resetExecutionCount() {
-        executionCount.set(0);
+        executionCount.remove();
     }
 
 }
