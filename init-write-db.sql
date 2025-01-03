@@ -1,3 +1,9 @@
+-- Replication User Setup
+CREATE USER 'repl'@'%' IDENTIFIED BY '1234';
+GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
+FLUSH PRIVILEGES;
+
+-- Schema Setup
 CREATE DATABASE IF NOT EXISTS catch_dining;
 
 USE catch_dining;
