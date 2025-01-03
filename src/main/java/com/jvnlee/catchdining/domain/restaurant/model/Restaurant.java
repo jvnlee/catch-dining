@@ -42,6 +42,12 @@ public class Restaurant extends BaseEntity {
 
     private String description;
 
+    @Column(name = "avg_rating")
+    private double avgRating;
+
+    @Column(name = "review_count")
+    private int reviewCount;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "country_type")
     private CountryType countryType;
@@ -85,4 +91,13 @@ public class Restaurant extends BaseEntity {
         this.foodType = restaurantUpdateDto.getFoodType();
         this.servingType = restaurantUpdateDto.getServingType();
     }
+
+    public void updateReviewData(double tasteRating, double moodRating, double serviceRating) {
+        double newRating = (tasteRating + moodRating + serviceRating) / 3.0;
+        double totalRating = this.avgRating * this.reviewCount;
+
+        this.reviewCount++;
+        this.avgRating = Math.round((totalRating + newRating) / this.reviewCount * 100.0) / 100.0;
+    }
+
 }
