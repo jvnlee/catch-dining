@@ -1,7 +1,7 @@
 package com.jvnlee.catchdining.domain.review.event;
 
 import com.jvnlee.catchdining.common.annotation.RabbitManualAck;
-import com.jvnlee.catchdining.domain.restaurant.service.RestaurantReviewStatService;
+import com.jvnlee.catchdining.domain.restaurant.service.RestaurantService;
 import com.rabbitmq.client.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,13 +20,13 @@ import static org.springframework.amqp.support.AmqpHeaders.DELIVERY_TAG;
 @RequiredArgsConstructor
 public class ReviewEventHandler {
 
-    private final RestaurantReviewStatService restaurantReviewStatService;
+    private final RestaurantService restaurantService;
 
     @Async
     @RabbitListener(queues = REVIEW_EVENT_QUEUE)
     @RabbitManualAck
     public void handleCreated(ReviewCreatedEvent event, Channel channel, @Header(DELIVERY_TAG) long tag) throws IOException {
-        restaurantReviewStatService.updateReviewData(
+        restaurantService.updateReviewData(
                 event.getRestaurantId(),
                 event.getTasteRating(),
                 event.getMoodRating(),
