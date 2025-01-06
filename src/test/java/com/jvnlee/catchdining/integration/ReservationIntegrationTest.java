@@ -11,7 +11,6 @@ import com.jvnlee.catchdining.domain.seat.dto.SeatDto;
 import com.jvnlee.catchdining.domain.seat.model.SeatType;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.domain.user.dto.UserLoginDto;
-import com.jvnlee.catchdining.util.IntegrationTest;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -19,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.time.LocalTime;
@@ -30,9 +30,10 @@ import java.util.concurrent.Executors;
 import static com.jvnlee.catchdining.domain.user.model.UserType.OWNER;
 import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-@IntegrationTest
+@SpringBootTest(webEnvironment = RANDOM_PORT)
 class ReservationIntegrationTest extends TestcontainersContext {
 
     @LocalServerPort
@@ -81,7 +82,7 @@ class ReservationIntegrationTest extends TestcontainersContext {
         RestaurantDto restaurantCreateDto = RestaurantDto.builder().name("restaurant").build();
         String restaurantCreateRequestBody = om.writeValueAsString(restaurantCreateDto);
 
-        ExtractableResponse<Response> restaurantCreateResponse = RestAssured
+        RestAssured
                 .given().log().all()
                 .header(AUTHORIZATION, user1AuthHeader)
                 .body(restaurantCreateRequestBody)
@@ -91,7 +92,7 @@ class ReservationIntegrationTest extends TestcontainersContext {
                 .then().log().all()
                 .extract();
 
-        Long restaurantId = ((Integer) restaurantCreateResponse.path("data.restaurantId")).longValue();
+        Long restaurantId = 1L;
 
         SeatDto seatDto = new SeatDto(
                 SeatType.BAR,

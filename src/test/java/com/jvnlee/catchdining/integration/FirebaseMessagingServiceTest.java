@@ -5,18 +5,19 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.jvnlee.catchdining.common.exception.MessageSendingFailureException;
 import com.jvnlee.catchdining.domain.notification.service.FirebaseMessagingService;
-import com.jvnlee.catchdining.util.IntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.retry.annotation.EnableRetry;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
-@IntegrationTest
+@SpringBootTest(webEnvironment = RANDOM_PORT)
 @EnableRetry
 public class FirebaseMessagingServiceTest extends TestcontainersContext {
 

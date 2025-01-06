@@ -3,7 +3,6 @@ package com.jvnlee.catchdining.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvnlee.catchdining.domain.user.dto.UserDto;
 import com.jvnlee.catchdining.domain.user.dto.UserLoginDto;
-import com.jvnlee.catchdining.util.IntegrationTest;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -11,18 +10,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.transaction.annotation.Transactional;
 
 import static com.jvnlee.catchdining.domain.user.model.UserType.*;
 import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.http.HttpStatus.*;
 
-@IntegrationTest
-@Transactional
+@SpringBootTest(webEnvironment = RANDOM_PORT)
 class LoginIntegrationTest extends TestcontainersContext {
 
     @LocalServerPort
@@ -228,12 +227,11 @@ class LoginIntegrationTest extends TestcontainersContext {
                 .then().log().all()
                 .extract();
 
-        String authHeader = response.header(AUTHORIZATION);
-        String validRefreshToken = authHeader.split(" ")[2];
+        String validRefreshToken = response.header(AUTHORIZATION).split(" ")[2];
 
         RestAssured
                 .given().log().all()
-                .header(AUTHORIZATION, "Bearer InvalidRefreshToken " + validRefreshToken)
+                .header(AUTHORIZATION, "Bearer InvalidAccessToken " + validRefreshToken)
                 .get("/someUrl")
                 .then().log().all()
                 .assertThat()
