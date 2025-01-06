@@ -1,10 +1,10 @@
 package com.jvnlee.catchdining;
 
 import com.jvnlee.catchdining.integration.TestcontainersContext;
-import com.jvnlee.catchdining.util.IntegrationTest;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
-@IntegrationTest
+@SpringBootTest
 class CatchdiningApplicationTests extends TestcontainersContext {
 
 	@Test
