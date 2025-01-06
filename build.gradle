@@ -37,8 +37,6 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.testcontainers:testcontainers:1.19.8'
-	testImplementation 'org.testcontainers:mysql:1.19.8'
-	testImplementation 'org.testcontainers:rabbitmq:1.19.8'
 	testImplementation ('io.rest-assured:rest-assured:5.4.0') {
 		exclude group: 'org.apache.groovy', module: 'groovy'
 		exclude group: 'org.apache.groovy', module: 'groovy-xml'

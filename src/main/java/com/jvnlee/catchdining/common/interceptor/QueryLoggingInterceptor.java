@@ -32,8 +32,16 @@ public class QueryLoggingInterceptor implements HandlerInterceptor {
     private static final int QUERY_LOG_WARN_THRESHOLD = 10;
 
     @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        queryInspector.initializeRequestStartTime();
+        queryInspector.initializeExecutionCount();
+
+        return true;
+    }
+
+    @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
-                                 @Nullable Exception ex) throws Exception {
+                                 @Nullable Exception ex) {
         Long elapsedTime = queryInspector.getElapsedTime();
         int executionCount = queryInspector.getExecutionCount();
 
@@ -53,6 +61,7 @@ public class QueryLoggingInterceptor implements HandlerInterceptor {
             );
         }
 
+        queryInspector.resetRequestStartTime();
         queryInspector.resetExecutionCount();
     }
 }

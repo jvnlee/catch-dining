@@ -1,3 +1,9 @@
+-- Replication User Setup
+CREATE USER 'repl'@'%' IDENTIFIED BY '1234';
+GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
+FLUSH PRIVILEGES;
+
+-- Schema Setup
 CREATE DATABASE IF NOT EXISTS catch_dining;
 
 USE catch_dining;
@@ -18,8 +24,11 @@ CREATE TABLE IF NOT EXISTS restaurant
     name               VARCHAR(255) UNIQUE,
     phone_number       VARCHAR(255),
     rating             DOUBLE,
-    serving_type       VARCHAR(255)
-);
+    serving_type       VARCHAR(255),
+    avg_rating         DOUBLE DEFAULT 0.0,
+    review_count       INT DEFAULT 0,
+    version            INT NOT NULL DEFAULT 0
+    );
 
 CREATE TABLE IF NOT EXISTS `user`
 (
@@ -31,7 +40,7 @@ CREATE TABLE IF NOT EXISTS `user`
     phone_number       VARCHAR(255) UNIQUE,
     user_type          VARCHAR(255),
     username           VARCHAR(255) UNIQUE
-);
+    );
 
 CREATE TABLE IF NOT EXISTS seat
 (
@@ -47,7 +56,7 @@ CREATE TABLE IF NOT EXISTS seat
     seat_type          VARCHAR(255),
     restaurant_id      BIGINT,
     FOREIGN KEY (restaurant_id) REFERENCES restaurant (restaurant_id)
-);
+    );
 
 CREATE TABLE IF NOT EXISTS menu
 (
@@ -58,7 +67,7 @@ CREATE TABLE IF NOT EXISTS menu
     price              INT,
     restaurant_id      BIGINT,
     FOREIGN KEY (restaurant_id) REFERENCES restaurant (restaurant_id)
-);
+    );
 
 CREATE TABLE IF NOT EXISTS payment
 (
@@ -69,7 +78,7 @@ CREATE TABLE IF NOT EXISTS payment
     payment_type       VARCHAR(255),
     tid                VARCHAR(255),
     total_price        INT
-);
+    );
 
 CREATE TABLE IF NOT EXISTS reserve_menu
 (
@@ -81,7 +90,7 @@ CREATE TABLE IF NOT EXISTS reserve_menu
     menu_name          VARCHAR(255),
     payment_id         BIGINT,
     FOREIGN KEY (payment_id) REFERENCES payment (payment_id)
-);
+    );
 
 CREATE TABLE IF NOT EXISTS reservation
 (
@@ -100,7 +109,7 @@ CREATE TABLE IF NOT EXISTS reservation
     FOREIGN KEY (payment_id) REFERENCES payment (payment_id),
     FOREIGN KEY (user_id) REFERENCES `user` (user_id),
     FOREIGN KEY (seat_id) REFERENCES seat (seat_id)
-);
+    );
 
 CREATE TABLE IF NOT EXISTS notification_request
 (
@@ -112,7 +121,7 @@ CREATE TABLE IF NOT EXISTS notification_request
     user_id                 BIGINT,
     FOREIGN KEY (restaurant_id) REFERENCES restaurant (restaurant_id),
     FOREIGN KEY (user_id) REFERENCES `user` (user_id)
-);
+    );
 
 CREATE TABLE IF NOT EXISTS favorite
 (
@@ -123,7 +132,7 @@ CREATE TABLE IF NOT EXISTS favorite
     user_id            BIGINT,
     FOREIGN KEY (restaurant_id) REFERENCES restaurant (restaurant_id),
     FOREIGN KEY (user_id) REFERENCES `user` (user_id)
-);
+    );
 
 CREATE TABLE IF NOT EXISTS review
 (
@@ -138,7 +147,7 @@ CREATE TABLE IF NOT EXISTS review
     restaurant_id      BIGINT,
     FOREIGN KEY (user_id) REFERENCES `user` (user_id),
     FOREIGN KEY (restaurant_id) REFERENCES restaurant (restaurant_id)
-);
+    );
 
 CREATE TABLE IF NOT EXISTS review_comment
 (
@@ -150,4 +159,4 @@ CREATE TABLE IF NOT EXISTS review_comment
     user_id            BIGINT,
     FOREIGN KEY (review_id) REFERENCES review (review_id),
     FOREIGN KEY (user_id) REFERENCES `user` (user_id)
-);
+    );

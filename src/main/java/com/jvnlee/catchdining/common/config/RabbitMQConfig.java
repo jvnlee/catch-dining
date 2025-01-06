@@ -26,8 +26,6 @@ public class RabbitMQConfig {
 
     public static final String REVIEW_EVENT_QUEUE = "REVIEW_EVENT_QUEUE";
 
-    public static final String RESTAURANT_EVENT_QUEUE = "RESTAURANT_EVENT_QUEUE";
-
     public static final String RESERVATION_EVENT_QUEUE = "RESERVATION_EVENT_QUEUE";
 
     @Bean
@@ -53,11 +51,6 @@ public class RabbitMQConfig {
     @Bean
     public Queue reviewEventQueue() {
         return new Queue(REVIEW_EVENT_QUEUE);
-    }
-
-    @Bean
-    public Queue restaurantEventQueue() {
-        return new Queue(RESTAURANT_EVENT_QUEUE);
     }
 
     @Bean

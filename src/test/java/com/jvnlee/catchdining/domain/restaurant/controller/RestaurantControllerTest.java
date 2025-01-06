@@ -8,7 +8,6 @@ import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Address;
 import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
-import com.jvnlee.catchdining.domain.restaurant.service.RestaurantReviewStatService;
 import com.jvnlee.catchdining.domain.restaurant.service.RestaurantService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,9 +53,6 @@ class RestaurantControllerTest {
 
     @MockBean
     RestaurantService restaurantService;
-
-    @MockBean
-    RestaurantReviewStatService restaurantReviewStatService;
 
     @Test
     @DisplayName("식당 등록 성공")
@@ -123,7 +119,7 @@ class RestaurantControllerTest {
         PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
 
         RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.NONE, pageRequest);
-        when(restaurantReviewStatService.search(restaurantSearchRequestDto)).thenReturn(page);
+        when(restaurantService.search(restaurantSearchRequestDto)).thenReturn(page);
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
@@ -132,7 +128,7 @@ class RestaurantControllerTest {
                         .param("size", pageRequest.getPageSize() + "")
         );
 
-        verify(restaurantReviewStatService).search(restaurantSearchRequestDto);
+        verify(restaurantService).search(restaurantSearchRequestDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 검색 결과"))
@@ -159,7 +155,7 @@ class RestaurantControllerTest {
         PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
 
         RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.AVG_RATING, pageRequest);
-        when(restaurantReviewStatService.search(restaurantSearchRequestDto)).thenReturn(page);
+        when(restaurantService.search(restaurantSearchRequestDto)).thenReturn(page);
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
@@ -169,7 +165,7 @@ class RestaurantControllerTest {
                         .param("size", pageRequest.getPageSize() + "")
         );
 
-        verify(restaurantReviewStatService).search(restaurantSearchRequestDto);
+        verify(restaurantService).search(restaurantSearchRequestDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 검색 결과"))
@@ -199,7 +195,7 @@ class RestaurantControllerTest {
         PageImpl<RestaurantSearchResponseDto> page = new PageImpl<>(content);
 
         RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.REVIEW_COUNT, pageRequest);
-        when(restaurantReviewStatService.search(restaurantSearchRequestDto)).thenReturn(page);
+        when(restaurantService.search(restaurantSearchRequestDto)).thenReturn(page);
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
@@ -209,7 +205,7 @@ class RestaurantControllerTest {
                         .param("size", pageRequest.getPageSize() + "")
         );
 
-        verify(restaurantReviewStatService).search(restaurantSearchRequestDto);
+        verify(restaurantService).search(restaurantSearchRequestDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 검색 결과"))
@@ -226,7 +222,7 @@ class RestaurantControllerTest {
         PageRequest pageRequest = PageRequest.of(0, 3);
 
         RestaurantSearchRequestDto restaurantSearchRequestDto = new RestaurantSearchRequestDto(name, SortBy.NONE, pageRequest);
-        when(restaurantReviewStatService.search(restaurantSearchRequestDto)).thenReturn(Page.empty());
+        when(restaurantService.search(restaurantSearchRequestDto)).thenReturn(Page.empty());
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants")
@@ -235,7 +231,7 @@ class RestaurantControllerTest {
                         .param("size", pageRequest.getPageSize() + "")
         );
 
-        verify(restaurantReviewStatService).search(restaurantSearchRequestDto);
+        verify(restaurantService).search(restaurantSearchRequestDto);
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 검색 결과"))
@@ -247,13 +243,13 @@ class RestaurantControllerTest {
     void view_success() throws Exception {
         String restaurantId = "1";
 
-        when(restaurantReviewStatService.view(Long.valueOf(restaurantId))).thenReturn(new RestaurantViewDto());
+        when(restaurantService.view(Long.valueOf(restaurantId))).thenReturn(new RestaurantViewDto());
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants/{restaurantId}", restaurantId)
         );
 
-        verify(restaurantReviewStatService).view(Long.valueOf(restaurantId));
+        verify(restaurantService).view(Long.valueOf(restaurantId));
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("식당 정보 조회 결과"))
@@ -265,13 +261,13 @@ class RestaurantControllerTest {
     void view_fail() throws Exception {
         String restaurantId = "1";
 
-        doThrow(new RestaurantNotFoundException()).when(restaurantReviewStatService).view(Long.valueOf(restaurantId));
+        doThrow(new RestaurantNotFoundException()).when(restaurantService).view(Long.valueOf(restaurantId));
 
         ResultActions resultActions = mockMvc.perform(
                 get("/restaurants/{restaurantId}", restaurantId)
         );
 
-        verify(restaurantReviewStatService).view(Long.valueOf(restaurantId));
+        verify(restaurantService).view(Long.valueOf(restaurantId));
         resultActions
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("식당 정보가 존재하지 않습니다."))

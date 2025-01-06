@@ -1,3 +1,22 @@
+spring:
+  profiles:
+    active: test
+  datasource:
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    read-db:
+      username: root
+      password: 1234
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+  rabbitmq:
+    username: guest
+    password: guest
+    listener:
+      simple:
+        acknowledge-mode: manual
+
 logging:
   level:
     org:

@@ -25,6 +25,8 @@ services:
     volumes:
       - ./write-db:/var/lib/mysql
       - ./init-write-db.sql:/docker-entrypoint-initdb.d/init-write-db.sql
+      - ./my-write-db.cnf:/etc/mysql/my.cnf
+      - ./mysql-pems:/pems
     environment:
       - MYSQL_ROOT_HOST=%
       - MYSQL_ROOT_PASSWORD=1234
@@ -42,10 +44,15 @@ services:
     image: mysql:8.0.32
     ports:
       - "3307:3306"
+    depends_on:
+      write-db:
+        condition: service_healthy
     restart: always
     volumes:
       - ./read-db:/var/lib/mysql
       - ./init-read-db.sql:/docker-entrypoint-initdb.d/init-read-db.sql
+      - ./my-read-db.cnf:/etc/mysql/my.cnf
+      - ./mysql-pems:/pems
     environment:
       - MYSQL_ROOT_HOST=%
       - MYSQL_ROOT_PASSWORD=1234

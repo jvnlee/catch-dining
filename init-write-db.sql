@@ -1,3 +1,9 @@
+-- Replication User Setup
+CREATE USER 'repl'@'%' IDENTIFIED BY '1234';
+GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
+FLUSH PRIVILEGES;
+
+-- Schema Setup
 CREATE DATABASE IF NOT EXISTS catch_dining;
 
 USE catch_dining;
@@ -18,7 +24,10 @@ CREATE TABLE IF NOT EXISTS restaurant
     name               VARCHAR(255) UNIQUE,
     phone_number       VARCHAR(255),
     rating             DOUBLE,
-    serving_type       VARCHAR(255)
+    serving_type       VARCHAR(255),
+    avg_rating         DOUBLE DEFAULT 0.0,
+    review_count       INT DEFAULT 0,
+    version            INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS `user`

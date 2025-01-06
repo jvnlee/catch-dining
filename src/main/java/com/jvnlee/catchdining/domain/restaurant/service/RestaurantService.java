@@ -1,23 +1,25 @@
 package com.jvnlee.catchdining.domain.restaurant.service;
 
-import com.jvnlee.catchdining.common.config.RabbitMQConfig;
 import com.jvnlee.catchdining.common.exception.RestaurantNotFoundException;
-import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantCreateResponseDto;
 import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantDto;
-import com.jvnlee.catchdining.domain.restaurant.event.RestaurantCreatedEvent;
-import com.jvnlee.catchdining.domain.restaurant.event.RestaurantDeletedEvent;
-import com.jvnlee.catchdining.domain.restaurant.event.RestaurantUpdatedEvent;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchRequestDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResponseDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantSearchResultDto;
+import com.jvnlee.catchdining.domain.restaurant.dto.RestaurantViewDto;
 import com.jvnlee.catchdining.domain.restaurant.model.Restaurant;
+import com.jvnlee.catchdining.domain.restaurant.model.SortBy;
 import com.jvnlee.catchdining.domain.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.OptimisticLockException;
 import java.util.Optional;
-
-import static com.jvnlee.catchdining.common.config.RabbitMQConfig.RESTAURANT_EVENT_QUEUE;
 
 @Service
 @Transactional
@@ -26,28 +28,63 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
 
-    private final RabbitTemplate rabbitTemplate;
-
-    public RestaurantCreateResponseDto register(RestaurantDto restaurantDto) {
+    public void register(RestaurantDto restaurantDto) {
         validateName(restaurantDto.getName());
-        Restaurant restaurant = new Restaurant(restaurantDto);
-        Restaurant saved = restaurantRepository.save(restaurant);
-        rabbitTemplate.convertAndSend(RESTAURANT_EVENT_QUEUE, new RestaurantCreatedEvent(restaurant.getId(), restaurantDto));
-        return new RestaurantCreateResponseDto(saved.getId());
+
+        restaurantRepository.save(new Restaurant(restaurantDto));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<RestaurantSearchResponseDto> search(RestaurantSearchRequestDto restaurantSearchRequestDto) {
+        String keyword = restaurantSearchRequestDto.getKeyword();
+        SortBy sortBy = restaurantSearchRequestDto.getSortBy();
+        Pageable pageable = restaurantSearchRequestDto.getPageable();
+
+        Page<RestaurantSearchResultDto> page;
+
+        if (sortBy.equals(SortBy.AVG_RATING)) {
+            page = restaurantRepository.findPageByKeywordSortByAvgRating(keyword, pageable);
+        } else if (sortBy.equals(SortBy.REVIEW_COUNT)) {
+            page = restaurantRepository.findPageByKeywordSortByReviewCount(keyword, pageable);
+        } else {
+            page = restaurantRepository.findPageByKeyword(keyword, pageable);
+        }
+
+        return page.map(RestaurantSearchResponseDto::new);
+    }
+
+    @Transactional(readOnly = true)
+    public RestaurantViewDto view(Long id) {
+        Restaurant restaurant = restaurantRepository
+                .findById(id)
+                .orElseThrow(RestaurantNotFoundException::new);
+        return new RestaurantViewDto(restaurant);
     }
 
     public void update(Long id, RestaurantDto restaurantUpdateDto) {
         validateName(id, restaurantUpdateDto.getName());
+
         Restaurant restaurant = restaurantRepository
                 .findById(id)
                 .orElseThrow(RestaurantNotFoundException::new);
         restaurant.update(restaurantUpdateDto);
-        rabbitTemplate.convertAndSend(RESTAURANT_EVENT_QUEUE, new RestaurantUpdatedEvent(id, restaurantUpdateDto));
+    }
+
+    @Retryable(
+            value = OptimisticLockException.class,
+            backoff = @Backoff(delay = 100L),
+            maxAttempts = 10
+    )
+    public void updateReviewData(Long restaurantId, double tasteRating, double moodRating, double serviceRating) {
+        Restaurant restaurant = restaurantRepository
+                .findById(restaurantId)
+                .orElseThrow(RestaurantNotFoundException::new);
+
+        restaurant.updateReviewData(tasteRating, moodRating, serviceRating);
     }
 
     public void delete(Long id) {
         restaurantRepository.deleteById(id);
-        rabbitTemplate.convertAndSend(RESTAURANT_EVENT_QUEUE, new RestaurantDeletedEvent(id));
     }
 
     private void validateName(String name) {

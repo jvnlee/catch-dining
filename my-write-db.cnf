@@ -1,0 +1,7 @@
+[mysqld]
+server-id=1
+log-bin=mysql-bin
+binlog-format=ROW
+ssl-ca=/pems/ca.pem
+ssl-cert=/pems/server-cert.pem
+ssl-key=/pems/server-key.pem
