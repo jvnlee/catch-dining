@@ -34,6 +34,8 @@ public class QueryLoggingInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         queryInspector.initializeRequestStartTime();
+        queryInspector.initializeExecutionCount();
+
         return true;
     }
 

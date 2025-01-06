@@ -10,7 +10,7 @@ public class QueryInspector implements StatementInspector {
 
     private ThreadLocal<Long> requestStartTime = new ThreadLocal<>();
 
-    private ThreadLocal<Integer> executionCount = new ThreadLocal<>();
+    private ThreadLocal<Integer> executionCount = ThreadLocal.withInitial(() -> 0);
 
     @Override
     public String inspect(String sql) {
@@ -30,9 +30,12 @@ public class QueryInspector implements StatementInspector {
         requestStartTime.remove();
     }
 
+    public void initializeExecutionCount() {
+        executionCount.set(0);
+    }
+
     private void incrementExecutionCount() {
-        Integer prevCount = executionCount.get();
-        executionCount.set(prevCount + 1);
+        executionCount.set(executionCount.get() + 1);
     }
 
     public int getExecutionCount() {
