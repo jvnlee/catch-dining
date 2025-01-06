@@ -1,0 +1,59 @@
+services:
+  write-db:
+    image: mysql:8.0.32
+    restart: always
+    volumes:
+      - ./init-write-db.test.sql:/docker-entrypoint-initdb.d/init-write-db.sql
+      - ./my-write-db.test.cnf:/etc/mysql/my.cnf
+    environment:
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=catch_dining
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      catch-dining-net:
+        aliases:
+          - write-db
+
+  read-db:
+    image: mysql:8.0.32
+    depends_on:
+      write-db:
+        condition: service_healthy
+    restart: always
+    volumes:
+      - ./init-read-db.test.sql:/docker-entrypoint-initdb.d/init-read-db.sql
+      - ./my-read-db.test.cnf:/etc/mysql/my.cnf
+    environment:
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=catch_dining
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      catch-dining-net:
+        aliases:
+          - read-db
+
+  redis:
+    image: redis:7.0.14
+    restart: always
+    networks:
+      - catch-dining-net
+
+  rabbitmq:
+    image: rabbitmq:3.13.6
+    restart: always
+    networks:
+      - catch-dining-net
+
+networks:
+  catch-dining-net:
+    driver: bridge
