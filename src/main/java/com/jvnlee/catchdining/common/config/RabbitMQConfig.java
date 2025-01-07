@@ -1,5 +1,8 @@
 package com.jvnlee.catchdining.common.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -10,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@RequiredArgsConstructor
 public class RabbitMQConfig {
 
     @Value("${spring.rabbitmq.host}")
@@ -23,6 +27,8 @@ public class RabbitMQConfig {
 
     @Value("${spring.rabbitmq.password}")
     private String password;
+
+    private final ObjectMapper om;
 
     public static final String REVIEW_EVENT_QUEUE = "REVIEW_EVENT_QUEUE";
 
@@ -39,13 +45,14 @@ public class RabbitMQConfig {
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
+        rabbitTemplate.setMessageConverter(jsonMessageConverter());
         return rabbitTemplate;
     }
 
     @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+        om.findAndRegisterModules();
+        return new Jackson2JsonMessageConverter(om);
     }
 
     @Bean
