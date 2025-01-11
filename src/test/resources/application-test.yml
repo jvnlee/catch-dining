@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: test
   datasource:
     username: root
     password: 1234
