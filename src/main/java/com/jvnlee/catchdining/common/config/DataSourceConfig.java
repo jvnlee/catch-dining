@@ -3,11 +3,11 @@ package com.jvnlee.catchdining.common.config;
 import com.jvnlee.catchdining.common.util.DataSourceRouter;
 import com.jvnlee.catchdining.common.util.DataSourceType;
 import com.zaxxer.hikari.HikariDataSource;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
 
 import javax.sql.DataSource;
@@ -75,9 +75,10 @@ public class DataSourceConfig {
         return dataSourceRouter;
     }
 
+    @Primary
     @Bean(name = "lazyDataSource")
-    public DataSource lazyDataSource(@Qualifier("dataSourceRouter") DataSource dataSource) {
-        return new LazyConnectionDataSourceProxy(dataSource);
+    public DataSource lazyDataSource() {
+        return new LazyConnectionDataSourceProxy(dataSourceRouter());
     }
 
 }
