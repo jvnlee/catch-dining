@@ -6,34 +6,21 @@ import com.jvnlee.catchdining.domain.user.dto.UserLoginDto;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 import static com.jvnlee.catchdining.domain.user.model.UserType.*;
 import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.http.HttpStatus.*;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
 class LoginIntegrationTest extends TestcontainersContext {
-
-    @LocalServerPort
-    int port;
 
     @Autowired
     ObjectMapper om;
-
-    @BeforeEach
-    void beforeEach() {
-        RestAssured.port = port;
-    }
 
     @Test
     @DisplayName("username password 로그인 성공")
