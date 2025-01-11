@@ -1,10 +1,17 @@
 package com.jvnlee.catchdining.integration;
 
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.ComposeContainer;
@@ -14,6 +21,7 @@ import java.io.File;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@TestInstance(Lifecycle.PER_CLASS)
 public class TestcontainersContext {
 
     private static final String WRITE_DB = "write-db";
@@ -34,6 +42,12 @@ public class TestcontainersContext {
     @LocalServerPort
     private int port;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
     static {
         COMPOSE_CONTAINER =
                 new ComposeContainer(new File(COMPOSE_FILE_PATH))
@@ -46,12 +60,13 @@ public class TestcontainersContext {
     }
 
     @DynamicPropertySource
-    protected static void dynamicProperties(DynamicPropertyRegistry registry) {
+    protected static void setDynamicProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", () ->
                 String.format(
                         JDBC_URL_FORMAT,
                         COMPOSE_CONTAINER.getServiceHost(WRITE_DB, MYSQL_PORT),
-                        COMPOSE_CONTAINER.getServicePort(WRITE_DB, MYSQL_PORT)
+                        COMPOSE_CONTAINER.getServicePort(WRITE_DB, MYSQL_PORT),
+                        DATABASE_NAME
                 )
         );
 
@@ -59,7 +74,8 @@ public class TestcontainersContext {
                 String.format(
                         JDBC_URL_FORMAT,
                         COMPOSE_CONTAINER.getServiceHost(READ_DB, MYSQL_PORT),
-                        COMPOSE_CONTAINER.getServicePort(READ_DB, MYSQL_PORT)
+                        COMPOSE_CONTAINER.getServicePort(READ_DB, MYSQL_PORT),
+                        DATABASE_NAME
                 )
         );
 
@@ -73,6 +89,28 @@ public class TestcontainersContext {
     @BeforeEach
     void setup() {
         RestAssured.port = port;
+    }
+
+    @AfterAll
+    void cleanup() {
+        List<String> tables = jdbcTemplate.queryForList(
+                "SELECT table_name FROM information_schema.tables WHERE table_schema = ?",
+                String.class,
+                DATABASE_NAME
+        );
+
+        jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
+
+        for (String table : tables) {
+            jdbcTemplate.execute("TRUNCATE TABLE `" + table + "`");
+        }
+
+        jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
+
+        redisTemplate.execute((RedisConnection connection) -> {
+            connection.flushAll();
+            return null;
+        });
     }
 
 }
