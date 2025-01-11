@@ -2,6 +2,7 @@ package com.jvnlee.catchdining.common.advice;
 
 import com.jvnlee.catchdining.common.exception.*;
 import com.jvnlee.catchdining.common.web.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import static org.springframework.http.HttpStatus.*;
 
+@Slf4j
 @RestControllerAdvice
 public class ControllerAdvice {
 
@@ -80,7 +82,8 @@ public class ControllerAdvice {
 
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(INTERNAL_SERVER_ERROR)
-    public Response<Void> handleRuntimeException() {
+    public Response<Void> handleRuntimeException(RuntimeException e) {
+        log.error("런타임 예외 발생: ", e);
         return new Response<>("요청 처리 도중 문제가 발생했습니다.");
     }
 
