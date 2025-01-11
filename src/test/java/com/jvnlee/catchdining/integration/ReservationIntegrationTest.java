@@ -14,12 +14,9 @@ import com.jvnlee.catchdining.domain.user.dto.UserLoginDto;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -30,24 +27,14 @@ import java.util.concurrent.Executors;
 import static com.jvnlee.catchdining.domain.user.model.UserType.OWNER;
 import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
 class ReservationIntegrationTest extends TestcontainersContext {
-
-    @LocalServerPort
-    int port;
 
     @Autowired
     ObjectMapper om;
 
     final int THREAD_COUNT = 100;
-
-    @BeforeEach
-    void beforeEach() {
-        RestAssured.port = port;
-    }
 
     @Test
     @DisplayName("10개 수량의 좌석에 대한 100개의 예약 요청 동시성 테스트")

@@ -1,18 +1,26 @@
 package com.jvnlee.catchdining.integration;
 
+import io.restassured.RestAssured;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
+import java.util.List;
 
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class TestcontainersContext {
 
     private static final String WRITE_DB = "write-db";
     private static final String READ_DB = "read-db";
     private static final int MYSQL_PORT = 3306;
-    private static final String JDBC_URL_FORMAT = "jdbc:mysql://%s:%d/catch_dining";
+    private static final String DATABASE_NAME = "catch_dining";
+    private static final String JDBC_URL_FORMAT = "jdbc:mysql://%s:%d/%s";
 
     private static final String REDIS = "redis";
     private static final int REDIS_PORT = 6379;
@@ -22,6 +30,9 @@ public class TestcontainersContext {
 
     private static final ComposeContainer COMPOSE_CONTAINER;
     private static final String COMPOSE_FILE_PATH = "src/test/resources/docker-compose.test.yml";
+
+    @LocalServerPort
+    private int port;
 
     static {
         COMPOSE_CONTAINER =
@@ -57,6 +68,11 @@ public class TestcontainersContext {
 
         registry.add("spring.rabbitmq.host", () -> COMPOSE_CONTAINER.getServiceHost(RABBITMQ, RABBITMQ_PORT));
         registry.add("spring.rabbitmq.port", () -> COMPOSE_CONTAINER.getServicePort(RABBITMQ, RABBITMQ_PORT));
+    }
+
+    @BeforeEach
+    void setup() {
+        RestAssured.port = port;
     }
 
 }
